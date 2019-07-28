@@ -1,14 +1,14 @@
 push!(LOAD_PATH, ".")
-import lava
-import features
+using lava
+using features
+using VulkanCore
 
 
 function main()
-    glfw = features.create(features.GlfwOutput)
-    fs = Array{features.IFeature, 1}()
+    glfw = features.create(features.GlfwOutputT)
+    fs = Array{features.IFeatureT, 1}()
     push!(fs, glfw)
-    instance = lava.create(lava.Instance, fs)
-    print(instance)
+    instance = lava.create(lava.InstanceT, fs)
 end
 
 main()

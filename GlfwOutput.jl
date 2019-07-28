@@ -1,28 +1,40 @@
+#module GlfwOutput
+export GlfwOutputT, create
 
-export GlfwOutput, create
-export instanceExtensions
-using features: IFeature
+using features: IFeatureT
+using GLFW
+using VulkanCore
 
-mutable struct GlfwOutput <: IFeature
+mutable struct GlfwOutputT <: IFeatureT
     layers::Array{String}
     instanceExtensions::Array{String}
     deviceExtensions::Array{String}
+    mInstance::Any
 
-    GlfwOutput() = new()
+    GlfwOutputT() = new()
 end
 
-function layers(feature::GlfwOutput)::Array{String}
+function create(::Type{GlfwOutputT})
+    return GlfwOutputT()
+end
+
+function layers(this::GlfwOutputT, available::Array{String})::Array{String}
+    return []
+end
+
+function instanceExtensions(this::GlfwOutputT, available::Array{String})::Array{String}
+    ret = Array{String, 1}()
+    glfwReqExts = GLFW.GetRequiredInstanceExtensions()
+    extCount = length(glfwReqExts)
     
-end
-
-function instanceExtensions(feature::GlfwOutput)::Array{String}
-    return [""]
-end
-
-function deviceExtensions(feature::GlfwOutput)::Array{String}
+    # TODO: check availability
     
+    append!(ret, glfwReqExts)
+    return ret
 end
 
-function create(::Type{GlfwOutput})
-    return GlfwOutput()
+function onInstanceCreated(this::GlfwOutputT, instance)
+    mInstance = instance
 end
+
+#end
