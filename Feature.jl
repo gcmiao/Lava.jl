@@ -24,5 +24,16 @@ function onInstanceCreated(this::IFeatureT, instance)
     println("empty implementation in IFeatureT.onInstanceCreated")
 end
 
+function onLogicalDeviceCreated(this::IFeatureT, device)
+    println("empty implementation in IFeatureT.onLogicalDeviceCreated")
+end
+
+function onPhysicalDeviceSelected(this::IFeatureT, phy::vk.VkPhysicalDevice)
+    println("empty implementation in IFeatureT.onPhysicalDeviceSelected")
+end
+
+function supportsDevice(this::IFeatureT, device::vk.VkPhysicalDevice)
+    return true
+end
 
 #end

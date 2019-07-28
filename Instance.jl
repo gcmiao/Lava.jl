@@ -5,6 +5,7 @@ using VulkanCore
 #using Feature
 using features
 #IFeatureT = features.IFeatureT
+using lava: Device, ISelectionStrategy
 using VkExt
 
 strings2pp(names::Vector{String}) = (ptr = Base.cconvert(Ptr{Cstring}, names); GC.@preserve ptr Base.unsafe_convert(Ptr{Cstring}, ptr))
@@ -73,8 +74,14 @@ mutable struct InstanceT
     end
 end
 
-#GlfwOutputT.mInstance
-
 function create(::Type{InstanceT}, features::Array{IFeatureT, 1})::InstanceT
     return InstanceT(features)
+end
+
+function createDevice(this::InstanceT, queues, gpuSelectionStrategy::ISelectionStrategy)
+    device = Device(this.mInstance, this.mFeatures, gpuSelectionStrategy, queues)
+    for feat in this.mFeatures
+        features.onLogicalDeviceCreated(feat, device)
+    end
+    return device
 end
