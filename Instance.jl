@@ -1,10 +1,5 @@
-#module Instance
-export InstanceT
-
 using VulkanCore
-#using Feature
 using features
-#IFeatureT = features.IFeatureT
 using lava: Device, ISelectionStrategy
 using VkExt
 
@@ -15,31 +10,23 @@ function chars2String(chars)::String
 end
 
 mutable struct InstanceT
-    mFeatures::Array{IFeatureT, 1}
-    mInstance::VkInstance
+    mFeatures::Array{features.IFeatureT, 1}
+    mInstance::VkExt.VkInstance
 
-    function InstanceT(inFeatures::Array{IFeatureT, 1})
+    function InstanceT(inFeatures::Array{features.IFeatureT, 1})
         this = new(inFeatures)
 
         # get required extension names
-        extensionCount = Ref{UInt32}(0)
-        vk.vkEnumerateInstanceExtensionProperties(C_NULL, extensionCount, C_NULL)
-        availableExtensions = Array{vk.VkExtensionProperties, 1}(undef, extensionCount[])
-        vk.vkEnumerateInstanceExtensionProperties(C_NULL, extensionCount, availableExtensions)
-
-        avaliableExtNames = Array{String, 1}(undef, extensionCount[])
-        for i = 1 : extensionCount[]
+        availableExtensions, extCount = VkExt.enumerateInstanceExtensionProperties()
+        avaliableExtNames = Array{String, 1}(undef, extCount)
+        for i = 1 : extCount
             avaliableExtNames[i] = chars2String(availableExtensions[i].extensionName)
         end
         
         # get required layer names
-        layerCount = Ref{UInt32}(0)
-        vk.vkEnumerateInstanceLayerProperties(layerCount, C_NULL);
-        avaliableLayers = Array{vk.VkLayerProperties, 1}(undef, layerCount[])
-        vk.vkEnumerateInstanceLayerProperties(layerCount, avaliableLayers)
-
-        avaliableLayerNames = Array{String, 1}(undef, layerCount[])
-        for i = 1 : layerCount[]
+        avaliableLayers, layerCount = VkExt.enumerateInstanceLayerProperties()
+        avaliableLayerNames = Array{String, 1}(undef, layerCount)
+        for i = 1 : layerCount
             avaliableLayerNames[i] = chars2String(avaliableLayers[i].layerName)
         end
     
@@ -67,18 +54,18 @@ mutable struct InstanceT
         this.mInstance = VkExt.createInstance(info)
 
         for feat in this.mFeatures
-            features.onInstanceCreated(feat, this)
+            features.onInstanceCreated(feat, this.mInstance)
         end
 
         return this
     end
 end
 
-function create(::Type{InstanceT}, features::Array{IFeatureT, 1})::InstanceT
+function create(::Type{InstanceT}, features::Array{features.IFeatureT, 1})::InstanceT
     return InstanceT(features)
 end
 
-function createDevice(this::InstanceT, queues, gpuSelectionStrategy::ISelectionStrategy)
+function createDevice(this::InstanceT, queues::Array{QueueRequest, 1}, gpuSelectionStrategy::ISelectionStrategy)
     device = Device(this.mInstance, this.mFeatures, gpuSelectionStrategy, queues)
     for feat in this.mFeatures
         features.onLogicalDeviceCreated(feat, device)

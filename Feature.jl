@@ -1,7 +1,5 @@
-#module Feature
-export FeatureT, IFeatureT
-
 using VulkanCore
+using VkExt
 
 abstract type IFeatureT end
 
@@ -20,7 +18,7 @@ function deviceExtensions(this::IFeatureT, available::Array{String})::Array{Stri
     return []
 end
 
-function onInstanceCreated(this::IFeatureT, instance)
+function onInstanceCreated(this::IFeatureT, instance::VkExt.VkInstance)
     println("empty implementation in IFeatureT.onInstanceCreated")
 end
 
@@ -32,8 +30,12 @@ function onPhysicalDeviceSelected(this::IFeatureT, phy::vk.VkPhysicalDevice)
     println("empty implementation in IFeatureT.onPhysicalDeviceSelected")
 end
 
-function supportsDevice(this::IFeatureT, device::vk.VkPhysicalDevice)
+function supportsDevice(this::IFeatureT, dev::vk.VkPhysicalDevice)
     return true
 end
 
-#end
+function addPhysicalDeviceFeatures(this::IFeatureT, outDeviceFeatures::VkExt.VkPhysicalDeviceFeatures)
+end
+
+function queueRequests(this::IFeatureT, families::Array{vk.VkQueueFamilyProperties, 1})
+end

@@ -1,19 +1,24 @@
-#module GlfwOutput
-export GlfwOutputT, create
-
 using features: IFeatureT
 using GLFW
 using VulkanCore
+using VkExt
+#using lava: QueueRequest, createByFamily
 
 mutable struct GlfwOutputT <: IFeatureT
-    layers::Array{String}
-    instanceExtensions::Array{String}
-    deviceExtensions::Array{String}
-    mInstance::Any
+    mInstance::VkExt.VkInstance
     mPhysicalDevice::vk.VkPhysicalDevice
     mDevice
 
-    GlfwOutputT() = new()
+    mTempWindow::GLFW.Window
+    mTempSurface::vk.VkSurfaceKHR
+
+    mPresentIndex::UInt32
+
+    function GlfwOutputT()
+        this = new()
+        GLFW.Init()
+        return this
+    end
 end
 
 function create(::Type{GlfwOutputT})
@@ -36,33 +41,42 @@ function instanceExtensions(this::GlfwOutputT, available::Array{String})::Array{
 end
 
 function deviceExtensions(this::GlfwOutputT)::Array{String}
-    
+    return [vk.VK_KHR_SWAPCHAIN_EXTENSION_NAME]
 end
 
-function onInstanceCreated(this::GlfwOutputT, instance)
-    mInstance = instance
+function onInstanceCreated(this::GlfwOutputT, instance::VkExt.VkInstance)
+    this.mInstance = instance
+
+    GLFW.WindowHint(GLFW.CLIENT_API, GLFW.NO_API)
+    GLFW.WindowHint(GLFW.VISIBLE, false)
+    #GLFW.WindowHint(GLFW.RESIZABLE, false)
+
+    this.mTempWindow = GLFW.CreateWindow(100, 100, "Vulkan")
+    this.mTempSurface = GLFW.CreateWindowSurface(this.mInstance.vkInstance, this.mTempWindow)
 end
 
 function onLogicalDeviceCreated(this::GlfwOutputT, device)
-    mDevice = device
+    this.mDevice = device
 end
 
 function onPhysicalDeviceSelected(this::GlfwOutputT, phy::vk.VkPhysicalDevice)
-    this.mPhysicalDevice = phy;
+    this.mPhysicalDevice = phy
 
     # TODO
-    # mChainFormat = bestFormat(phy, mTempSurface);
+    # mChainFormat = bestFormat(phy, mTempSurface)
 end
 
-function supportsDevice(this::GlfwOutputT, device::vk.VkPhysicalDevice)
-    # TODO
-    # auto families = dev.getQueueFamilyProperties();
-    # for (uint32_t i = 0; i < families.size(); i++) {
-    #     if (dev.getSurfaceSupportKHR(i, mTempSurface))
-    #         return true;
-    # }
-    # return false;
-    return true
+function supportsDevice(this::GlfwOutputT, dev::vk.VkPhysicalDevice)
+    families = VkExt.getQueueFamilyProperties(dev)
+    for i::UInt32 = 0 : length(families) - 1 #queueFamilyIndex should start from 0
+        if VkExt.getSurfaceSupportKHR(dev, i, this.mTempSurface) == vk.VK_TRUE
+            return true
+        end
+    end
+    return false
 end
 
-#end
+# function addPhysicalDeviceFeatures(this::GlfwOutputT, outDeviceFeatures::VkExt.VkPhysicalDeviceFeatures)
+# end
+
+
