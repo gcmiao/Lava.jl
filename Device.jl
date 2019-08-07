@@ -20,6 +20,8 @@ mutable struct Device
 
         pickPhysicalDevice(this, gpuSelectionStrategy)
         createLogicalDevice(this, [this.mPhysicalDevice], queues)
+
+        return this
     end
 end
 
@@ -55,8 +57,9 @@ mutable struct FamilyInfo
     index::UInt32
     names::Array{String, 1}
     priorities::Array{Float32, 1}
+    minPriority::Float32
     
-    FamilyInfo() = new(typemax(UInt32), Array{String, 1}(), Array{Float32, 1}())
+    FamilyInfo() = new(typemax(UInt32), Array{String, 1}(), Array{Float32, 1}(), typemax(Float32))
 end
 
 function resolveQueueRequest(req::QueueRequest, families::Array{vk.VkQueueFamilyProperties, 1})
@@ -80,6 +83,10 @@ function resolveQueueRequest(req::QueueRequest, families::Array{vk.VkQueueFamily
             end
         end
     end
+end
+
+function queueRequests(this::features.IFeatureT, families::Array{vk.VkQueueFamilyProperties, 1})
+    return []
 end
 
 function queueRequests(this::features.GlfwOutputT, families::Array{vk.VkQueueFamilyProperties, 1})
@@ -121,6 +128,7 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
         info.index = q.index
         push!(info.names, q.name)
         push!(info.priorities, q.priority)
+        info.minPriority = min(info.minPriority, q.priority)
     end
     println("3. family dict:", familyInfoDict)
 
@@ -131,8 +139,11 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
             C_NULL, #pNext::Ptr{Cvoid}
             0, #flags::VkDeviceQueueCreateFlags
             info.index, #queueFamilyIndex::UInt32
-            length(info.priorities), #queueCount::UInt32
-            pointer(info.priorities) #pQueuePriorities::Ptr{Cfloat}
+            # queueCount should be less than or equal to available queue count
+            # for this pCreateInfo->pQueueCreateInfos[0].queueFamilyIndex} (=0)
+            # obtained previously from vkGetPhysicalDeviceQueueFamilyProperties
+            1, #length(info.priorities), #queueCount::UInt32
+            Base.unsafe_convert(Ptr{Float32}, Ref(info.minPriority)) #pQueuePriorities::Ptr{Cfloat}
         )
         push!(queueCreateInfos, queueCreateInfo)
     end
@@ -145,15 +156,12 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
         append!(extNames, add)
     end
     println("5. extensions:", extNames)
-
-    deviceFeatures = Ref{vk.VkPhysicalDeviceFeatures}()
-    vk.vkGetPhysicalDeviceFeatures(this.mPhysicalDevice, deviceFeatures)
     println("support sampler anisotropy:", deviceFeatures[].samplerAnisotropy)
 
-    devFatures = VkExt.VkPhysicalDeviceFeatures()
-    VkExt.setSamplerAnisotropy(devFatures, VkExt.VkTrue)
+    deviceFatures = VkExt.VkPhysicalDeviceFeatures()
+    VkExt.setSamplerAnisotropy(deviceFatures, VkExt.VkTrue)
     for feat in this.mFeatures
-        features.addPhysicalDeviceFeatures(feat, devFatures)
+        features.addPhysicalDeviceFeatures(feat, deviceFatures)
     end
 
     println("6. device features:", devFatures)
@@ -186,9 +194,7 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
                 )
             pNext = pointer_from_objref(Ref(groupInfo))
         end
-        
-        enabledFeatures = VkExt.build(devFatures)
-        enabledFeatures = deviceFeatures
+        enabledFeaturesRef = Ref(VkExt.build(deviceFatures))
         createInfo = vk.VkDeviceCreateInfo(
             vk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, #sType::VkStructureType
             pNext, #pNext::Ptr{Cvoid}
@@ -198,13 +204,15 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
             0, #enabledLayerCount::UInt32, VilidationLayers is disabled
             C_NULL, #ppEnabledLayerNames::Ptr{Cstring}
             length(extNames), #enabledExtensionCount::UInt32
-            pointer_from_objref(Ref(enabledFeatures)) #pEnabledFeatures::Ptr{VkPhysicalDeviceFeatures}
             StringHelper.strings2pp(extNames), #ppEnabledExtensionNames::Ptr{Cstring}
+            Base.unsafe_convert(Ptr{vk.VkPhysicalDeviceFeatures}, enabledFeaturesRef)
         )
 
         println("7. physical device:", this.mPhysicalDevice)
         println("8. create info:", createInfo)
-        this.mDevice = VkExt.createDevice(this.mPhysicalDevice, Ref(createInfo))
+        GC.@preserve enabledFeaturesRef begin
+            this.mDevice = VkExt.createDevice(this.mPhysicalDevice, Ref(createInfo))
+        end
         println(this.mDevice)
     #}
     
