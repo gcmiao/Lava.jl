@@ -2,6 +2,7 @@ using features
 using VulkanCore
 using VkExt
 using lava: ISelectionStrategy, QueueRequest
+using StringHelper
 
 mutable struct Device
     mInstance::VkExt.VkInstance
@@ -198,8 +199,8 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
             0, #enabledLayerCount::UInt32, VilidationLayers is disabled
             C_NULL, #ppEnabledLayerNames::Ptr{Cstring}
             length(extNames), #enabledExtensionCount::UInt32
-            strings2pp(extNames), #ppEnabledExtensionNames::Ptr{Cstring}
             pointer_from_objref(Ref(enabledFeatures)) #pEnabledFeatures::Ptr{VkPhysicalDeviceFeatures}
+            StringHelper.strings2pp(extNames), #ppEnabledExtensionNames::Ptr{Cstring}
         )
 
         println("7. physical device:", this.mPhysicalDevice)

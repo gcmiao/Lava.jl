@@ -2,12 +2,7 @@ using VulkanCore
 using features
 using lava: Device, ISelectionStrategy
 using VkExt
-
-strings2pp(names::Vector{String}) = (ptr = Base.cconvert(Ptr{Cstring}, names); GC.@preserve ptr Base.unsafe_convert(Ptr{Cstring}, ptr))
-function chars2String(chars)::String
-    charArray = UInt8[chars...]
-    return String(Base.getindex(charArray, 1:Base.findfirst(x->x==0, charArray) - 1))
-end
+using StringHelper
 
 mutable struct InstanceT
     mFeatures::Array{features.IFeatureT, 1}
@@ -20,14 +15,14 @@ mutable struct InstanceT
         availableExtensions, extCount = VkExt.enumerateInstanceExtensionProperties()
         avaliableExtNames = Array{String, 1}(undef, extCount)
         for i = 1 : extCount
-            avaliableExtNames[i] = chars2String(availableExtensions[i].extensionName)
+            avaliableExtNames[i] = StringHelper.chars2String(availableExtensions[i].extensionName)
         end
         
         # get required layer names
         avaliableLayers, layerCount = VkExt.enumerateInstanceLayerProperties()
         avaliableLayerNames = Array{String, 1}(undef, layerCount)
         for i = 1 : layerCount
-            avaliableLayerNames[i] = chars2String(avaliableLayers[i].layerName)
+            avaliableLayerNames[i] = StringHelper.chars2String(avaliableLayers[i].layerName)
         end
     
         requiredExtNames = Array{String, 1}()
@@ -46,9 +41,9 @@ mutable struct InstanceT
             UInt32(0), #flags::VkInstanceCreateFlags
             C_NULL, #pApplicationInfo::Ptr{VkApplicationInfo}
             length(requiredLayerNames), #enabledLayerCount::UInt32
-            strings2pp(requiredLayerNames), #ppEnabledLayerNames::Ptr{Cstring}
+            StringHelper.strings2pp(requiredLayerNames), #ppEnabledLayerNames::Ptr{Cstring}
             length(requiredExtNames), #enabledExtensionCount::UInt32
-            strings2pp(requiredExtNames), #ppEnabledExtensionNames::Ptr{Cstring}
+            StringHelper.strings2pp(requiredExtNames), #ppEnabledExtensionNames::Ptr{Cstring}
         )
 
         this.mInstance = VkExt.createInstance(info)

@@ -3,11 +3,10 @@ using lava
 using features
 using VulkanCore
 
-
 function main()
-    glfw = features.create(features.GlfwOutputT)
     fs = Array{features.IFeatureT, 1}()
-    push!(fs, glfw)
+    push!(fs, features.create(features.Validation))
+    push!(fs, features.create(features.GlfwOutputT))
     instance = lava.create(lava.InstanceT, fs)
     queues = [lava.createGraphics(lava.QueueRequest, "graphics")]#::Array{QueueRequest, 1}
     device = lava.createDevice(instance, queues,

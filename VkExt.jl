@@ -36,6 +36,21 @@ function enumerateInstanceLayerProperties()::Tuple{Array{vk.VkLayerProperties, 1
     return avaliableLayers, layerCount[]
 end
 
+function vkCreateDebugReportCallbackEXT(instance, callbackInfoRef, allocatorRef, callbackRef)
+    fnptr = vk.vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT") |> vk.PFN_vkCreateDebugReportCallbackEXT
+    ccall(fnptr, vk.VkResult, (vk.VkInstance, Ptr{vk.VkDebugReportCallbackCreateInfoEXT}, Ptr{vk.VkAllocationCallbacks},
+                               Ptr{vk.VkDebugReportCallbackEXT}), instance, callbackInfoRef, allocatorRef, callbackRef)
+end
+
+function createDebugReportCallbackEXT(instance::vk.VkInstance, createInfo::vk.VkDebugReportCallbackCreateInfoEXT)
+    callback = Ref{vk.VkDebugReportCallbackEXT}()
+    err = vkCreateDebugReportCallbackEXT(instance, Ref(createInfo), C_NULL, callback)
+    if err != vk.VK_SUCCESS
+        println(err, "create debug report callback ext failed!")
+    end
+    return callback[]
+end
+
 # physical device
 function enumeratePhysicalDevices(this::VkInstance)
     physicalDeviceCount = Ref{Cuint}(0)
