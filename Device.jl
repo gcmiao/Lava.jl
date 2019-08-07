@@ -1,7 +1,6 @@
 using features
 using VulkanCore
 using VkExt
-using lava: ISelectionStrategy, QueueRequest
 using StringHelper
 
 mutable struct Device

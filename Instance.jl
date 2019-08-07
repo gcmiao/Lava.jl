@@ -1,6 +1,5 @@
 using VulkanCore
 using features
-using lava: Device, ISelectionStrategy
 using VkExt
 using StringHelper
 

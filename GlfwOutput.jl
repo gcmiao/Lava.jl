@@ -1,4 +1,3 @@
-using features: IFeatureT
 using GLFW
 using VulkanCore
 using VkExt
