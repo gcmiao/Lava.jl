@@ -3,8 +3,8 @@ module VkExt
 using VulkanCore
 include("VkExt.VkPhysicalDeviceFeatures.jl")
 
-const VkTrue = UInt32(vk.VK_TRUE)
-const VkFalse = UInt32(vk.VK_FALSE)
+const VK_TRUE = UInt32(vk.VK_TRUE)
+const VK_FALSE = UInt32(vk.VK_FALSE)
 
 struct VkInstance
     vkInstance::vk.VkInstance
@@ -60,7 +60,6 @@ function enumeratePhysicalDevices(this::VkInstance)
     end
     physicalDevices = Array{vk.VkPhysicalDevice, 1}(undef, physicalDeviceCount[])
     vk.vkEnumeratePhysicalDevices(this.vkInstance, physicalDeviceCount, physicalDevices)
-    #println(physicalDevices)
     return physicalDevices
 end
 

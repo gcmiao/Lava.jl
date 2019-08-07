@@ -24,11 +24,11 @@ function create(::Type{GlfwOutputT})
     return GlfwOutputT()
 end
 
-function layers(this::GlfwOutputT, available::Array{String})::Array{String}
+function layers(this::GlfwOutputT, available::Array{String, 1})::Array{String, 1}
     return []
 end
 
-function instanceExtensions(this::GlfwOutputT, available::Array{String})::Array{String}
+function instanceExtensions(this::GlfwOutputT, available::Array{String, 1})::Array{String, 1}
     ret = Array{String, 1}()
     glfwReqExts = GLFW.GetRequiredInstanceExtensions()
     extCount = length(glfwReqExts)
@@ -39,7 +39,7 @@ function instanceExtensions(this::GlfwOutputT, available::Array{String})::Array{
     return ret
 end
 
-function deviceExtensions(this::GlfwOutputT)::Array{String}
+function deviceExtensions(this::GlfwOutputT)::Array{String, 1}
     return [vk.VK_KHR_SWAPCHAIN_EXTENSION_NAME]
 end
 
@@ -65,7 +65,7 @@ function onPhysicalDeviceSelected(this::GlfwOutputT, phy::vk.VkPhysicalDevice)
     # mChainFormat = bestFormat(phy, mTempSurface)
 end
 
-function supportsDevice(this::GlfwOutputT, dev::vk.VkPhysicalDevice)
+function supportsDevice(this::GlfwOutputT, dev::vk.VkPhysicalDevice)::Bool
     families = VkExt.getQueueFamilyProperties(dev)
     for i::UInt32 = 0 : length(families) - 1 #queueFamilyIndex should start from 0
         if VkExt.getSurfaceSupportKHR(dev, i, this.mTempSurface) == vk.VK_TRUE
@@ -77,5 +77,3 @@ end
 
 # function addPhysicalDeviceFeatures(this::GlfwOutputT, outDeviceFeatures::VkExt.VkPhysicalDeviceFeatures)
 # end
-
-

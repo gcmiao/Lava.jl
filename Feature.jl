@@ -3,39 +3,30 @@ using VkExt
 
 abstract type IFeatureT end
 
-function layers(this::IFeatureT, available::Array{String})::Array{String}
-    println("empty implementation in IFeatureT.layers")
+function layers(this::IFeatureT, available::Array{String, 1})::Array{String, 1}
     return []
 end
 
-function instanceExtensions(this::IFeatureT, available::Array{String})::Array{String}
-    println("empty implementation in IFeatureT.instanceExtensions")
+function instanceExtensions(this::IFeatureT, available::Array{String, 1})::Array{String, 1}
     return []
 end
 
-function deviceExtensions(this::IFeatureT, available::Array{String})::Array{String}
-    println("empty implementation in IFeatureT.deviceExtensions")
+function deviceExtensions(this::IFeatureT)::Array{String, 1}
     return []
 end
 
 function onInstanceCreated(this::IFeatureT, instance::VkExt.VkInstance)
-    println("empty implementation in IFeatureT.onInstanceCreated")
 end
 
 function onLogicalDeviceCreated(this::IFeatureT, device)
-    println("empty implementation in IFeatureT.onLogicalDeviceCreated")
 end
 
 function onPhysicalDeviceSelected(this::IFeatureT, phy::vk.VkPhysicalDevice)
-    println("empty implementation in IFeatureT.onPhysicalDeviceSelected")
 end
 
-function supportsDevice(this::IFeatureT, dev::vk.VkPhysicalDevice)
+function supportsDevice(this::IFeatureT, dev::vk.VkPhysicalDevice)::Bool
     return true
 end
 
 function addPhysicalDeviceFeatures(this::IFeatureT, outDeviceFeatures::VkExt.VkPhysicalDeviceFeatures)
-end
-
-function queueRequests(this::IFeatureT, families::Array{vk.VkQueueFamilyProperties, 1})
 end

@@ -58,7 +58,7 @@ function debugCallback(flags::vk.VkDebugReportFlagsEXT,
     validationPtr = Base.unsafe_convert(Ptr{Validation}, userData)
     validation = Base.unsafe_load(validationPtr)
     if (paused(validation))
-        return VkExt.VkFalse
+        return VkExt.VK_FALSE
     end
 
     bumpMessageCount(validation)
@@ -71,7 +71,7 @@ function debugCallback(flags::vk.VkDebugReportFlagsEXT,
     println("layerPrefix:", unsafe_string(layerPrefix))
     println("msg:", unsafe_string(msg))
 
-    return VkExt.VkFalse
+    return VkExt.VK_FALSE
 end
 
 function onInstanceCreated(this::Validation, instance::VkExt.VkInstance)

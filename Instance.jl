@@ -8,7 +8,8 @@ mutable struct InstanceT
     mInstance::VkExt.VkInstance
 
     function InstanceT(inFeatures::Array{features.IFeatureT, 1})
-        this = new(inFeatures)
+        this = new()
+        this.mFeatures = inFeatures
 
         # get required extension names
         availableExtensions, extCount = VkExt.enumerateInstanceExtensionProperties()
@@ -55,8 +56,8 @@ mutable struct InstanceT
     end
 end
 
-function create(::Type{InstanceT}, features::Array{features.IFeatureT, 1})::InstanceT
-    return InstanceT(features)
+function create(::Type{InstanceT}, inFeatures::Array{features.IFeatureT, 1})::InstanceT
+    return InstanceT(inFeatures)
 end
 
 function createDevice(this::InstanceT, queues::Array{QueueRequest, 1}, gpuSelectionStrategy::ISelectionStrategy)

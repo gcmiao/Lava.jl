@@ -118,8 +118,7 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
     for q in queues
         resolveQueueRequest(q, families)
     end
-    println("1. queues:", queues)
-    println("2. families: ", families)
+
     # Group requested queues by family index
     # Combine info that have the same index
     familyInfoDict = Dict{UInt32, FamilyInfo}()
@@ -130,7 +129,6 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
         push!(info.priorities, q.priority)
         info.minPriority = min(info.minPriority, q.priority)
     end
-    println("3. family dict:", familyInfoDict)
 
     queueCreateInfos = Array{vk.VkDeviceQueueCreateInfo, 1}()
     for info in values(familyInfoDict)
@@ -148,23 +146,18 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
         push!(queueCreateInfos, queueCreateInfo)
     end
 
-    println("4. queue create infos:", queueCreateInfos)
-
     extNames = Array{String, 1}()
     for feat in this.mFeatures
         add = features.deviceExtensions(feat)
         append!(extNames, add)
     end
-    println("5. extensions:", extNames)
-    println("support sampler anisotropy:", deviceFeatures[].samplerAnisotropy)
 
     deviceFatures = VkExt.VkPhysicalDeviceFeatures()
-    VkExt.setSamplerAnisotropy(deviceFatures, VkExt.VkTrue)
+    VkExt.setSamplerAnisotropy(deviceFatures, VkExt.VK_TRUE)
     for feat in this.mFeatures
         features.addPhysicalDeviceFeatures(feat, deviceFatures)
     end
 
-    println("6. device features:", devFatures)
     # TODO
     # features::IFeature::NextPtr features2 = nullptr
     # for (auto &&feat : mFeatures)
@@ -208,8 +201,6 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
             Base.unsafe_convert(Ptr{vk.VkPhysicalDeviceFeatures}, enabledFeaturesRef)
         )
 
-        println("7. physical device:", this.mPhysicalDevice)
-        println("8. create info:", createInfo)
         GC.@preserve enabledFeaturesRef begin
             this.mDevice = VkExt.createDevice(this.mPhysicalDevice, Ref(createInfo))
         end
