@@ -56,6 +56,12 @@ mutable struct InstanceT
     end
 end
 
+# TODO: Deconstruction
+# Instance::~Instance() {
+#     for (auto &&feat : mFeatures)
+#         feat->beforeInstanceDestruction();
+# }
+
 function create(::Type{InstanceT}, inFeatures::Array{features.IFeatureT, 1})::InstanceT
     return InstanceT(inFeatures)
 end

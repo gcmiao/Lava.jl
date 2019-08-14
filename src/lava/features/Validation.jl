@@ -18,6 +18,14 @@ mutable struct Validation <: IFeatureT
     end
 end
 
+#TODO: Deconstruction
+# Validation::~Validation() {
+#     if (mCallback) {
+#         mInstance.destroyDebugReportCallbackEXT(mCallback);
+#         mCallback = vk::DebugReportCallbackEXT{};
+#     }
+# }
+
 function create(::Type{Validation})
     return Validation()
 end

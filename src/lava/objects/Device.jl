@@ -25,6 +25,12 @@ mutable struct Device
     end
 end
 
+# TODO: Deconstruction
+# Device::~Device() {
+#     for (auto &&feat : mFeatures)
+#         feat->beforeDeviceDestruction();
+# }
+
 function pickPhysicalDevice(this::Device, gpuSelectionStrategy::ISelectionStrategy)
     devices = VkExt.enumeratePhysicalDevices(this.mInstance)
     isGoodDevice = function(device::vk.VkPhysicalDevice)
