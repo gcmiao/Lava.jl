@@ -1,9 +1,9 @@
 module lava
 
-include("Queue.jl")
-include("SelectionStrategy.jl")
-include("Device.jl")
-include("Instance.jl")
-#using Instance
+include("objects/Queue.jl")
+include("objects/Device.jl")
+include("objects/Instance.jl")
+
+include("gpuselection/SelectionStrategy.jl")
 
 end
