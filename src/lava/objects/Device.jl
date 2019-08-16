@@ -231,3 +231,17 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
     #     }
     # }
 end
+
+function createPipelineLayout(this::Device, type, descriptorSets::Array{DescriptorSetLayout, 1} = [])::PipelineLayout
+    range = vk.VkPushConstantRange(
+        vk.VK_SHADER_STAGE_ALL, #stageFlags::VkShaderStageFlags
+        0, #offset::UInt32
+        sizeof(type) #size::UInt32
+    )
+    return createPipelineLayout(this, {range}, descriptorSets);
+end
+
+function createPipelineLayout(this::Device, constantRanges::Array{PushConstantRange, 1} = [],
+                              descriptorSets::Array{DescriptorSetLayout, 1} = [])::PipelineLayout
+    return PipelineLayout(this, descriptorSets, constantRanges)
+end
