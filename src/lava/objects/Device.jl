@@ -1,14 +1,9 @@
-using features
-using VulkanCore
-using VkExt
-using StringHelper
-
 mutable struct Device
     mInstance::VkExt.VkInstance
     mFeatures::Array{features.IFeatureT, 1}
     mPhysicalDevice::vk.VkPhysicalDevice
     mPhyProperties::vk.VkPhysicalDeviceProperties
-    mDevice::vk.VkDevice
+    mVkDevice::vk.VkDevice
 
     function Device(instance::VkExt.VkInstance,
                features::Array{features.IFeatureT, 1},
@@ -178,7 +173,7 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
     #     vk::PhysicalDeviceFeatures2KHR wrapper{features}
     #     wrapper.pNext = features2
     #     info.pNext = &wrapper
-    #     mDevice = mPhysicalDevice.createDeviceUnique(info)
+    #     mVkDevice = mPhysicalDevice.createDeviceUnique(info)
     # } else {
         # Only level 1 extensions are used, no weird magic here.
 
@@ -208,15 +203,14 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
         )
 
         GC.@preserve enabledFeaturesRef begin
-            this.mDevice = VkExt.createDevice(this.mPhysicalDevice, Ref(createInfo))
+            this.mVkDevice = VkExt.createDevice(this.mPhysicalDevice, Ref(createInfo))
         end
-        println(this.mDevice)
     #}
     
     #TODO
 
     # for (auto const &pair : familyInfos) {
-    #     mPools[pair.second.index] = mDevice->createCommandPoolUnique(
+    #     mPools[pair.second.index] = mVkDevice->createCommandPoolUnique(
     #         {vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
     #              vk::CommandPoolCreateFlagBits::eTransient,
     #          pair.second.index})
@@ -225,23 +219,29 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
     #     for (uint32_t i = 0 i < pair.second.names.size() i++) {
     #         auto const &name = pair.second.names[i]
     #         auto const &family = pair.second.index
-    #         auto queue = mDevice->getQueue(family, i)
+    #         auto queue = mVkDevice->getQueue(family, i)
 
     #         mQueues.emplace(name, Queue(family, queue, pool, this))
     #     }
     # }
 end
 
-function createPipelineLayout(this::Device, type, descriptorSets::Array{DescriptorSetLayout, 1} = [])::PipelineLayout
+function createPipelineLayout(this::Device, type::Type, descriptorSets::Array{DescriptorSetLayout, 1} = [])::PipelineLayout   
     range = vk.VkPushConstantRange(
         vk.VK_SHADER_STAGE_ALL, #stageFlags::VkShaderStageFlags
         0, #offset::UInt32
-        sizeof(type) #size::UInt32
+        sizeof_obj(type()) #size::UInt32
     )
-    return createPipelineLayout(this, {range}, descriptorSets);
+    return createPipelineLayout(this, [range], descriptorSets);
 end
 
-function createPipelineLayout(this::Device, constantRanges::Array{PushConstantRange, 1} = [],
+function createPipelineLayout(this::Device, constantRanges::Array{vk.VkPushConstantRange, 1} = [],
                               descriptorSets::Array{DescriptorSetLayout, 1} = [])::PipelineLayout
-    return PipelineLayout(this, descriptorSets, constantRanges)
+    return PipelineLayout(this.mVkDevice, descriptorSets, constantRanges)
+end
+
+function createDescriptorSetLayout(this::Device, info::DescriptorSetLayoutCreateInfo, poolSize::UInt32 = UInt32(4))
+    return DescriptorSetLayout(this.mVkDevice, info, poolSize)
+end
+
 end

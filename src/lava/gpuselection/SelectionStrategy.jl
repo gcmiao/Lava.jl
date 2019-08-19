@@ -1,6 +1,3 @@
-using VulkanCore
-using VkExt
-
 abstract type ISelectionStrategy end
 
 function selectFrom(this::ISelectionStrategy, phys::Array{vk.VkPhysicalDevice})::vk.VkPhysicalDevice

@@ -1,5 +1,3 @@
-using VulkanCore
-
 mutable struct QueueRequest
     name::String
     priority::Float32

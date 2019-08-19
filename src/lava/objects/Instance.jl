@@ -1,8 +1,3 @@
-using VulkanCore
-using features
-using VkExt
-using StringHelper
-
 mutable struct InstanceT
     mFeatures::Array{features.IFeatureT, 1}
     mInstance::VkExt.VkInstance

@@ -1,19 +1,17 @@
 mutable struct DescriptorSetLayout
-    mDevice::Device,
+    mVkDevice::vk.VkDevice
     mCreateInfo::DescriptorSetLayoutCreateInfo
 
     mHandleRef::Ref{vk.VkDescriptorSetLayout}
 
-    function DescriptorSetLayout(device::Device,
+    function DescriptorSetLayout(device::vk.VkDevice,
                                    info::DescriptorSetLayoutCreateInfo,
                                poolSize::UInt32)
         this = new()
-        this.mDevice = device
+        this.mVkDevice = device
         this.mCreateInfo = info
         
         this.mHandleRef = Ref{vk.VkDescriptorSetLayout}()
-        vk.vkCreateDescriptorSetLayout(this.mDevice, handleRef(mCreateInfo), C_NULL, mHandleRef)
-        
         if poolSize != 0 #TODO
             # std::unordered_map<vk::DescriptorType, uint32_t> sizes;
             # for (auto b : info.mBindings) {
@@ -26,9 +24,14 @@ mutable struct DescriptorSetLayout
             #     pinfo.addSize(s.first, s.second * poolSize);
             # }
             # pinfo.setMaxSets(poolSize);
+        if vk.vkCreateDescriptorSetLayout(this.mVkDevice, handleRef(this.mCreateInfo), C_NULL, this.mHandleRef) != vk.VK_SUCCESS
+            error("Failed to create descriptor set layout!")
+        end
+        println("descriptor set layout:", this.mHandleRef)
 
             # mPool = mDevice->createDescriptorPool(pinfo);
         end
+        return this
     end
 
 end
@@ -39,5 +42,7 @@ end
 #     mDevice->handle().destroyDescriptorSetLayout(mHandle);
 # }
 
-function handleRef(this::DescriptorSetLayout)::vk.VkDescriptorSetLayout
+function handleRef(this::DescriptorSetLayout)::Ref{vk.VkDescriptorSetLayout}
+    return this.mHandleRef
+end
 end

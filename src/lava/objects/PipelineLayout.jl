@@ -1,35 +1,38 @@
 mutable struct PipelineLayout
-    mDevice::Device,
-    mDescriptors::Array{DescriptorSetLayout, 1},
-    mDescriptorHandles::Array{vk.VkDescriptorSetLayout, 1},
+    mVkDevice::vk.VkDevice
+    mDescriptors::Array{DescriptorSetLayout, 1}
+    mDescriptorHandles::Array{vk.VkDescriptorSetLayout, 1}
 
-    mPushConstants::Array{vk.VkPushConstantRange, 1},
+    mPushConstants::Array{vk.VkPushConstantRange, 1}
     mCreateInfo::PipelineLayoutCreateInfo
+
     mHandleRef::Ref{vk.VkPipelineLayout}
 
-    function PipelineLayout(device::Device,
+    function PipelineLayout(device::vk.VkDevice,
                        descriptors::Array{DescriptorSetLayout, 1},
-                     pushConstants::Array{PushConstantRange, 1})
+                     pushConstants::Array{vk.VkPushConstantRange, 1})
         this = new()
-        this.mDevice = device
+        this.mVkDevice = device
         this.mDescriptors = descriptors
         this.mPushConstants = pushConstants
-
-        std::transform(begin(mDescriptors), end(mDescriptors),
-                       back_inserter(mDescriptorHandles),
-                       [](SharedDescriptorSetLayout const &d) { return d->handle(); });
+        this.mCreateInfo = PipelineLayoutCreateInfo()
+        this.mDescriptorHandles = Array{vk.VkDescriptorSetLayout, 1}()
         
         for d in descriptors
-            addSetLayout(mCreateInfo, handle(d))
+            handle = handleRef(d)[]
+            push!(this.mDescriptorHandles, handle)
+            addSetLayout(this.mCreateInfo, handle)
         end
         for p in pushConstants
-            addPushConstantRange(mCreateInfo, p)
+            addPushConstantRange(this.mCreateInfo, p)
         end
         
         this.mHandleRef = Ref{vk.VkPipelineLayout}()
-        if (vk.vkCreatePipelineLayout(this.mDevice, handleRef(mCreateInfo), C_NULL, mHandleRef) != vk.VK_SUCCESS)
+        if vk.vkCreatePipelineLayout(this.mVkDevice, handleRef(this.mCreateInfo), C_NULL, this.mHandleRef) != vk.VK_SUCCESS
             error("Failed to create pipeline layout!")
         end
+        println("pipeline layout:", this.mHandleRef)
+        return this
     end
 end
 
@@ -39,6 +42,6 @@ end
 #     mDevice->handle().destroyPipelineLayout(mHandle);
 # }
 
-function handleRef(this::PipelineLayout)::vk.VkPipelineLayout
-    return mHandleRef[]
+function handleRef(this::PipelineLayout)::Ref{vk.VkPipelineLayout}
+    return this.mHandleRef
 end
