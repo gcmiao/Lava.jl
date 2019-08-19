@@ -3,15 +3,15 @@ using VkExt
 
 abstract type IFeatureT end
 
-function layers(this::IFeatureT, available::Array{String, 1})::Array{String, 1}
+function layers(this::IFeatureT, available::Vector{String})::Vector{String}
     return []
 end
 
-function instanceExtensions(this::IFeatureT, available::Array{String, 1})::Array{String, 1}
+function instanceExtensions(this::IFeatureT, available::Vector{String})::Vector{String}
     return []
 end
 
-function deviceExtensions(this::IFeatureT)::Array{String, 1}
+function deviceExtensions(this::IFeatureT)::Vector{String}
     return []
 end
 

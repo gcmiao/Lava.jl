@@ -1,27 +1,27 @@
 mutable struct InstanceT
-    mFeatures::Array{features.IFeatureT, 1}
+    mFeatures::Vector{features.IFeatureT}
     mInstance::VkExt.VkInstance
 
-    function InstanceT(inFeatures::Array{features.IFeatureT, 1})
+    function InstanceT(inFeatures::Vector{features.IFeatureT})
         this = new()
         this.mFeatures = inFeatures
 
         # get required extension names
         availableExtensions, extCount = VkExt.enumerateInstanceExtensionProperties()
-        avaliableExtNames = Array{String, 1}(undef, extCount)
+        avaliableExtNames = Vector{String}(undef, extCount)
         for i = 1 : extCount
             avaliableExtNames[i] = StringHelper.chars2String(availableExtensions[i].extensionName)
         end
         
         # get required layer names
         avaliableLayers, layerCount = VkExt.enumerateInstanceLayerProperties()
-        avaliableLayerNames = Array{String, 1}(undef, layerCount)
+        avaliableLayerNames = Vector{String}(undef, layerCount)
         for i = 1 : layerCount
             avaliableLayerNames[i] = StringHelper.chars2String(avaliableLayers[i].layerName)
         end
     
-        requiredExtNames = Array{String, 1}()
-        requiredLayerNames = Array{String, 1}()
+        requiredExtNames = Vector{String}()
+        requiredLayerNames = Vector{String}()
         for feat in this.mFeatures
             extNames = features.instanceExtensions(feat, avaliableExtNames)
             append!(requiredExtNames, extNames)
@@ -57,11 +57,11 @@ end
 #         feat->beforeInstanceDestruction();
 # }
 
-function create(::Type{InstanceT}, inFeatures::Array{features.IFeatureT, 1})::InstanceT
+function create(::Type{InstanceT}, inFeatures::Vector{features.IFeatureT})::InstanceT
     return InstanceT(inFeatures)
 end
 
-function createDevice(this::InstanceT, queues::Array{QueueRequest, 1}, gpuSelectionStrategy::ISelectionStrategy)
+function createDevice(this::InstanceT, queues::Vector{QueueRequest}, gpuSelectionStrategy::ISelectionStrategy)
     device = Device(this.mInstance, this.mFeatures, gpuSelectionStrategy, queues)
     for feat in this.mFeatures
         features.onLogicalDeviceCreated(feat, device)

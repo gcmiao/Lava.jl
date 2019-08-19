@@ -24,12 +24,12 @@ function create(::Type{GlfwOutputT})
     return GlfwOutputT()
 end
 
-function layers(this::GlfwOutputT, available::Array{String, 1})::Array{String, 1}
+function layers(this::GlfwOutputT, available::Vector{String})::Vector{String}
     return []
 end
 
-function instanceExtensions(this::GlfwOutputT, available::Array{String, 1})::Array{String, 1}
-    ret = Array{String, 1}()
+function instanceExtensions(this::GlfwOutputT, available::Vector{String})::Vector{String}
+    ret = Vector{String}()
     glfwReqExts = GLFW.GetRequiredInstanceExtensions()
     extCount = length(glfwReqExts)
     
@@ -39,7 +39,7 @@ function instanceExtensions(this::GlfwOutputT, available::Array{String, 1})::Arr
     return ret
 end
 
-function deviceExtensions(this::GlfwOutputT)::Array{String, 1}
+function deviceExtensions(this::GlfwOutputT)::Vector{String}
     return [vk.VK_KHR_SWAPCHAIN_EXTENSION_NAME]
 end
 

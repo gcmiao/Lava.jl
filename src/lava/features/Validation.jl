@@ -38,11 +38,11 @@ end
 #     }
 # }
 
-function layers(this::Validation, available::Array{String, 1})::Array{String, 1}
+function layers(this::Validation, available::Vector{String})::Vector{String}
     return ["VK_LAYER_LUNARG_standard_validation"]
 end
 
-function instanceExtensions(this::Validation, available::Array{String, 1})::Array{String, 1}
+function instanceExtensions(this::Validation, available::Vector{String})::Vector{String}
     return [vk.VK_EXT_DEBUG_REPORT_EXTENSION_NAME]
 end
 

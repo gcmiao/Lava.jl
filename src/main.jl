@@ -16,11 +16,11 @@ end
 function main()
     # Create a Vulkan instance, tell it we need glfw and the validation as
     # extension features
-    fs = Array{features.IFeatureT, 1}()
+    fs = Vector{features.IFeatureT}()
     push!(fs, features.create(features.Validation))
     push!(fs, features.create(features.GlfwOutputT))
     instance = lava.create(lava.InstanceT, fs)
-    queues = [lava.createGraphics(lava.QueueRequest, "graphics")]#::Array{QueueRequest, 1}
+    queues = [lava.createGraphics(lava.QueueRequest, "graphics")]#::Vector{QueueRequest}
 
     # Create a logical device with a single graphics queue named "graphics" on
     # a discrete (non-integrated) GPU. For more complex apps you can request

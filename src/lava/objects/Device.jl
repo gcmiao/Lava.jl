@@ -1,14 +1,14 @@
 mutable struct Device
     mInstance::VkExt.VkInstance
-    mFeatures::Array{features.IFeatureT, 1}
+    mFeatures::Vector{features.IFeatureT}
     mPhysicalDevice::vk.VkPhysicalDevice
     mPhyProperties::vk.VkPhysicalDeviceProperties
     mVkDevice::vk.VkDevice
 
     function Device(instance::VkExt.VkInstance,
-               features::Array{features.IFeatureT, 1},
+               features::Vector{features.IFeatureT},
                gpuSelectionStrategy::ISelectionStrategy,
-               queues::Array{QueueRequest, 1})
+               queues::Vector{QueueRequest})
         this = new()
         this.mInstance = instance
         this.mFeatures = features
@@ -56,14 +56,14 @@ end
 
 mutable struct FamilyInfo
     index::UInt32
-    names::Array{String, 1}
-    priorities::Array{Float32, 1}
+    names::Vector{String}
+    priorities::Vector{Float32}
     minPriority::Float32
     
-    FamilyInfo() = new(typemax(UInt32), Array{String, 1}(), Array{Float32, 1}(), typemax(Float32))
+    FamilyInfo() = new(typemax(UInt32), Vector{String}(), Vector{Float32}(), typemax(Float32))
 end
 
-function resolveQueueRequest(req::QueueRequest, families::Array{vk.VkQueueFamilyProperties, 1})
+function resolveQueueRequest(req::QueueRequest, families::Vector{vk.VkQueueFamilyProperties})
     if (req.index != typemax(UInt32))
         return
     end
@@ -86,12 +86,12 @@ function resolveQueueRequest(req::QueueRequest, families::Array{vk.VkQueueFamily
     end
 end
 
-function queueRequests(this::features.IFeatureT, families::Array{vk.VkQueueFamilyProperties, 1})
+function queueRequests(this::features.IFeatureT, families::Vector{vk.VkQueueFamilyProperties})
     return []
 end
 
-function queueRequests(this::features.GlfwOutputT, families::Array{vk.VkQueueFamilyProperties, 1})
-    result = Array{QueueRequest, 1}()
+function queueRequests(this::features.GlfwOutputT, families::Vector{vk.VkQueueFamilyProperties})
+    result = Vector{QueueRequest}()
     for i::UInt32 = 0 : length(families) - 1 #queueFamilyIndex should start from 0
         if VkExt.getSurfaceSupportKHR(this.mPhysicalDevice, i, this.mTempSurface) == vk.VK_TRUE
             this.mPresentIndex = i
@@ -106,7 +106,7 @@ function queueRequests(this::features.GlfwOutputT, families::Array{vk.VkQueueFam
     return result
 end
 
-function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalDevice, 1}, queues::Array{QueueRequest, 1})
+function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysicalDevice}, queues::Vector{QueueRequest})
     avaliableExts = VkExt.enumerateDeviceExtensionProperties(this.mPhysicalDevice)
 
     # Throw in the queues requested by Features
@@ -131,7 +131,7 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
         info.minPriority = min(info.minPriority, q.priority)
     end
 
-    queueCreateInfos = Array{vk.VkDeviceQueueCreateInfo, 1}()
+    queueCreateInfos = Vector{vk.VkDeviceQueueCreateInfo}()
     for info in values(familyInfoDict)
         queueCreateInfo = vk.VkDeviceQueueCreateInfo(
             vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, #sType::VkStructureType
@@ -147,7 +147,7 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
         push!(queueCreateInfos, queueCreateInfo)
     end
 
-    extNames = Array{String, 1}()
+    extNames = Vector{String}()
     for feat in this.mFeatures
         add = features.deviceExtensions(feat)
         append!(extNames, add)
@@ -226,7 +226,7 @@ function createLogicalDevice(this::Device, physicalDevices::Array{vk.VkPhysicalD
     # }
 end
 
-function createPipelineLayout(this::Device, type::Type, descriptorSets::Array{DescriptorSetLayout, 1} = [])::PipelineLayout   
+function createPipelineLayout(this::Device, type::Type, descriptorSets::Vector{DescriptorSetLayout} = [])::PipelineLayout   
     range = vk.VkPushConstantRange(
         vk.VK_SHADER_STAGE_ALL, #stageFlags::VkShaderStageFlags
         0, #offset::UInt32
@@ -235,8 +235,8 @@ function createPipelineLayout(this::Device, type::Type, descriptorSets::Array{De
     return createPipelineLayout(this, [range], descriptorSets);
 end
 
-function createPipelineLayout(this::Device, constantRanges::Array{vk.VkPushConstantRange, 1} = [],
-                              descriptorSets::Array{DescriptorSetLayout, 1} = [])::PipelineLayout
+function createPipelineLayout(this::Device, constantRanges::Vector{vk.VkPushConstantRange} = [],
+                              descriptorSets::Vector{DescriptorSetLayout} = [])::PipelineLayout
     return PipelineLayout(this.mVkDevice, descriptorSets, constantRanges)
 end
 

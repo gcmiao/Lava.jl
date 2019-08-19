@@ -1,13 +1,13 @@
 mutable struct PipelineLayoutCreateInfo
-    mLayouts::Array{vk.VkDescriptorSetLayout, 1}
-    mRanges::Array{vk.VkPushConstantRange, 1}
+    mLayouts::Vector{vk.VkDescriptorSetLayout}
+    mRanges::Vector{vk.VkPushConstantRange}
 
     mHandleRef::Ref{vk.VkPipelineLayoutCreateInfo}
 
     function PipelineLayoutCreateInfo()
         this = new()
-        this.mLayouts = Array{vk.VkDescriptorSetLayout, 1}()
-        this.mRanges = Array{vk.VkPushConstantRange, 1}()
+        this.mLayouts = Vector{vk.VkDescriptorSetLayout}()
+        this.mRanges = Vector{vk.VkPushConstantRange}()
         return this
     end
 end

@@ -1,22 +1,22 @@
 mutable struct PipelineLayout
     mVkDevice::vk.VkDevice
-    mDescriptors::Array{DescriptorSetLayout, 1}
-    mDescriptorHandles::Array{vk.VkDescriptorSetLayout, 1}
+    mDescriptors::Vector{DescriptorSetLayout}
+    mDescriptorHandles::Vector{vk.VkDescriptorSetLayout}
 
-    mPushConstants::Array{vk.VkPushConstantRange, 1}
+    mPushConstants::Vector{vk.VkPushConstantRange}
     mCreateInfo::PipelineLayoutCreateInfo
 
     mHandleRef::Ref{vk.VkPipelineLayout}
 
     function PipelineLayout(device::vk.VkDevice,
-                       descriptors::Array{DescriptorSetLayout, 1},
-                     pushConstants::Array{vk.VkPushConstantRange, 1})
+                       descriptors::Vector{DescriptorSetLayout},
+                     pushConstants::Vector{vk.VkPushConstantRange})
         this = new()
         this.mVkDevice = device
         this.mDescriptors = descriptors
         this.mPushConstants = pushConstants
         this.mCreateInfo = PipelineLayoutCreateInfo()
-        this.mDescriptorHandles = Array{vk.VkDescriptorSetLayout, 1}()
+        this.mDescriptorHandles = Vector{vk.VkDescriptorSetLayout}()
         
         for d in descriptors
             handle = handleRef(d)[]

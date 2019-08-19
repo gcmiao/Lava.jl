@@ -20,18 +20,18 @@ function createInstance(info::vk.VkInstanceCreateInfo)::VkInstance
     return VkInstance(outInstance[])
 end
 
-function enumerateInstanceExtensionProperties()::Tuple{Array{vk.VkExtensionProperties, 1}, UInt32}
+function enumerateInstanceExtensionProperties()::Tuple{Vector{vk.VkExtensionProperties}, UInt32}
     extensionCount = Ref{UInt32}(0)
     vk.vkEnumerateInstanceExtensionProperties(C_NULL, extensionCount, C_NULL)
-    availableExtensions = Array{vk.VkExtensionProperties, 1}(undef, extensionCount[])
+    availableExtensions = Vector{vk.VkExtensionProperties}(undef, extensionCount[])
     vk.vkEnumerateInstanceExtensionProperties(C_NULL, extensionCount, availableExtensions)
     return availableExtensions, extensionCount[]
 end
 
-function enumerateInstanceLayerProperties()::Tuple{Array{vk.VkLayerProperties, 1}, UInt32}
+function enumerateInstanceLayerProperties()::Tuple{Vector{vk.VkLayerProperties}, UInt32}
     layerCount = Ref{UInt32}(0)
     vk.vkEnumerateInstanceLayerProperties(layerCount, C_NULL);
-    avaliableLayers = Array{vk.VkLayerProperties, 1}(undef, layerCount[])
+    avaliableLayers = Vector{vk.VkLayerProperties}(undef, layerCount[])
     vk.vkEnumerateInstanceLayerProperties(layerCount, avaliableLayers)
     return avaliableLayers, layerCount[]
 end
@@ -58,7 +58,7 @@ function enumeratePhysicalDevices(this::VkInstance)
     if (physicalDeviceCount[] == 0)
         println("failed to find GPUs with Vulkan support!")
     end
-    physicalDevices = Array{vk.VkPhysicalDevice, 1}(undef, physicalDeviceCount[])
+    physicalDevices = Vector{vk.VkPhysicalDevice}(undef, physicalDeviceCount[])
     vk.vkEnumeratePhysicalDevices(this.vkInstance, physicalDeviceCount, physicalDevices)
     return physicalDevices
 end
@@ -73,16 +73,16 @@ function enumerateDeviceExtensionProperties(phy::vk.VkPhysicalDevice)
     extensionCount = Ref{UInt32}(0)
     vk.vkEnumerateDeviceExtensionProperties(phy, C_NULL, extensionCount, C_NULL)
 
-    availableExtensions = Array{vk.VkExtensionProperties, 1}(undef, extensionCount[])
+    availableExtensions = Vector{vk.VkExtensionProperties}(undef, extensionCount[])
     vk.vkEnumerateDeviceExtensionProperties(phy, C_NULL, extensionCount, availableExtensions)
     return availableExtensions
 end
 
-function getQueueFamilyProperties(phy::vk.VkPhysicalDevice)::Array{vk.VkQueueFamilyProperties, 1}
+function getQueueFamilyProperties(phy::vk.VkPhysicalDevice)::Vector{vk.VkQueueFamilyProperties}
     queueFamilyCount = Ref{Cuint}(0)
     vk.vkGetPhysicalDeviceQueueFamilyProperties(phy, queueFamilyCount, C_NULL)
     
-    queueFamilies = Array{vk.VkQueueFamilyProperties, 1}(undef, queueFamilyCount[])
+    queueFamilies = Vector{vk.VkQueueFamilyProperties}(undef, queueFamilyCount[])
     vk.vkGetPhysicalDeviceQueueFamilyProperties(phy, queueFamilyCount, queueFamilies)
     return queueFamilies
 end

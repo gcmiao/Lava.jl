@@ -1,6 +1,6 @@
 module StringHelper
 
-strings2pp(names::Array{String, 1}) = (ptr = Base.cconvert(Ptr{Cstring}, names); GC.@preserve ptr Base.unsafe_convert(Ptr{Cstring}, ptr))
+strings2pp(names::Vector{String}) = (ptr = Base.cconvert(Ptr{Cstring}, names); GC.@preserve ptr Base.unsafe_convert(Ptr{Cstring}, ptr))
 
 function chars2String(chars)::String
     charArray = UInt8[chars...]
