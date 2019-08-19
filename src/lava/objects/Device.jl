@@ -244,4 +244,6 @@ function createDescriptorSetLayout(this::Device, info::DescriptorSetLayoutCreate
     return DescriptorSetLayout(this.mVkDevice, info, poolSize)
 end
 
+function createDescriptorPool(vkDevice::vk.VkDevice, info::DescriptorPoolCreateInfo)::DescriptorPool
+    return DescriptorPool(vkDevice, info)
 end

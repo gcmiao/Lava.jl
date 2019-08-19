@@ -1,6 +1,7 @@
 mutable struct DescriptorSetLayout
     mVkDevice::vk.VkDevice
     mCreateInfo::DescriptorSetLayoutCreateInfo
+    mPool::DescriptorPool
 
     mHandleRef::Ref{vk.VkDescriptorSetLayout}
 
@@ -12,24 +13,25 @@ mutable struct DescriptorSetLayout
         this.mCreateInfo = info
         
         this.mHandleRef = Ref{vk.VkDescriptorSetLayout}()
-        if poolSize != 0 #TODO
-            # std::unordered_map<vk::DescriptorType, uint32_t> sizes;
-            # for (auto b : info.mBindings) {
-            #     sizes[b.descriptorType] += b.descriptorCount;
-            # }
-
-            # DescriptorPoolCreateInfo pinfo;
-            # pinfo.allowFreeing();
-            # for (auto s : sizes) {
-            #     pinfo.addSize(s.first, s.second * poolSize);
-            # }
-            # pinfo.setMaxSets(poolSize);
         if vk.vkCreateDescriptorSetLayout(this.mVkDevice, handleRef(this.mCreateInfo), C_NULL, this.mHandleRef) != vk.VK_SUCCESS
             error("Failed to create descriptor set layout!")
         end
         println("descriptor set layout:", this.mHandleRef)
+        if poolSize != 0
+            sizes = Dict{vk.VkDescriptorType, UInt32}()
+            for b in info.mBindings
+                count = get!(sizes, b.descriptorType, 0)
+                count += b.descriptorCount
+                sizes[b.descriptorType] = count
+            end
+            pinfo = DescriptorPoolCreateInfo()
+            allowFreeing(pinfo)
+            for s in sizes
+                addSize(pinfo, s.first, s.second * poolSize);
+            end
+            setMaxSets(pinfo, poolSize);
 
-            # mPool = mDevice->createDescriptorPool(pinfo);
+            this.mPool = createDescriptorPool(this.mVkDevice, pinfo);
         end
         return this
     end
@@ -45,4 +47,7 @@ end
 function handleRef(this::DescriptorSetLayout)::Ref{vk.VkDescriptorSetLayout}
     return this.mHandleRef
 end
+
+function createDescriptorSet(this::DescriptorSetLayout)::DescriptorSet
+    return createDescriptorSet(this.mPool, this);
 end

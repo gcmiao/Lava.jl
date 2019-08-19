@@ -30,6 +30,13 @@ function main()
     # Create a pipeline layout that transfers the CameraData as push constants
     # and has no descriptors (textures or uniform buffers)
     plLayout = lava.createPipelineLayout(device, CameraData, Vector{lava.DescriptorSetLayout}())
+
+    # Test descriptor set layout
+    # descCreateInfo = lava.DescriptorSetLayoutCreateInfo()
+    # lava.addUniformBuffer(descCreateInfo, vk.VK_SHADER_STAGE_VERTEX_BIT);
+    # lava.addCombinedImageSampler(descCreateInfo, vk.VK_SHADER_STAGE_FRAGMENT_BIT);
+    # descLayout = lava.createDescriptorSetLayout(device, descCreateInfo)
+    # plLayout = lava.createPipelineLayout(device, CameraData, [descLayout])
 end
 
 main()
