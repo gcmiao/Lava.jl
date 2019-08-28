@@ -10,6 +10,7 @@ mutable struct GlfwOutputT <: IFeatureT
 
     mTempWindow::GLFW.Window
     mTempSurface::vk.VkSurfaceKHR
+    mChainFormat::vk.VkSurfaceFormatKHR
 
     mPresentIndex::UInt32
 
@@ -27,6 +28,17 @@ end
 function layers(this::GlfwOutputT, available::Vector{String})::Vector{String}
     return []
 end
+
+# TODO
+# std::shared_ptr<GlfwWindow> GlfwOutput::openWindow(uint32_t width,
+#                                                    uint32_t height,
+#                                                    bool resizable,
+#                                                    const char *title) {
+
+#     return std::make_shared<GlfwWindow>(mDevice->shared_from_this(),
+#                                         mChainFormat, width, height, resizable,
+#                                         title);
+# }
 
 function instanceExtensions(this::GlfwOutputT, available::Vector{String})::Vector{String}
     ret = Vector{String}()
@@ -58,11 +70,40 @@ function onLogicalDeviceCreated(this::GlfwOutputT, device)
     this.mDevice = device
 end
 
+function bestFormat(dev::vk.VkPhysicalDevice, surface::vk.VkSurfaceKHR)::vk.VkSurfaceFormatKHR
+    formats = VkExt.getSurfaceFormatsKHR(dev, surface)
+
+    if (length(formats) == 1) && (formats[1].format == vk.VK_FORMAT_UNDEFINED)
+        return vk.VkSurfaceFormatKHR(
+                                        vk.VK_FORMAT_R8G8B8A8_SRGB, #format::VkFormat
+                                        vk.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR#colorSpace::VkColorSpaceKHR
+                                    )
+    end
+
+    for f in formats
+        if (f.format == vk.VK_FORMAT_B8G8R8A8_SRGB ||
+            f.format == vk.VK_FORMAT_R8G8B8A8_SRGB ||
+            f.format == vk.VK_FORMAT_B8G8R8_SRGB ||
+            f.format == vk.VK_FORMAT_R8G8B8_SRGB)
+            return f
+        end
+    end
+
+    for f in formats
+        if (f.format == vk.VK_FORMAT_B8G8R8A8_UNORM ||
+            f.format == vk.VK_FORMAT_R8G8B8A8_UNORM ||
+            f.format == vk.VK_FORMAT_B8G8R8_UNORM ||
+            f.format == vk.VK_FORMAT_R8G8B8_UNORM)
+            return f
+        end
+    end
+
+    error("No suitable format found!")
+end
+
 function onPhysicalDeviceSelected(this::GlfwOutputT, phy::vk.VkPhysicalDevice)
     this.mPhysicalDevice = phy
-
-    # TODO
-    # mChainFormat = bestFormat(phy, mTempSurface)
+    this.mChainFormat = bestFormat(phy, this.mTempSurface)
 end
 
 function supportsDevice(this::GlfwOutputT, dev::vk.VkPhysicalDevice)::Bool
@@ -77,3 +118,7 @@ end
 
 # function addPhysicalDeviceFeatures(this::GlfwOutputT, outDeviceFeatures::VkExt.VkPhysicalDeviceFeatures)
 # end
+
+function format(this::GlfwOutputT)::vk.VkFormat
+    return this.mChainFormat.format
+end

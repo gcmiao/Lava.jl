@@ -105,4 +105,15 @@ function getSurfaceSupportKHR(phy::vk.VkPhysicalDevice, queueFamilyIndex::UInt32
     return presentSupport[]
 end
 
+function getSurfaceFormatsKHR(device::vk.VkPhysicalDevice, surface::vk.VkSurfaceKHR)::Vector{vk.VkSurfaceFormatKHR}
+    surfaceFormats = Vector{vk.VkSurfaceFormatKHR}()
+    formatCount = Ref{UInt32}()
+    vk.vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, formatCount, C_NULL)
+    if (formatCount[] != 0)
+        resize!(surfaceFormats, formatCount[])
+        vk.vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, formatCount, surfaceFormats)
+    end
+    return surfaceFormats
+end
+
 end #module
