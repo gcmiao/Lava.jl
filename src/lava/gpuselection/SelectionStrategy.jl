@@ -22,6 +22,6 @@ function selectFrom(this::NthOfTypeStrategy, phys::Vector{vk.VkPhysicalDevice}):
             end
         end
     end
-    println("Failed to select physical device.")
+    error("Failed to select physical device.")
     return vk.VK_NULL_HANDLE
 end
