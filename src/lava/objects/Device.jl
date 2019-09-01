@@ -249,5 +249,5 @@ function createDescriptorPool(vkDevice::vk.VkDevice, info::DescriptorPoolCreateI
 end
 
 function createRenderPass(this::Device, info::RenderPassCreateInfo)::RenderPass
-    return RenderPass(this, info)
+    return RenderPass(this.mVkDevice, info)
 end

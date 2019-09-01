@@ -10,14 +10,15 @@ mutable struct RenderPassCreateInfo
     mNext::Ref{ExtensionStructure}
     
     mVkDependencies::Vector{vk.VkSubpassDependency}
-    mVkSubpasses::Vector{vk.VkSubpassDescription}
 
     mHandleRef::Ref{vk.VkRenderPassCreateInfo}
 
     function RenderPassCreateInfo()
         this = new()
-        this.mNext = Ref{ExtensionStructure}()
-        println(fieldnames(this.mNext))
+        this.mAttachments = Vector{AttachmentDescription}()
+        this.mSubpasses = Vector{SubpassDescription}()
+        this.mVkDependencies = Vector{vk.VkSubpassDependency}()
+        return this
     end
 end
 
@@ -36,6 +37,7 @@ function createSimpleForward(::Type{RenderPassCreateInfo}, colorFormat::vk.VkFor
 
     addSubpass(info, createFullSubpass(info))
     autoAddDependencies(info)
+    commit(info)
 
     return info
 end
@@ -57,18 +59,19 @@ function createFullSubpass(this::RenderPassCreateInfo)::SubpassDescription
     attCount = length(this.mAttachments)
     for i = 1 : attCount
         attachment = UInt32(i - 1)
-        if (aspectsOf(format(this.mAttachments[i])) & vk.VK_IMAGE_ASPECT_COLOR_BIT != 0)
+        if (aspectsOf(getFormat(this.mAttachments[i])) & vk.VK_IMAGE_ASPECT_COLOR_BIT != 0)
             push!(sub.colorAttachments, vk.VkAttachmentReference(
                                             attachment, #attachment::UInt32
                                             vk.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL#layout::VkImageLayout
                                         ))
         else
-            sub.depthAttachment = vk.VkAttachmentReference(
-                                        attachment, #attachment::UInt32
-                                        vk.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL#layout::VkImageLayout
-                                    )
+            sub.depthStencilAttachment = vk.VkAttachmentReference(
+                                            attachment, #attachment::UInt32
+                                            vk.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL#layout::VkImageLayout
+                                        )
         end
     end
+    commit(sub)
     return sub;
 end
 
@@ -111,14 +114,26 @@ function autoAddDependencies(this::RenderPassCreateInfo)
 end
 
 function commit(this::RenderPassCreateInfo)
+    subpassCount = length(this.mSubpasses)
+    vkSubpasses = Vector{vk.VkSubpassDescription}()
+    for subpass in this.mSubpasses
+        push!(vkSubpasses, handleRef(subpass)[])
+    end
+
+    attachCount = length(this.mAttachments)
+    vkAttachs = Vector{vk.VkAttachmentDescription}()
+    for attach in this.mAttachments
+        push!(vkAttachs, handleRef(attach)[])
+    end
+        
     this.mHandleRef = Ref(vk.VkRenderPassCreateInfo(
                             vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, #sType::VkStructureType
-                            pointer(this.mNext), #pNext::Ptr{Cvoid}
+                            isdefined(this, :mNext) ? pointer(this.mNext) : C_NULL, #pNext::Ptr{Cvoid}
                             0, #flags::VkRenderPassCreateFlags
-                            length(this.mAttachments), #attachmentCount::UInt32
-                            pointer(this.mAttachments), #pAttachments::Ptr{VkAttachmentDescription}
-                            length(this.mVkSubpasses), #subpassCount::UInt32
-                            pointer(this.mVkSubpasses), #pSubpasses::Ptr{VkSubpassDescription}
+                            attachCount, #attachmentCount::UInt32
+                            pointer(vkAttachs), #pAttachments::Ptr{VkAttachmentDescription}
+                            subpassCount, #subpassCount::UInt32
+                            pointer(vkSubpasses), #pSubpasses::Ptr{VkSubpassDescription}
                             length(this.mVkDependencies), #dependencyCount::UInt32
                             pointer(this.mVkDependencies) #pDependencies::Ptr{VkSubpassDependency}
                         ))

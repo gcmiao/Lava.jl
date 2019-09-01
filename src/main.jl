@@ -17,8 +17,9 @@ function main()
     # Create a Vulkan instance, tell it we need glfw and the validation as
     # extension features
     fs = Vector{features.IFeatureT}()
+    glfw = features.create(features.GlfwOutputT)
     push!(fs, features.create(features.Validation))
-    push!(fs, features.create(features.GlfwOutputT))
+    push!(fs, glfw)
     instance = lava.create(lava.InstanceT, fs)
     queues = [lava.createGraphics(lava.QueueRequest, "graphics")]#::Vector{QueueRequest}
 
@@ -37,6 +38,9 @@ function main()
     # lava.addCombinedImageSampler(descCreateInfo, vk.VK_SHADER_STAGE_FRAGMENT_BIT);
     # descLayout = lava.createDescriptorSetLayout(device, descCreateInfo)
     # plLayout = lava.createPipelineLayout(device, CameraData, [descLayout])
+    
+    pass = lava.createRenderPass(device, lava.createSimpleForward(lava.RenderPassCreateInfo, features.format(glfw)))
+    println("render pass:", pass)
 end
 
 main()

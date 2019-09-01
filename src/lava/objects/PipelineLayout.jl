@@ -31,7 +31,6 @@ mutable struct PipelineLayout
         if vk.vkCreatePipelineLayout(this.mVkDevice, handleRef(this.mCreateInfo), C_NULL, this.mHandleRef) != vk.VK_SUCCESS
             error("Failed to create pipeline layout!")
         end
-        println("pipeline layout:", this.mHandleRef)
         return this
     end
 end

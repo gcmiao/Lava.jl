@@ -116,4 +116,22 @@ function getSurfaceFormatsKHR(device::vk.VkPhysicalDevice, surface::vk.VkSurface
     return surfaceFormats
 end
 
+# common
+mutable struct ClearValue
+    mColor::vk.VkClearColorValue
+    mDepthStencil::vk.VkClearDepthStencilValue
+
+    function ClearValue(color::vk.VkClearColorValue)
+        this = new()
+        this.mColor = color
+        return this
+    end
+
+    function ClearValue(depthStencil::vk.VkClearDepthStencilValue)
+        this = new()
+        this.mDepthStencil = depthStencil
+        return this
+    end
+end
+
 end #module

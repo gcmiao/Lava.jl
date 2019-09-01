@@ -11,9 +11,12 @@ mutable struct SubpassDescription
 
     function SubpassDescription()
         this = new()
+        this.flags = 0
         this.pipelineBindPoint = vk.VK_PIPELINE_BIND_POINT_GRAPHICS
         this.resolveAttachments = Vector{vk.VkAttachmentReference}()
         this.preserveAttachments = Vector{UInt32}()
+        this.colorAttachments = Vector{vk.VkAttachmentReference}()
+        this.inputAttachments = Vector{vk.VkAttachmentReference}()
         return this
     end
 end
@@ -69,15 +72,17 @@ function perViewAttributes(this::SubpassDescription, active::Bool = true, allCom
 end
 
 function commit(this::SubpassDescription)
+    colorAttCount = length(this.colorAttachments)
+    resolveAttCount = length(this.resolveAttachments)
     this.mHandleRef = Ref(vk.VkSubpassDescription(
         this.flags, #flags::VkSubpassDescriptionFlags
         this.pipelineBindPoint, #pipelineBindPoint::VkPipelineBindPoint
         length(this.inputAttachments), #inputAttachmentCount::UInt32
         pointer(this.inputAttachments), #pInputAttachments::Ptr{VkAttachmentReference}
-        length(this.colorAttachments), #colorAttachmentCount::UInt32
+        colorAttCount, #colorAttachmentCount::UInt32
         pointer(this.colorAttachments), #pColorAttachments::Ptr{VkAttachmentReference}
-        pointer(this.resolveAttachments), #pResolveAttachments::Ptr{VkAttachmentReference}
-        pointer(this.depthStencilAttachment), #pDepthStencilAttachment::Ptr{VkAttachmentReference}
+        colorAttCount <= resolveAttCount ? pointer(this.resolveAttachments) : C_NULL, #pResolveAttachments::Ptr{VkAttachmentReference}
+        Base.unsafe_convert(Ptr{vk.VkAttachmentReference}, this.depthStencilAttachment), #pDepthStencilAttachment::Ptr{VkAttachmentReference}
         length(this.preserveAttachments), #preserveAttachmentCount::UInt32
         pointer(this.preserveAttachments) #pPreserveAttachments::Ptr{UInt32}
     ))
