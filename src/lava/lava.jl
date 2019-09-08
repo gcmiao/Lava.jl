@@ -7,11 +7,26 @@ using StringHelper
 
 include("common/Utils.jl")
 include("common/FormatInfo.jl")
+include("common/ShaderExtension.jl")
+
+include("objects/ShaderModule.jl")
 
 include("createinfos/DescriptorSetLayoutCreateInfo.jl")
 include("createinfos/DescriptorPoolCreateInfo.jl")
 include("createinfos/PipelineLayoutCreateInfo.jl")
 include("createinfos/RenderPassCreateInfo.jl")
+include("createinfos/GraphicsPipelineCreateInfo.jl")
+include("createinfos/PipelineColorBlendStateCreateInfo.jl")
+include("createinfos/PipelineDepthStencilStateCreateInfo.jl")
+include("createinfos/PipelineDynamicStateCreateInfo.jl")
+include("createinfos/PipelineInputAssemblyStateCreateInfo.jl")
+include("createinfos/PipelineMultisampleStateCreateInfo.jl")
+include("createinfos/PipelineRasterizationStateCreateInfo.jl")
+include("createinfos/PipelineShaderStageCreateInfo.jl")
+include("createinfos/PipelineTessellationStateCreateInfo.jl")
+include("createinfos/PipelineVertexInputStateCreateInfo.jl")
+include("createinfos/PipelineViewportStateCreateInfo.jl")
+
 
 include("gpuselection/SelectionStrategy.jl")
 

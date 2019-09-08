@@ -1,29 +1,26 @@
-mutable struct PipelineVertexInputStateCreateInfo
-    mAttributes::Vector{vk.VkVertexInputAttributeDescription}
-    mBindings::Vector{vk.VkVertexInputBindingDescription}
+struct PipelineVertexInputStateCreateInfo
+    mHandleRef::Ref{vk.VkPipelineVertexInputStateCreateInfo}
+    reserve::Vector{Any}
 
-    mHandleRef::vk.VkPipelineVertexInputStateCreateInfo
+    function PipelineVertexInputStateCreateInfo(
+        pNext::Ptr{Cvoid} = C_NULL,
+        flags::vk.VkPipelineVertexInputStateCreateFlags = 0,
+        attributes::Vector{vk.VkVertexInputAttributeDescription} = Vector{vk.VkVertexInputAttributeDescription}(),
+        bindings::Vector{vk.VkVertexInputBindingDescription} = Vector{vk.VkVertexInputBindingDescription}()
+    )
 
-    function PipelineVertexInputStateCreateInfo()
-        this = new()
-        this.mAttributes = Vector{vk.VkVertexInputAttributeDescription}()
-        this.mBindings = Vector{vk.VkVertexInputBindingDescription}()
-        return this
+        this = new(Ref(vk.VkPipelineVertexInputStateCreateInfo(
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO, #sType::VkStructureType
+            pNext, #::Ptr{Cvoid}
+            flags, #::VkPipelineVertexInputStateCreateFlags
+            length(bindings), #vertexBindingDescriptionCount::UInt32
+            pointer(bindings), #pVertexBindingDescriptions::Ptr{VkVertexInputBindingDescription}
+            length(attributes), #vertexAttributeDescriptionCount::UInt32
+            pointer(attributes) #pVertexAttributeDescriptions::Ptr{VkVertexInputAttributeDescription}
+        ), [attributes, bindings]))
     end
 end
 
-function commit(this::PipelineVertexInputStateCreateInfo)
-    this.mHandleRef = VkPipelineVertexInputStateCreateInfo(
-        vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO, #sType::VkStructureType
-        C_NULL, #pNext::Ptr{Cvoid}
-        0, #flags::VkPipelineVertexInputStateCreateFlags
-        length(this.mBindings), #vertexBindingDescriptionCount::UInt32
-        pointer(this.mBindings), #pVertexBindingDescriptions::Ptr{VkVertexInputBindingDescription}
-        length(this.mAttributes), #vertexAttributeDescriptionCount::UInt32
-        pointer(this.mAttributes) #pVertexAttributeDescriptions::Ptr{VkVertexInputAttributeDescription}
-    )
-end
-
 function handleRef(this::PipelineVertexInputStateCreateInfo)::Ref{vk.VkPipelineVertexInputStateCreateInfo}
-    return this.handleRef
+    this.mHandleRef
 end

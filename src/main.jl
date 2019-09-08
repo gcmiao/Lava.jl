@@ -6,6 +6,8 @@ using features
 using VulkanCore
 using LinearAlgebra
 
+shaderFolder = "../shaders/"
+
 struct CameraData
     view::Matrix{Float32}
     proj::Matrix{Float32}

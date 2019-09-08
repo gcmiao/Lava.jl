@@ -1,163 +1,131 @@
-include("PipelineVertexInputStateCreateInfo.jl")
-include("PipelineViewportStateCreateInfo.jl")
-include("PipelineColorBlendStateCreateInfo.jl")
-include("PipelineDynamicStateCreateInfo.jl")
+struct GraphicsPipelineCreateInfo
+    mHandleRef::Ref{vk.VkGraphicsPipelineCreateInfo}
+    mReserve::Vector{Any}
 
-mutable struct GraphicsPipelineCreateInfo
-    vertexInputState::PipelineVertexInputStateCreateInfo
-    inputAssemblyStateRef::Ref{vk.VkPipelineInputAssemblyStateCreateInfo}
-    tesselationStateRef::Ref{vk.VkPipelineTessellationStateCreateInfo}
-    viewportState::PipelineViewportStateCreateInfo
-    rasterizationStateRef::Ref{vk.VkPipelineRasterizationStateCreateInfo}
-    depthStencilStateRef::Ref{vk.VkPipelineDepthStencilStateCreateInfo}
-    multisampleStateRef::Ref{vk.VkPipelineMultisampleStateCreateInfo}
-    colorBlendState::PipelineColorBlendStateCreateInfo
-    dynamicState::PipelineDynamicStateCreateInfo
+    function GraphicsPipelineCreateInfo(reserve::Vector{Any} = [];
+        pNext::Ptr{Cvoid} = C_NULL,
+        flags::vk.VkPipelineCreateFlags = 0,
+        stages::Vector{vk.VkPipelineShaderStageCreateInfo} = Vector{vk.VkPipelineShaderStageCreateInfo}(),
+        pVertexInputState::Ptr{vk.VkPipelineVertexInputStateCreateInfo} = C_NULL,
+        pInputAssemblyState::Ptr{vk.VkPipelineInputAssemblyStateCreateInfo} = C_NULL,
+        pTessellationState::Ptr{vk.VkPipelineTessellationStateCreateInfo} = C_NULL,
+        pViewportState::Ptr{vk.VkPipelineViewportStateCreateInfo} = C_NULL,
+        pRasterizationState::Ptr{vk.VkPipelineRasterizationStateCreateInfo} = C_NULL,
+        pMultisampleState::Ptr{vk.VkPipelineMultisampleStateCreateInfo} = C_NULL,
+        pDepthStencilState::Ptr{vk.VkPipelineDepthStencilStateCreateInfo} = C_NULL,
+        pColorBlendState::Ptr{vk.VkPipelineColorBlendStateCreateInfo} = C_NULL,
+        pDynamicState::Ptr{vk.VkPipelineDynamicStateCreateInfo} = C_NULL,
+        layout::vk.VkPipelineLayout, #required
+        renderPass::vk.VkRenderPass, #required
+        subpass::UInt32 = 0,
+        basePipelineHandle::vk.VkPipeline = vk.VK_NULL_HANDLE,
+        basePipelineIndex::Int32 = 0,
+    )
 
-    bool mUseTesselation = false;
-    mStages::Vector{PipelineShaderStageCreateInfo}
-    mLayout::PipelineLayout
-    mPass::RenderPass
-
-    mHandleRef::vk.VkGraphicsPipelineCreateInfo
-
-    function GraphicsPipelineCreateInfo()
-        this = new()
-        this.vertexInputState = PipelineVertexInputStateCreateInfo()
-        this.viewportState = PipelineViewportStateCreateInfo()
-        this.colorBlendState = PipelineColorBlendStateCreateInfo()
-        this.dynamicState = PipelineDynamicStateCreateInfo()
-        this.tesselationStateRef = Ref(vk.VkPipelineTessellationStateCreateInfo(
-                                            vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO, #sType::VkStructureType
-                                            C_NULL, #pNext::Ptr{Cvoid}
-                                            0, #flags::VkPipelineTessellationStateCreateFlags
-                                            0 #patchControlPoints::UInt32
-                                        ))
+        this = new(Ref(vk.VkGraphicsPipelineCreateInfo(
+            vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO, #sType::VkStructureType
+            pNext, #pNext::Ptr{Cvoid}
+            flags, #flags::VkPipelineCreateFlags
+            length(stages), #stageCount::UInt32
+            pointer(stages), #pStages::Ptr{VkPipelineShaderStageCreateInfo}
+            pVertexInputState, #::Ptr{VkPipelineVertexInputStateCreateInfo}
+            pInputAssemblyState, #::Ptr{VkPipelineInputAssemblyStateCreateInfo}
+            pTessellationState, #::Ptr{VkPipelineTessellationStateCreateInfo}
+            pViewportState, #::Ptr{VkPipelineViewportStateCreateInfo}
+            pRasterizationState, #::Ptr{VkPipelineRasterizationStateCreateInfo}
+            pMultisampleState, #::Ptr{VkPipelineMultisampleStateCreateInfo}
+            pDepthStencilState, #::Ptr{VkPipelineDepthStencilStateCreateInfo}
+            pColorBlendState, #::Ptr{VkPipelineColorBlendStateCreateInfo}
+            pDynamicState, #::Ptr{VkPipelineDynamicStateCreateInfo}
+            layout, #::VkPipelineLayout
+            renderPass, #::VkRenderPass
+            subpass, #::UInt32
+            basePipelineHandle, #::VkPipeline
+            basePipelineIndex #::Int32
+        )), reserve)
         return this
     end
 end
 
-function defaults(::Type{GraphicsPipelineCreateInfo})::GraphicsPipelineCreateInfo
-    info = GraphicsPipelineCreateInfo()
-    info.inputAssemblyStateRef = Ref(vk.VkPipelineInputAssemblyStateCreateInfo(
-                                        vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO, #sType::VkStructureType
-                                        C_NULL, #pNext::Ptr{Cvoid}
-                                        0, #flags::VkPipelineInputAssemblyStateCreateFlags
-                                        vk.VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, #topology::VkPrimitiveTopology
-                                        vk.VK_FALSE #primitiveRestartEnable::VkBool32
-                                    ))
-
-    addViewport(info.viewportState, vk.VkViewport(
-                                                    0, #x::Cfloat
-                                                    0, #y::Cfloat
-                                                    float(INT32_MAX), #width::Cfloat
-                                                    float(INT32_MAX), #height::Cfloat
-                                                    0.f, #minDepth::Cfloat
-                                                    1.f #maxDepth::Cfloat
-                                                ))
-    addScissor(info.viewportState, vk.VkRect2D(vk.VkOffset2D(0, 0), vk.VkExtent2D(INT32_MAX, INT32_MAX)))
-
-    info.rasterizationStateRef = Ref(vk.VkPipelineRasterizationStateCreateInfo(
-                                        vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO, #sType::VkStructureType
-                                        C_NULL, #pNext::Ptr{Cvoid}
-                                        0, #flags::VkPipelineRasterizationStateCreateFlags
-                                        vk.VK_FALSE, #depthClampEnable::VkBool32
-                                        vk.VK_FALSE, #rasterizerDiscardEnable::VkBool32
-                                        vk.VK_POLYGON_MODE_FILL, #polygonMode::VkPolygonMode
-                                        vk.VK_CULL_MODE_NONE, #cullMode::VkCullModeFlags
-                                        vk.VK_FRONT_FACE_COUNTER_CLOCKWISE, #frontFace::VkFrontFace
-                                        vk.VK_FALSE, #depthBiasEnable::VkBool32
-                                        0.0, #depthBiasConstantFactor::Cfloat
-                                        0.0, #depthBiasClamp::Cfloat
-                                        0.0, #depthBiasSlopeFactor::Cfloat
-                                        1.f #lineWidth::Cfloat
-                                    ))
-
-    info.depthStencilStateRef = Ref(vk.VkPipelineDepthStencilStateCreateInfo(
-                                        vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO, #sType::VkStructureType
-                                        C_NULL, #pNext::Ptr{Cvoid}
-                                        0, #flags::VkPipelineDepthStencilStateCreateFlags
-                                        vk.VK_FALSE, #depthTestEnable::VkBool32
-                                        vk.VK_FALSE, #depthWriteEnable::VkBool32
-                                        vk.VK_COMPARE_OP_GREATER, #depthCompareOp::VkCompareOp
-                                        vk.VK_FALSE, #depthBoundsTestEnable::VkBool32
-                                        vk.VK_FALSE, #stencilTestEnable::VkBool32
-                                        vk.VkStencilOpState(
-                                                VK_STENCIL_OP_KEEP, #failOp::VkStencilOp
-                                                vk.VK_STENCIL_OP_KEEP, #passOp::VkStencilOp
-                                                vk.VK_STENCIL_OP_KEEP, #depthFailOp::VkStencilOp
-                                                vk.VK_COMPARE_OP_NEVER, #compareOp::VkCompareOp
-                                                0, #compareMask::UInt32
-                                                0, #writeMask::UInt32
-                                                0 #reference::UInt32
-                                            ), #front::VkStencilOpState
-                                        vk.VkStencilOpState(
-                                                VK_STENCIL_OP_KEEP, #failOp::VkStencilOp
-                                                vk.VK_STENCIL_OP_KEEP, #passOp::VkStencilOp
-                                                vk.VK_STENCIL_OP_KEEP, #depthFailOp::VkStencilOp
-                                                vk.VK_COMPARE_OP_NEVER, #compareOp::VkCompareOp
-                                                0, #compareMask::UInt32
-                                                0, #writeMask::UInt32
-                                                0 #reference::UInt32
-                                            ), #back::VkStencilOpState
-                                        0, #minDepthBounds::Cfloat
-                                        0 #maxDepthBounds::Cfloat
-                                    ))
-
-    info.multisampleStateRef = Ref(vk.VkPipelineMultisampleStateCreateInfo(
-                                        vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO, #sType::VkStructureType
-                                        C_NULL, #pNext::Ptr{Cvoid}
-                                        0, #flags::VkPipelineMultisampleStateCreateFlags
-                                        vk.VK_SAMPLE_COUNT_1_BIT, #rasterizationSamples::VkSampleCountFlagBits
-                                        vk.VK_FALSE, #sampleShadingEnable::VkBool32
-                                        1.f, #minSampleShading::Cfloat
-                                        C_NULL, #pSampleMask::Ptr{VkSampleMask}
-                                        vk.VK_FALSE, #alphaToCoverageEnable::VkBool32
-                                        vk.VK_FALSE #alphaToOneEnable::VkBool32
-                                    ))
-
-    addNoBlend(info.colorBlendState)
-    commit(info.colorBlendState)
-
-    addState(info.dynamicState, vk.VK_DYNAMIC_STATE_VIEWPORT)
-    commit(info.dynamicState)
-
-    return info
-end
-
-function setLayout(this::GraphicsPipelineCreateInfo, layout::PipelineLayout)
-    this.mLayout = layout
-end
-
-function commit(this::GraphicsPipelineCreateInfo)
-
-    vkStages = Vector{vk.VkPipelineShaderStageCreateInfo}()
-    for stage in this.mStages
-        push!(vkStages, handleRef(stage))
-    end
-    this.mHandleRef = vk.VkGraphicsPipelineCreateInfo(
-        vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO, #sType::VkStructureType
-        C_NULL, #pNext::Ptr{Cvoid}
-        0, #flags::VkPipelineCreateFlags
-        length(vkStages), #stageCount::UInt32
-        pointer(vkStages), #pStages::Ptr{VkPipelineShaderStageCreateInfo}
-        Base.unsafe_convert(Ptr{vk.VkPipelineVertexInputStateCreateInfo}, handleRef(this.vertexInputState)), #pVertexInputState::Ptr{VkPipelineVertexInputStateCreateInfo}
-        Base.unsafe_convert(Ptr{vk.VkPipelineInputAssemblyStateCreateInfo}, this.inputAssemblyStateRef), #pInputAssemblyState::Ptr{VkPipelineInputAssemblyStateCreateInfo}
-        Base.unsafe_convert(Ptr{vk.VkPipelineTessellationStateCreateInfo}, this.tesselationStateRef), #pTessellationState::Ptr{VkPipelineTessellationStateCreateInfo}
-        handleRef(this.viewportState), #pViewportState::Ptr{VkPipelineViewportStateCreateInfo}
-        Base.unsafe_convert(Ptr{vk.VkPipelineRasterizationStateCreateInfo}, this.rasterizationStateRef), #pRasterizationState::Ptr{VkPipelineRasterizationStateCreateInfo}
-        Base.unsafe_convert(Ptr{vk.VkPipelineMultisampleStateCreateInfo}, this.multisampleStateRef), #pMultisampleState::Ptr{VkPipelineMultisampleStateCreateInfo}
-        Base.unsafe_convert(Ptr{vk.VkPipelineDepthStencilStateCreateInfo}, this.depthStencilStateRef), #pDepthStencilState::Ptr{VkPipelineDepthStencilStateCreateInfo}
-        handleRef(info.colorBlendState), #pColorBlendState::Ptr{VkPipelineColorBlendStateCreateInfo}
-        handleRef(info.dynamicState), #pDynamicState::Ptr{VkPipelineDynamicStateCreateInfo}
-        handleRef(this.mLayout)[], #layout::VkPipelineLayout
-        handleRef(this.mPass)[], #renderPass::VkRenderPass
-        0, #subpass::UInt32
-        vk.VK_NULL_HANDLE, #basePipelineHandle::VkPipeline
-        0 #basePipelineIndex::Int32
-    )
-end
-
-function handleRef(this::GraphicsPipelineCreateInfo)::vk.VkGraphicsPipelineCreateInfo
+function handleRef(this::GraphicsPipelineCreateInfo)::Ref{vk.VkGraphicsPipelineCreateInfo}
     return this.mHandleRef
+end
+
+function defaults(::Type{GraphicsPipelineCreateInfo};
+    stages::Vector{vk.VkPipelineShaderStageCreateInfo} = Vector{vk.VkPipelineShaderStageCreateInfo}(),
+    layout::vk.VkPipelineLayout, #required
+    renderPass::vk.VkRenderPass, #required
+    subpass::UInt32 = 0,
+    depthTestEnable::vk.VkBool32 = Vk.VK_FALSE,
+    depthWriteEnable::vk.VkBool32 = Vk.VK_FALSE,
+    frontFace::vk.VkFrontFace = vk.VK_FRONT_FACE_COUNTER_CLOCKWISE,
+)::GraphicsPipelineCreateInfo
+
+    inputState = PipelineVertexInputStateCreateInfo()
+    inputAssemblyState = PipelineInputAssemblyStateCreateInfo(
+                                    topology = vk.VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, #::VkPrimitiveTopology
+                                )
+    tesselationState = PipelineTessellationStateCreateInfo()
+
+    viewports = [vk.VkViewport(
+                    0, #x::Cfloat
+                    0, #y::Cfloat
+                    float(INT32_MAX), #width::Cfloat
+                    float(INT32_MAX), #height::Cfloat
+                    0.0, #minDepth::Cfloat
+                    1.0 #maxDepth::Cfloat
+                )]
+    scissors = [vk.VkRect2D(vk.VkOffset2D(0, 0), vk.VkExtent2D(INT32_MAX, INT32_MAX))]
+    viewportState = PipelineViewportStateCreateInfo(
+                        mViewports = viewports,
+                        mScissors = scissors
+                    )
+
+    rasterizationState = PipelineRasterizationStateCreateInfo(
+                            polygonMode = vk.VK_POLYGON_MODE_FILL, #::VkPolygonMode
+                            frontFace = vk.VK_FRONT_FACE_COUNTER_CLOCKWISE, #::VkFrontFace
+                            lineWidth = 1.0 #::Cfloat
+                        )
+
+    depthStencilState = PipelineDepthStencilStateCreateInfo(
+                            depthCompareOp = vk.VK_COMPARE_OP_GREATER, #::VkCompareOp
+                        )
+
+    multisampleState = PipelineMultisampleStateCreateInfo(
+                            rasterizationSamples = vk.VK_SAMPLE_COUNT_1_BIT, #::VkSampleCountFlagBits
+                            minSampleShading = 1.0 #::Cfloat
+                        )
+    #addNoBlend
+    attachments = [PipelineColorBlendAttachmentState(
+                        colorBlendOp = vk.VK_BLEND_OP_ADD, #::VkBlendOp
+                        alphaBlendOp = vk.VK_BLEND_OP_ADD, #::VkBlendOp
+                        colorWriteMask = (vk.VK_COLOR_COMPONENT_R_BIT | vk.VK_COLOR_COMPONENT_G_BIT |
+                                            vk.VK_COLOR_COMPONENT_B_BIT | vk.VK_COLOR_COMPONENT_A_BIT) #::VkColorComponentFlags
+                    )]
+    colorBlendState = PipelineColorBlendStateCreateInfo(
+                            logicOp = vk.VK_LOGIC_OP_COPY, #::VkLogicOp
+                            attachments = attachments #::Vector{vk.VkPipelineColorBlendAttachmentState}
+                        )
+
+    dynamicState = PipelineDynamicStateCreateInfo(states = [vk.VK_DYNAMIC_STATE_VIEWPORT])
+
+    info = GraphicsPipelineCreateInfo([stages,
+                                        inputState, inputAssemblyState, tesselationState,
+                                        viewportState, rasterizationState, multisampleState,
+                                        depthStencilState, colorBlendState, dynamicState],
+        stages = stages, #::Vector{vk.VkPipelineShaderStageCreateInfo}
+        pVertexInputState = Base.unsafe_convert(Ptr{vk.VkPipelineVertexInputStateCreateInfo}, handleRef(inputState)), #::Ptr{VkPipelineVertexInputStateCreateInfo}
+        pInputAssemblyState = Base.unsafe_convert(Ptr{vk.VkPipelineInputAssemblyStateCreateInfo}, handleRef(inputAssemblyState)), #::Ptr{VkPipelineInputAssemblyStateCreateInfo}
+        pTessellationState = Base.unsafe_convert(Ptr{vk.VkPipelineTessellationStateCreateInfo}, handleRef(tesselationState)), #::Ptr{VkPipelineTessellationStateCreateInfo}
+        pViewportState = Base.unsafe_convert(Ptr{vk.VkPipelineViewportStateCreateInfo}, handleRef(viewportState)), #::Ptr{VkPipelineViewportStateCreateInfo}
+        pRasterizationState = Base.unsafe_convert(Ptr{vk.VkPipelineRasterizationStateCreateInfo}, handleRef(rasterizationState)), #::Ptr{VkPipelineRasterizationStateCreateInfo}
+        pMultisampleState = Base.unsafe_convert(Ptr{vk.VkPipelineMultisampleStateCreateInfo}, handleRef(multisampleState)), #::Ptr{VkPipelineMultisampleStateCreateInfo}
+        pDepthStencilState = Base.unsafe_convert(Ptr{vk.VkPipelineDepthStencilStateCreateInfo}, handleRef(depthStencilState)), #::Ptr{VkPipelineDepthStencilStateCreateInfo}
+        pColorBlendState = Base.unsafe_convert(Ptr{vk.VkPipelineColorBlendStateCreateInfo}, handleRef(colorBlendState)), #::Ptr{VkPipelineColorBlendStateCreateInfo}
+        pDynamicState = Base.unsafe_convert(Ptr{vk.VkPipelineDynamicStateCreateInfo}, handleRef(dynamicState)), #::Ptr{VkPipelineDynamicStateCreateInfo}
+        layout = layout, #::VkPipelineLayout
+        renderPass = renderPass, #::VkRenderPass
+        subpass = subpass #::UInt32
+    )
+    return info
 end

@@ -251,3 +251,10 @@ end
 function createRenderPass(this::Device, info::RenderPassCreateInfo)::RenderPass
     return RenderPass(this.mVkDevice, info)
 end
+
+function createShaderFromFile(this::Device, filePath::String)::ShaderModule
+    file = Base.read(filePath)
+    size = filesize(filePath)
+    stage = identifyShader(filePath)
+    return ShaderModule(this.mVkDevice, pointer(file), size, stage)
+end

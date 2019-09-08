@@ -116,6 +116,22 @@ function getSurfaceFormatsKHR(device::vk.VkPhysicalDevice, surface::vk.VkSurface
     return surfaceFormats
 end
 
+function createShaderModule(logicalDevice::vk.VkDevice, code::Ptr{UInt8}, codeSize::Int64)::vk.VkShaderModule
+    createInfo = Ref(vk.VkShaderModuleCreateInfo(
+        vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, #sType::VkStructureType
+        C_NULL, #pNext::Ptr{Cvoid}
+        0, #flags::VkShaderModuleCreateFlags
+        codeSize, #codeSize::Csize_t
+        code, #pCode::Ptr{UInt32}
+    ))
+
+    shaderModule = Ref{vk.VkShaderModule}()
+    if (vk.vkCreateShaderModule(logicalDevice, createInfo, C_NULL, shaderModule) != vk.VK_SUCCESS)
+        error("Failed to create shader module!")
+    end
+    return shaderModule[]
+end
+
 # common
 mutable struct ClearValue
     mColor::vk.VkClearColorValue

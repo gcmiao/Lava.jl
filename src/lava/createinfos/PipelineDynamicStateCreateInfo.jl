@@ -1,29 +1,22 @@
-mutable struct PipelineDynamicStateCreateInfo
-    mStates::Vector{vk.VkDynamicState}
-    
+struct PipelineDynamicStateCreateInfo
     mHandleRef::Ref{vk.VkPipelineDynamicStateCreateInfo}
 
-    function PipelineDynamicStateCreateInfo()
-        this = new()
-        this.mStates = Vector{vk.VkDynamicState}()
-        return this
+    function PipelineDynamicStateCreateInfo(;
+        pNext::Ptr{Cvoid} = C_NULL,
+        flags::vk.VkPipelineDynamicStateCreateFlags = 0,
+        states::Vector{vk.VkDynamicState} = Vector{vk.VkDynamicState}()
+    )
+
+        this = new(Ref(vk.VkPipelineDynamicStateCreateInfo(
+            vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO, #sType::VkStructureType
+            pNext, #::Ptr{Cvoid}
+            flags, #::VkPipelineDynamicStateCreateFlags
+            length(states), #dynamicStateCount::UInt32
+            pointer(states) #pDynamicStates::Ptr{VkDynamicState}
+        )))
     end
 end
 
-function addState(this::PipelineDynamicStateCreateInfo, state::vk.VkDynamicState)
-    push!(this.mStates, state)
-end
-
-function commit(this::PipelineDynamicStateCreateInfo)
-    this.handleRef = Ref(vk.VkPipelineDynamicStateCreateInfo(
-                                vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO, #sType::VkStructureType
-                                C_NULL, #pNext::Ptr{Cvoid}
-                                0, #flags::VkPipelineDynamicStateCreateFlags
-                                length(this.mStates), #dynamicStateCount::UInt32
-                                pointer(this.mStates) #pDynamicStates::Ptr{VkDynamicState}
-                            ))
-end
-
 function handleRef(this::PipelineDynamicStateCreateInfo)::Ref{vk.VkPipelineDynamicStateCreateInfo}
-    return this.handleRef
+    this.mHandleRef
 end

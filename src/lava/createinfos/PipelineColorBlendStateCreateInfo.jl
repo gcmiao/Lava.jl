@@ -1,46 +1,52 @@
-mutable struct PipelineColorBlendStateCreateInfo
-    mAttachments::Vector{vk.VkPipelineColorBlendAttachmentState}
+function PipelineColorBlendAttachmentState(;
+    blendEnable::vk.VkBool32 = vk.VK_FALSE,
+    srcColorBlendFactor::vk.VkBlendFactor = vk.VK_BLEND_FACTOR_ZERO,
+    dstColorBlendFactor::vk.VkBlendFactor = vk.VK_BLEND_FACTOR_ZERO,
+    colorBlendOp::vk.VkBlendOp = vk.VK_BLEND_OP_ADD,
+    srcAlphaBlendFactor::vk.VkBlendFactor = vk.VK_BLEND_FACTOR_ZERO,
+    dstAlphaBlendFactor::vk.VkBlendFactor = vk.VK_BLEND_FACTOR_ZERO,
+    alphaBlendOp::vk.VkBlendOp = vk.VK_BLEND_OP_ADD,
+    colorWriteMask::vk.VkColorComponentFlags = 0
+)
 
-    mHandleRef::vk.VkPipelineColorBlendStateCreateInfo
+    vk.VkPipelineColorBlendAttachmentState(
+        blendEnable, #::VkBool32
+        srcColorBlendFactor, #::VkBlendFactor
+        dstColorBlendFactor, #::VkBlendFactor
+        colorBlendOp, #::VkBlendOp
+        srcAlphaBlendFactor, #::VkBlendFactor
+        dstAlphaBlendFactor, #::VkBlendFactor
+        alphaBlendOp, #::VkBlendOp
+        colorWriteMask #::VkColorComponentFlags
+    )
+end
 
-    function PipelineColorBlendStateCreateInfo()
-        this = new()
-        this.mAttachments = Vector{vk.VkPipelineColorBlendAttachmentState}()
-        return this
+struct PipelineColorBlendStateCreateInfo
+    mHandleRef::Ref{vk.VkPipelineColorBlendStateCreateInfo}
+    mReserve::Vector{Any}
+
+    function PipelineColorBlendStateCreateInfo(;
+        pNext::Ptr{Cvoid} = C_NULL,
+        flags::vk.VkPipelineColorBlendStateCreateFlags = 0,
+        logicOpEnable::vk.VkBool32 = vk.VK_FALSE,
+        logicOp::vk.VkLogicOp = vk.VK_LOGIC_OP_COPY,
+        attachments::Vector{vk.VkPipelineColorBlendAttachmentState} = Vector{vk.VkPipelineColorBlendAttachmentState}(),
+        blendConstants::NTuple{4, Cfloat} = (0.0, 0.0, 0.0, 0.0)
+    )
+
+        this = new(Ref(vk.VkPipelineColorBlendStateCreateInfo(
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO, #sType::VkStructureType
+            pNext, #::Ptr{Cvoid}
+            flags, #::VkPipelineColorBlendStateCreateFlags
+            logicOpEnable, #::VkBool32
+            logicOp, #::VkLogicOp
+            length(attachments), #::UInt32
+            pointer(attachments), #::Ptr{VkPipelineColorBlendAttachmentState}
+            blendConstants #::NTuple{4, Cfloat}
+        ), [attachments]))
     end
 end
 
-function add(this::PipelineColorBlendStateCreateInfo, state::vk.VkPipelineColorBlendAttachmentState)
-    this.mAttachments.push_back(state);
-end
-
-function addNoBlend(this::PipelineColorBlendStateCreateInfo)
-    add(this, vk.VkPipelineColorBlendAttachmentState(
-                        vk.VK_FALSE, #blendEnable::VkBool32
-                        vk.VK_BLEND_FACTOR_ZERO, #srcColorBlendFactor::VkBlendFactor
-                        vk.VK_BLEND_FACTOR_ZERO, #dstColorBlendFactor::VkBlendFactor
-                        vk.VK_BLEND_OP_ADD, #colorBlendOp::VkBlendOp
-                        vk.VK_BLEND_FACTOR_ZERO, #srcAlphaBlendFactor::VkBlendFactor
-                        vk.VK_BLEND_FACTOR_ZERO, #dstAlphaBlendFactor::VkBlendFactor
-                        vk.VK_BLEND_OP_ADD, #alphaBlendOp::VkBlendOp
-                        (vk.VK_COLOR_COMPONENT_R_BIT | vk.VK_COLOR_COMPONENT_G_BIT |
-                         vk.VK_COLOR_COMPONENT_B_BIT | vk.VK_COLOR_COMPONENT_A_BIT) #colorWriteMask::VkColorComponentFlags
-                    ))
-end
-
-function commit(this::PipelineColorBlendStateCreateInfo)
-    this.mHandleRef = Ref(vk.VkPipelineColorBlendStateCreateInfo(
-                                vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO, #sType::VkStructureType
-                                C_NULL, #pNext::Ptr{Cvoid}
-                                0, #flags::VkPipelineColorBlendStateCreateFlags
-                                vk.VK_FALSE, #logicOpEnable::VkBool32
-                                vk.VK_LOGIC_OP_COPY, #logicOp::VkLogicOp
-                                length(this.mAttachments), #attachmentCount::UInt32
-                                pointer(this.mAttachments), #pAttachments::Ptr{VkPipelineColorBlendAttachmentState}
-                                (0.0, 0.0, 0.0, 0.0) #blendConstants::NTuple{4, Cfloat}
-                            ))
-end
-
 function handleRef(this::PipelineColorBlendStateCreateInfo)::Ref{vk.VkPipelineColorBlendStateCreateInfo}
-    return this.mHandleRef
+    this.mHandleRef
 end
