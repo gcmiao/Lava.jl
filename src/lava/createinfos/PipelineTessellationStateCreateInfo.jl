@@ -1,10 +1,10 @@
 struct PipelineTessellationStateCreateInfo
-    mHandleRef::vk.VkPipelineTessellationStateCreateInfo
+    mHandleRef::Ref{vk.VkPipelineTessellationStateCreateInfo}
 
-    function PipelineTessellationStateCreateInfo(
+    function PipelineTessellationStateCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,
-        flags::vk.VkPipelineTessellationStateCreateFlags = 0,
-        patchControlPoints::UInt32 = 0
+        flags::vk.VkPipelineTessellationStateCreateFlags = vk.VkFlags(0),
+        patchControlPoints::UInt32 = UInt32(0)
     )
 
         this = new(Ref(vk.VkPipelineTessellationStateCreateInfo(

@@ -3,7 +3,7 @@ struct PipelineDynamicStateCreateInfo
 
     function PipelineDynamicStateCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,
-        flags::vk.VkPipelineDynamicStateCreateFlags = 0,
+        flags::vk.VkPipelineDynamicStateCreateFlags = vk.VkFlags(0),
         states::Vector{vk.VkDynamicState} = Vector{vk.VkDynamicState}()
     )
 

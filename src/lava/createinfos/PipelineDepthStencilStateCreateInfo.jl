@@ -3,13 +3,13 @@ function StencilOpState(;
     passOp::vk.VkStencilOp = vk.VK_STENCIL_OP_KEEP,
     depthFailOp::vk.VkStencilOp = vk.VK_STENCIL_OP_KEEP,
     compareOp::vk.VkCompareOp = vk.VK_COMPARE_OP_NEVER,
-    compareMask::UInt32 = 0,
-    writeMask::UInt32 = 0,
-    reference::UInt32 = 0
+    compareMask::UInt32 = UInt32(0),
+    writeMask::UInt32 = UInt32(0),
+    reference::UInt32 = UInt32(0)
 )
     
     vk.VkStencilOpState(
-        ailOp, #::VkStencilOp
+        failOp, #::VkStencilOp
         passOp, #::VkStencilOp
         depthFailOp, #::VkStencilOp
         compareOp, #::VkCompareOp
@@ -20,20 +20,20 @@ function StencilOpState(;
 end
 
 struct PipelineDepthStencilStateCreateInfo
-    mHandleRef::vk.VkPipelineDepthStencilStateCreateInfo
+    mHandleRef::Ref{vk.VkPipelineDepthStencilStateCreateInfo}
 
     function PipelineDepthStencilStateCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,
-        flags::vk.VkPipelineDepthStencilStateCreateFlags = 0,
-        depthTestEnable::vk.VkBool32 = vk.VK_FALSE,
-        depthWriteEnable::vk.VkBool32 = vk.VK_FALSE,
+        flags::vk.VkPipelineDepthStencilStateCreateFlags = vk.VkFlags(0),
+        depthTestEnable::vk.VkBool32 = vk.VkBool32(vk.VK_FALSE),
+        depthWriteEnable::vk.VkBool32 = vk.VkBool32(vk.VK_FALSE),
         depthCompareOp::vk.VkCompareOp = VK_COMPARE_OP_NEVER,
-        depthBoundsTestEnable::vk.VkBool32 = vk.VK_FALSE,
-        stencilTestEnable::vk.VkBool32 = vk.VK_FALSE,
+        depthBoundsTestEnable::vk.VkBool32 = vk.VkBool32(vk.VK_FALSE),
+        stencilTestEnable::vk.VkBool32 = vk.VkBool32(vk.VK_FALSE),
         front::vk.VkStencilOpState = StencilOpState(),
         back::vk.VkStencilOpState = StencilOpState(),
-        minDepthBounds::Cfloat = 0,
-        maxDepthBounds::Cfloat = 0
+        minDepthBounds::Cfloat = Cfloat(0.0),
+        maxDepthBounds::Cfloat = Cfloat(0.0)
     )
 
         this = new(Ref(vk.VkPipelineDepthStencilStateCreateInfo(

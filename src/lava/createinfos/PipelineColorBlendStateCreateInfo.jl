@@ -1,5 +1,5 @@
 function PipelineColorBlendAttachmentState(;
-    blendEnable::vk.VkBool32 = vk.VK_FALSE,
+    blendEnable::vk.VkBool32 = vk.VkBool32(vk.VK_FALSE),
     srcColorBlendFactor::vk.VkBlendFactor = vk.VK_BLEND_FACTOR_ZERO,
     dstColorBlendFactor::vk.VkBlendFactor = vk.VK_BLEND_FACTOR_ZERO,
     colorBlendOp::vk.VkBlendOp = vk.VK_BLEND_OP_ADD,
@@ -27,11 +27,11 @@ struct PipelineColorBlendStateCreateInfo
 
     function PipelineColorBlendStateCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,
-        flags::vk.VkPipelineColorBlendStateCreateFlags = 0,
-        logicOpEnable::vk.VkBool32 = vk.VK_FALSE,
+        flags::vk.VkPipelineColorBlendStateCreateFlags = vk.VkFlags(0),
+        logicOpEnable::vk.VkBool32 = vk.VkBool32(vk.VK_FALSE),
         logicOp::vk.VkLogicOp = vk.VK_LOGIC_OP_COPY,
         attachments::Vector{vk.VkPipelineColorBlendAttachmentState} = Vector{vk.VkPipelineColorBlendAttachmentState}(),
-        blendConstants::NTuple{4, Cfloat} = (0.0, 0.0, 0.0, 0.0)
+        blendConstants::NTuple{4, Cfloat} = (Cfloat(0), Cfloat(0), Cfloat(0), Cfloat(0))
     )
 
         this = new(Ref(vk.VkPipelineColorBlendStateCreateInfo(
@@ -43,7 +43,7 @@ struct PipelineColorBlendStateCreateInfo
             length(attachments), #::UInt32
             pointer(attachments), #::Ptr{VkPipelineColorBlendAttachmentState}
             blendConstants #::NTuple{4, Cfloat}
-        ), [attachments]))
+        )), [attachments])
     end
 end
 

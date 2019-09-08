@@ -2,9 +2,9 @@ struct PipelineVertexInputStateCreateInfo
     mHandleRef::Ref{vk.VkPipelineVertexInputStateCreateInfo}
     reserve::Vector{Any}
 
-    function PipelineVertexInputStateCreateInfo(
+    function PipelineVertexInputStateCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,
-        flags::vk.VkPipelineVertexInputStateCreateFlags = 0,
+        flags::vk.VkPipelineVertexInputStateCreateFlags = vk.VkFlags(0),
         attributes::Vector{vk.VkVertexInputAttributeDescription} = Vector{vk.VkVertexInputAttributeDescription}(),
         bindings::Vector{vk.VkVertexInputBindingDescription} = Vector{vk.VkVertexInputBindingDescription}()
     )
@@ -17,7 +17,7 @@ struct PipelineVertexInputStateCreateInfo
             pointer(bindings), #pVertexBindingDescriptions::Ptr{VkVertexInputBindingDescription}
             length(attributes), #vertexAttributeDescriptionCount::UInt32
             pointer(attributes) #pVertexAttributeDescriptions::Ptr{VkVertexInputAttributeDescription}
-        ), [attributes, bindings]))
+        )), [attributes, bindings])
     end
 end
 

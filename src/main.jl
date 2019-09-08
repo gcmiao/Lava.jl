@@ -42,7 +42,25 @@ function main()
     # plLayout = lava.createPipelineLayout(device, CameraData, [descLayout])
     
     pass = lava.createRenderPass(device, lava.createSimpleForward(lava.RenderPassCreateInfo, features.format(glfw)))
-    println("render pass:", pass)
+
+    stageVert = lava.defaults(lava.PipelineShaderStageCreateInfo,
+                        _module = lava.createShaderFromFile(device, shaderFolder * "cube_vert.spv"))
+    stageFrag = lava.defaults(lava.PipelineShaderStageCreateInfo, 
+                        _module = lava.createShaderFromFile(device, shaderFolder * "cube_frag.spv"))
+    stages = [lava.handleRef(stageVert)[], lava.handleRef(stageFrag)[]]
+
+    ci = lava.defaults(lava.GraphicsPipelineCreateInfo,
+        stages = stages,
+        layout = lava.handleRef(plLayout)[],
+        renderPass = lava.handleRef(pass)[],
+        subpass = UInt32(0),
+        depthTestEnable = vk.VkBool32(vk.VK_TRUE),
+        depthWriteEnable = vk.VkBool32(vk.VK_TRUE),
+        # Due to the flipped y axis in NDC, the triangle winding order is inverted, too
+        frontFace = vk.VK_FRONT_FACE_CLOCKWISE,
+    )
+
+    #ci.vertexInputState.binding(0, &Vertex::position, &Vertex::color);
 end
 
 main()

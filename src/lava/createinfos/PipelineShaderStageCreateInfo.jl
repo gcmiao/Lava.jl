@@ -3,11 +3,11 @@ struct PipelineShaderStageCreateInfo
 
     function PipelineShaderStageCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,
-        flags::vk.VkPipelineShaderStageCreateFlags = UInt32(0),
+        flags::vk.VkPipelineShaderStageCreateFlags = vk.VkFlags(0),
         stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL,
         _module::vk.VkShaderModule, #required
         name::String = "",
-        pSpecializationInfo::Ptr{vk.VkSpecializationInfo} = C_NULL
+        pSpecializationInfo::Ptr{vk.VkSpecializationInfo} = Ptr{vk.VkSpecializationInfo}(C_NULL)
     )
 
         this = new(Ref(vk.VkPipelineShaderStageCreateInfo(

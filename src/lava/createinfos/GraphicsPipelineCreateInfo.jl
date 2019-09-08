@@ -4,7 +4,7 @@ struct GraphicsPipelineCreateInfo
 
     function GraphicsPipelineCreateInfo(reserve::Vector{Any} = [];
         pNext::Ptr{Cvoid} = C_NULL,
-        flags::vk.VkPipelineCreateFlags = 0,
+        flags::vk.VkPipelineCreateFlags = vk.VkFlags(0),
         stages::Vector{vk.VkPipelineShaderStageCreateInfo} = Vector{vk.VkPipelineShaderStageCreateInfo}(),
         pVertexInputState::Ptr{vk.VkPipelineVertexInputStateCreateInfo} = C_NULL,
         pInputAssemblyState::Ptr{vk.VkPipelineInputAssemblyStateCreateInfo} = C_NULL,
@@ -17,9 +17,9 @@ struct GraphicsPipelineCreateInfo
         pDynamicState::Ptr{vk.VkPipelineDynamicStateCreateInfo} = C_NULL,
         layout::vk.VkPipelineLayout, #required
         renderPass::vk.VkRenderPass, #required
-        subpass::UInt32 = 0,
-        basePipelineHandle::vk.VkPipeline = vk.VK_NULL_HANDLE,
-        basePipelineIndex::Int32 = 0,
+        subpass::UInt32 = UInt32(0),
+        basePipelineHandle::vk.VkPipeline = vk.VkPipeline(vk.VK_NULL_HANDLE),
+        basePipelineIndex::Int32 = Int32(0),
     )
 
         this = new(Ref(vk.VkGraphicsPipelineCreateInfo(
@@ -55,7 +55,7 @@ function defaults(::Type{GraphicsPipelineCreateInfo};
     stages::Vector{vk.VkPipelineShaderStageCreateInfo} = Vector{vk.VkPipelineShaderStageCreateInfo}(),
     layout::vk.VkPipelineLayout, #required
     renderPass::vk.VkRenderPass, #required
-    subpass::UInt32 = 0,
+    subpass::UInt32 = UInt32(0),
     depthTestEnable::vk.VkBool32 = Vk.VK_FALSE,
     depthWriteEnable::vk.VkBool32 = Vk.VK_FALSE,
     frontFace::vk.VkFrontFace = vk.VK_FRONT_FACE_COUNTER_CLOCKWISE,
@@ -70,21 +70,21 @@ function defaults(::Type{GraphicsPipelineCreateInfo};
     viewports = [vk.VkViewport(
                     0, #x::Cfloat
                     0, #y::Cfloat
-                    float(INT32_MAX), #width::Cfloat
-                    float(INT32_MAX), #height::Cfloat
+                    float(typemax(Int32)), #width::Cfloat
+                    float(typemax(Int32)), #height::Cfloat
                     0.0, #minDepth::Cfloat
                     1.0 #maxDepth::Cfloat
                 )]
-    scissors = [vk.VkRect2D(vk.VkOffset2D(0, 0), vk.VkExtent2D(INT32_MAX, INT32_MAX))]
+    scissors = [vk.VkRect2D(vk.VkOffset2D(0, 0), vk.VkExtent2D(typemax(Int32), typemax(Int32)))]
     viewportState = PipelineViewportStateCreateInfo(
-                        mViewports = viewports,
+                        viewports = viewports,
                         mScissors = scissors
                     )
 
     rasterizationState = PipelineRasterizationStateCreateInfo(
                             polygonMode = vk.VK_POLYGON_MODE_FILL, #::VkPolygonMode
                             frontFace = vk.VK_FRONT_FACE_COUNTER_CLOCKWISE, #::VkFrontFace
-                            lineWidth = 1.0 #::Cfloat
+                            lineWidth = Cfloat(1.0) #::Cfloat
                         )
 
     depthStencilState = PipelineDepthStencilStateCreateInfo(
@@ -93,7 +93,7 @@ function defaults(::Type{GraphicsPipelineCreateInfo};
 
     multisampleState = PipelineMultisampleStateCreateInfo(
                             rasterizationSamples = vk.VK_SAMPLE_COUNT_1_BIT, #::VkSampleCountFlagBits
-                            minSampleShading = 1.0 #::Cfloat
+                            minSampleShading = Cfloat(1.0) #::Cfloat
                         )
     #addNoBlend
     attachments = [PipelineColorBlendAttachmentState(

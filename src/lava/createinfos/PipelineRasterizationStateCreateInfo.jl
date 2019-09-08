@@ -3,17 +3,17 @@ struct PipelineRasterizationStateCreateInfo
 
     function PipelineRasterizationStateCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,
-        flags::vk.VkPipelineRasterizationStateCreateFlags = 0,
-        depthClampEnable::vk.VkBool32 = vk.VK_FALSE,
-        rasterizerDiscardEnable::vk.VkBool32 = vk.VK_FALSE,
+        flags::vk.VkPipelineRasterizationStateCreateFlags = vk.VkFlags(0),
+        depthClampEnable::vk.VkBool32 = vk.VkBool32(vk.VK_FALSE),
+        rasterizerDiscardEnable::vk.VkBool32 = vk.VkBool32(vk.VK_FALSE),
         polygonMode::vk.VkPolygonMode = vk.VK_POLYGON_MODE_FILL,
-        cullMode::vk.VkCullModeFlags = vk.VK_CULL_MODE_NONE,
+        cullMode::vk.VkCullModeFlags = vk.VkFlags(vk.VK_CULL_MODE_NONE),
         frontFace::vk.VkFrontFace = vk.VK_FRONT_FACE_COUNTER_CLOCKWISE,
-        depthBiasEnable::vk.VkBool32 = vk.VK_FALSE,
-        depthBiasConstantFactor::Cfloat = 0.0,
-        depthBiasClamp::Cfloat = 0.0,
-        depthBiasSlopeFactor::Cfloat = 0.0,
-        lineWidth::Cfloat = 1.0
+        depthBiasEnable::vk.VkBool32 = vk.VkBool32(vk.VK_FALSE),
+        depthBiasConstantFactor::Cfloat = Cfloat(0.0),
+        depthBiasClamp::Cfloat = Cfloat(0.0),
+        depthBiasSlopeFactor::Cfloat = Cfloat(0.0),
+        lineWidth::Cfloat = Cfloat(1.0)
     )
 
         this = new(Ref(vk.VkPipelineRasterizationStateCreateInfo(
