@@ -116,6 +116,7 @@ function getSurfaceFormatsKHR(device::vk.VkPhysicalDevice, surface::vk.VkSurface
     return surfaceFormats
 end
 
+# logical device
 function createShaderModule(logicalDevice::vk.VkDevice, code::Ptr{UInt8}, codeSize::Int64)::vk.VkShaderModule
     createInfo = Ref(vk.VkShaderModuleCreateInfo(
         vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, #sType::VkStructureType

@@ -10,3 +10,14 @@ function sizeof_obj(x)
         return total;
     end
 end
+
+function indexOfField(type, field)
+    names = fieldnames(type)
+    count = length(names)
+    for i = 1 : count
+        if names[i] == field
+            return i
+        end
+    end
+    return 0
+end

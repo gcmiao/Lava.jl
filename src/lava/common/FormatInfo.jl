@@ -1,3 +1,5 @@
+using StaticArrays
+
 function aspectsOf(format::vk.VkFormat)::vk.VkImageAspectFlags
     if format == vk.VK_FORMAT_UNDEFINED
         return 0
@@ -202,4 +204,30 @@ function aspectsOf(format::vk.VkFormat)::vk.VkImageAspectFlags
         error("lava/common/FormatInfo lava::aspectsOf(): Unknown ", format, ", assuming color.")
     end
     return vk.VK_IMAGE_ASPECT_COLOR_BIT
+end
+
+const TYPE_TO_VK_FORMAT_MAP = Dict([
+    (SVector{1, UInt8}, vk.VK_FORMAT_R8_UNORM),
+    (SVector{2, UInt8}, vk.VK_FORMAT_R8G8_UNORM),
+    (SVector{3, UInt8}, vk.VK_FORMAT_R8G8B8_UNORM),
+    (SVector{4, UInt8}, vk.VK_FORMAT_R8G8B8A8_UNORM),
+    (SVector{1, Int8}, vk.VK_FORMAT_R8_SNORM),
+    (SVector{2, Int8}, vk.VK_FORMAT_R8G8_SNORM),
+    (SVector{3, Int8}, vk.VK_FORMAT_R8G8B8_SNORM),
+    (SVector{4, Int8}, vk.VK_FORMAT_R8G8B8A8_SNORM),
+    (SVector{1, UInt32}, vk.VK_FORMAT_R32_UINT),
+    (SVector{2, UInt32}, vk.VK_FORMAT_R32G32_UINT),
+    (SVector{3, UInt32}, vk.VK_FORMAT_R32G32B32_UINT),
+    (SVector{4, UInt32}, vk.VK_FORMAT_R32G32B32A32_UINT),
+    (SVector{1, Int32}, vk.VK_FORMAT_R32_SINT),
+    (SVector{2, Int32}, vk.VK_FORMAT_R32G32_SINT),
+    (SVector{3, Int32}, vk.VK_FORMAT_R32G32B32_SINT),
+    (SVector{4, Int32}, vk.VK_FORMAT_R32G32B32A32_SINT),
+    (SVector{1, Float32}, vk.VK_FORMAT_R32_SFLOAT),
+    (SVector{2, Float32}, vk.VK_FORMAT_R32G32_SFLOAT),
+    (SVector{3, Float32}, vk.VK_FORMAT_R32G32B32_SFLOAT),
+    (SVector{4, Float32}, vk.VK_FORMAT_R32G32B32A32_SFLOAT)
+])
+function vkTypeOfFormat(type)::vk.VkFormat
+    return get(TYPE_TO_VK_FORMAT_MAP, type, vk.VK_FORMAT_UNDEFINED)
 end

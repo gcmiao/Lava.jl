@@ -5,6 +5,7 @@ using lava
 using features
 using VulkanCore
 using LinearAlgebra
+using StaticArrays
 
 shaderFolder = "../shaders/"
 
@@ -13,6 +14,13 @@ struct CameraData
     proj::Matrix{Float32}
 
     CameraData() = new(Matrix{Float32}(I, 4, 4), Matrix{Float32}(I, 4, 4))
+end
+
+struct Vertex
+    # glm::vec3 position
+    # glm::u8vec4 color
+    position::SVector{3, Float32}
+    color::SVector{4, UInt8}
 end
 
 function main()
@@ -43,12 +51,16 @@ function main()
     
     pass = lava.createRenderPass(device, lava.createSimpleForward(lava.RenderPassCreateInfo, features.format(glfw)))
 
-    stageVert = lava.defaults(lava.PipelineShaderStageCreateInfo,
-                        _module = lava.createShaderFromFile(device, shaderFolder * "cube_vert.spv"))
-    stageFrag = lava.defaults(lava.PipelineShaderStageCreateInfo, 
-                        _module = lava.createShaderFromFile(device, shaderFolder * "cube_frag.spv"))
+    vertShader = lava.createShaderFromFile(device, shaderFolder * "cube_vert.spv")
+    fragShader = lava.createShaderFromFile(device, shaderFolder * "cube_frag.spv")
+    stageVert = lava.defaults(lava.PipelineShaderStageCreateInfo, _module = vertShader)
+    stageFrag = lava.defaults(lava.PipelineShaderStageCreateInfo, _module = fragShader)
     stages = [lava.handleRef(stageVert)[], lava.handleRef(stageFrag)[]]
 
+    attributes = Vector{vk.VkVertexInputAttributeDescription}()
+    bindings = Vector{vk.VkVertexInputBindingDescription}()
+    lava.binding(attributes, bindings, UInt32(0), Vertex, :position)
+    lava.binding(attributes, bindings, UInt32(0), Vertex, :color)
     ci = lava.defaults(lava.GraphicsPipelineCreateInfo,
         stages = stages,
         layout = lava.handleRef(plLayout)[],
@@ -58,9 +70,9 @@ function main()
         depthWriteEnable = vk.VkBool32(vk.VK_TRUE),
         # Due to the flipped y axis in NDC, the triangle winding order is inverted, too
         frontFace = vk.VK_FRONT_FACE_CLOCKWISE,
+        inputState = lava.PipelineVertexInputStateCreateInfo(attributes = attributes, bindings = bindings)
     )
-
-    #ci.vertexInputState.binding(0, &Vertex::position, &Vertex::color);
+    pipeline = lava.GraphicsPipeline(lava.getLogicalDevice(device), lava.handleRef(ci))
 end
 
 main()

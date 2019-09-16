@@ -20,6 +20,10 @@ mutable struct Device
     end
 end
 
+function getLogicalDevice(this::Device)::vk.VkDevice
+    return this.mVkDevice
+end
+
 # TODO: Deconstruction
 # Device::~Device() {
 #     for (auto &&feat : mFeatures)

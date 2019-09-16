@@ -43,7 +43,6 @@ struct GraphicsPipelineCreateInfo
             basePipelineHandle, #::VkPipeline
             basePipelineIndex #::Int32
         )), reserve)
-        return this
     end
 end
 
@@ -59,9 +58,8 @@ function defaults(::Type{GraphicsPipelineCreateInfo};
     depthTestEnable::vk.VkBool32 = Vk.VK_FALSE,
     depthWriteEnable::vk.VkBool32 = Vk.VK_FALSE,
     frontFace::vk.VkFrontFace = vk.VK_FRONT_FACE_COUNTER_CLOCKWISE,
+    inputState::PipelineVertexInputStateCreateInfo = PipelineVertexInputStateCreateInfo()
 )::GraphicsPipelineCreateInfo
-
-    inputState = PipelineVertexInputStateCreateInfo()
     inputAssemblyState = PipelineInputAssemblyStateCreateInfo(
                                     topology = vk.VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, #::VkPrimitiveTopology
                                 )
