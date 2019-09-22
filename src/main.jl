@@ -76,6 +76,22 @@ function main()
 
     fbos = Vector{vk.VkFramebuffer}()
     # window = features.openWindow(glfw)
+    # features.buildSwapchainWith(window,
+    #     [&](std::vector<lava::SharedImageView> const &views) {
+    #         auto depth_image =
+    #             lava::attachment2D(window->width(), window->height(),
+    #                                lava::Format::DEPTH_COMPONENT32F)
+    #                 .create(device);
+    #         depth_image->realizeAttachment();
+    #         auto depth_view = depth_image->createView();
+
+    #         fbos.clear();
+    #         for (auto &view : views)
+    #             fbos.push_back(pass->createFramebuffer({depth_view, view}));
+
+    #         camera.setAspectRatio(float(window->width()) /
+    #                               float(window->height()));
+    #     });
 end
 
 main()

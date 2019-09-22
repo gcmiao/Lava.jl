@@ -116,6 +116,17 @@ function getSurfaceFormatsKHR(device::vk.VkPhysicalDevice, surface::vk.VkSurface
     return surfaceFormats
 end
 
+function getSurfacePresentModesKHR(device::vk.VkPhysicalDevice, surface::vk.VkSurfaceKHR)::Vector{vk.VkPresentModeKHR}
+    presentModes = Vector{vk.VkPresentModeKHR}(undef, 1)
+    presentModeCount = Ref{UInt32}()
+    vk.vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, presentModeCount, C_NULL)
+    if (presentModeCount != 0)
+        resize!(presentModes, presentModeCount[])
+        vk.vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, presentModeCount, presentModes)
+    end
+    return presentModes
+end
+
 # logical device
 function createShaderModule(logicalDevice::vk.VkDevice, code::Ptr{UInt8}, codeSize::Int64)::vk.VkShaderModule
     createInfo = Ref(vk.VkShaderModuleCreateInfo(
@@ -153,6 +164,14 @@ function createSemaphore(logicalDevice::vk.VkDevice, createInfo::vk.VkSemaphoreC
     return semaphore[]
 end
 
+function getSwapchainImagesKHR(logicalDevice::vk.VkDevice, swapchain::vk.VkSwapchainKHR)::Vector{vk.VkImage}
+    imageCount = Ref{UInt32}()
+    swapChainImages = Vector{vk.VkImage}()
+    vk.vkGetSwapchainImagesKHR(logicalDevice, swapChain, imageCount, C_NULL)
+    resize!(swapChainImages, imageCount)
+    vk.vkGetSwapchainImagesKHR(logicalDevice, swapChain, imageCount, swapChainImages)
+    return swapChainImages
+end
 # common
 mutable struct ClearValue
     mColor::vk.VkClearColorValue
