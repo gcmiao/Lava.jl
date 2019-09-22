@@ -18,7 +18,7 @@ end
 function onInstanceCreated(this::IFeatureT, instance::VkExt.VkInstance)
 end
 
-function onLogicalDeviceCreated(this::IFeatureT, device)
+function onLogicalDeviceCreated(this::IFeatureT, device::vk.VkDevice)
 end
 
 function onPhysicalDeviceSelected(this::IFeatureT, phy::vk.VkPhysicalDevice)

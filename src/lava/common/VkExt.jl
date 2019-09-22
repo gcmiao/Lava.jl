@@ -141,6 +141,18 @@ function createCommandPool(logicalDevice::vk.VkDevice, createInfo::vk.VkCommandP
     return commandPool[]
 end
 
+function createSemaphore(logicalDevice::vk.VkDevice, createInfo::vk.VkSemaphoreCreateInfo = vk.VkSemaphoreCreateInfo(
+                                                                                                vk.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, #sType::VkStructureType
+                                                                                                C_NULL, #pNext::Ptr{Cvoid}
+                                                                                                0 #flags::VkSemaphoreCreateFlags
+                                                                                            ))
+    semaphore = Ref{vk.VkSemaphore}()
+    if (vk.vkCreateSemaphore(logicalDevice, Ref(createInfo), C_NULL, semaphore) != vk.VK_SUCCESS)
+        println("Failed to create semaphore!")
+    end
+    return semaphore[]
+end
+
 # common
 mutable struct ClearValue
     mColor::vk.VkClearColorValue

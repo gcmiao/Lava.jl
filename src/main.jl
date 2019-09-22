@@ -73,6 +73,9 @@ function main()
         inputState = lava.PipelineVertexInputStateCreateInfo(attributes = attributes, bindings = bindings)
     )
     pipeline = lava.GraphicsPipeline(lava.getLogicalDevice(device), lava.handleRef(ci))
+
+    fbos = Vector{vk.VkFramebuffer}()
+    # window = features.openWindow(glfw)
 end
 
 main()

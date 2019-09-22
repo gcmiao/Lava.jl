@@ -64,7 +64,7 @@ end
 function createDevice(this::InstanceT, queues::Vector{QueueRequest}, gpuSelectionStrategy::ISelectionStrategy)
     device = Device(this.mInstance, this.mFeatures, gpuSelectionStrategy, queues)
     for feat in this.mFeatures
-        features.onLogicalDeviceCreated(feat, device)
+        features.onLogicalDeviceCreated(feat, getLogicalDevice(device), device)
     end
     return device
 end
