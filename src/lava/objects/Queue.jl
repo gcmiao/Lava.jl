@@ -24,3 +24,20 @@ end
 function createByFamily(::Type{QueueRequest}, name::String, index::UInt32, priority::Float32)
     return QueueRequest(name, priority, 0, index)
 end
+
+mutable struct Queue
+    mFamilyIndex::UInt32
+    mQueue::vk.VkQueue
+    mPool::vk.VkCommandPool
+    function Queue(family::UInt32, queue::vk.VkQueue, pool::vk.VkCommandPool)
+        this = new()
+        this.mFamilyIndex = family
+        this.mQueue = queue
+        this.mPool = pool
+        return this
+    end
+end
+
+function family(this::Queue)::UInt32
+    return this.mFamilyIndex
+end

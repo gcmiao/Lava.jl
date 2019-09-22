@@ -133,6 +133,14 @@ function createShaderModule(logicalDevice::vk.VkDevice, code::Ptr{UInt8}, codeSi
     return shaderModule[]
 end
 
+function createCommandPool(logicalDevice::vk.VkDevice, createInfo::vk.VkCommandPoolCreateInfo)::vk.VkCommandPool
+    commandPool = Ref{vk.VkCommandPool}()
+    if (vk.vkCreateCommandPool(logicalDevice, Ref(createInfo), C_NULL, commandPool) != vk.VK_SUCCESS)
+        error("Failed to create command pool!")
+    end
+    return commandPool[]
+end
+
 # common
 mutable struct ClearValue
     mColor::vk.VkClearColorValue

@@ -1,9 +1,14 @@
 mutable struct Device
     mInstance::VkExt.VkInstance
-    mFeatures::Vector{features.IFeatureT}
     mPhysicalDevice::vk.VkPhysicalDevice
-    mPhyProperties::vk.VkPhysicalDeviceProperties
     mVkDevice::vk.VkDevice
+    
+    mFeatures::Vector{features.IFeatureT}
+    mQueues::Dict{String, Queue}
+    mPools::Dict{UInt32, vk.VkCommandPool}
+
+    mPhyProperties::vk.VkPhysicalDeviceProperties
+
 
     function Device(instance::VkExt.VkInstance,
                features::Vector{features.IFeatureT},
@@ -12,6 +17,8 @@ mutable struct Device
         this = new()
         this.mInstance = instance
         this.mFeatures = features
+        this.mQueues = Dict{String, Queue}()
+        this.mPools = Dict{UInt32, vk.VkCommandPool}()
 
         pickPhysicalDevice(this, gpuSelectionStrategy)
         createLogicalDevice(this, [this.mPhysicalDevice], queues)
@@ -24,6 +31,9 @@ function getLogicalDevice(this::Device)::vk.VkDevice
     return this.mVkDevice
 end
 
+function getPhysicalDevice(this::Device)::vk.VkPhysicalDevice
+    return this.mPhysicalDevice
+end
 # TODO: Deconstruction
 # Device::~Device() {
 #     for (auto &&feat : mFeatures)
@@ -211,23 +221,24 @@ function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysical
         end
     #}
     
-    #TODO
-
-    # for (auto const &pair : familyInfos) {
-    #     mPools[pair.second.index] = mVkDevice->createCommandPoolUnique(
-    #         {vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
-    #              vk::CommandPoolCreateFlagBits::eTransient,
-    #          pair.second.index})
-
-    #     auto pool = mPools[pair.second.index].get()
-    #     for (uint32_t i = 0 i < pair.second.names.size() i++) {
-    #         auto const &name = pair.second.names[i]
-    #         auto const &family = pair.second.index
-    #         auto queue = mVkDevice->getQueue(family, i)
-
-    #         mQueues.emplace(name, Queue(family, queue, pool, this))
-    #     }
-    # }
+    for pair in familyInfoDict
+        info = pair.second
+        pool = VkExt.createCommandPool(this.mVkDevice, vk.VkCommandPoolCreateInfo(
+            vk.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, #sType::VkStructureType
+            C_NULL, #pNext::Ptr{Cvoid}
+            vk.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT |
+            vk.VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, #flags::VkCommandPoolCreateFlags
+            info.index #queueFamilyIndex::UInt32
+        ))
+        this.mPools[info.index] = pool
+        for i::UInt32 = 1 : length(info.names)
+            name = info.names[i]
+            family = info.index
+            queue = Ref{vk.VkQueue}()
+            vk.vkGetDeviceQueue(this.mVkDevice, family, i - 1, queue)
+            this.mQueues[name] = Queue(family, queue[], pool)
+        end
+    end
 end
 
 function createPipelineLayout(this::Device, type::Type, descriptorSets::Vector{DescriptorSetLayout} = [])::PipelineLayout   
@@ -261,4 +272,22 @@ function createShaderFromFile(this::Device, filePath::String)::ShaderModule
     size = filesize(filePath)
     stage = identifyShader(filePath)
     return ShaderModule(this.mVkDevice, pointer(file), size, stage)
+end
+
+function namedQueue(this::Device, name::String)::Queue
+    it = mQueues.find(name)
+    @assert hasKey(this.mQueues, name) "No Queue with this name exists."
+    return mQueues[name]
+end
+
+function graphicsQueue(this::Device)::Queue
+    return namedQueue(this, "graphics")
+end
+
+function transferQueue(this::Device)::Queue
+    if hasKey(this.mQueues, "transfer")
+        return mQueues["transfer"]
+    else
+        return graphicsQueue()
+    end
 end
