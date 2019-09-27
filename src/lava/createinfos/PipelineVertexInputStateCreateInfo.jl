@@ -1,6 +1,6 @@
 struct PipelineVertexInputStateCreateInfo
     mHandleRef::Ref{vk.VkPipelineVertexInputStateCreateInfo}
-    mReserve::Vector{Any}
+    mPreserve::Vector{Any}
 
     function PipelineVertexInputStateCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,

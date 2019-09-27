@@ -8,7 +8,7 @@ mutable struct GraphicsPipeline
         this = new()
         this.mVkDevice = vkDevice
         this.mHandleRef = Ref{vk.VkPipeline}()
-        if (vk.vkCreateGraphicsPipelines(vkDevice, vk.VK_NULL_HANDLE, 1, createInfoRef, C_NULL, this.mHandleRef) != vk.VK_SUCCESS)
+        if (vk.vkCreateGraphicsPipelines(vkDevice, C_NULL, 1, createInfoRef, C_NULL, this.mHandleRef) != vk.VK_SUCCESS)
             error("Failed to create graphics pipeline!")
         end
         return this

@@ -23,7 +23,7 @@ end
 
 struct PipelineColorBlendStateCreateInfo
     mHandleRef::Ref{vk.VkPipelineColorBlendStateCreateInfo}
-    mReserve::Vector{Any}
+    mPreserve::Vector{Any}
 
     function PipelineColorBlendStateCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,

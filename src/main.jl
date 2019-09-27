@@ -72,8 +72,9 @@ function main()
         frontFace = vk.VK_FRONT_FACE_CLOCKWISE,
         inputState = lava.PipelineVertexInputStateCreateInfo(attributes = attributes, bindings = bindings)
     )
-    pipeline = lava.GraphicsPipeline(lava.getLogicalDevice(device), lava.handleRef(ci))
-
+    GC.@preserve ci begin
+        pipeline = lava.GraphicsPipeline(lava.getLogicalDevice(device), lava.handleRef(ci))
+    end
     fbos = Vector{vk.VkFramebuffer}()
     # window = features.openWindow(glfw)
     # features.buildSwapchainWith(window,

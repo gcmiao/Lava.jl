@@ -1,5 +1,6 @@
 struct PipelineShaderStageCreateInfo
     mHandleRef::Ref{vk.VkPipelineShaderStageCreateInfo}
+    mPreserve::Vector{Any}
 
     function PipelineShaderStageCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,
@@ -7,7 +8,7 @@ struct PipelineShaderStageCreateInfo
         stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL,
         _module::vk.VkShaderModule, #required
         name::String = "",
-        pSpecializationInfo::Ptr{vk.VkSpecializationInfo} = Ptr{vk.VkSpecializationInfo}(C_NULL)
+        specializationInfo = nothing #::vk.VkSpecializationInfo
     )
 
         this = new(Ref(vk.VkPipelineShaderStageCreateInfo(
@@ -17,8 +18,8 @@ struct PipelineShaderStageCreateInfo
             stage, #stage::VkShaderStageFlagBits
             _module, #::vk.VkShaderModule
             Base.unsafe_convert(Cstring, name), #pName::Cstring
-            pSpecializationInfo, #pSpecializationInfo::Ptr{VkSpecializationInfo}
-        )))
+            object_to_pointer(vk.VkSpecializationInfo, specializationInfo), #pSpecializationInfo::Ptr{VkSpecializationInfo}
+        )), [specializationInfo])
     end
 end
 

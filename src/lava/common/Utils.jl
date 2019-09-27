@@ -21,3 +21,8 @@ function indexOfField(type, field)
     end
     return 0
 end
+
+function object_to_pointer(type::Type, pointer)
+    pointer == nothing ? C_NULL : Base.unsafe_convert(Ptr{type}, pointer)
+end
+

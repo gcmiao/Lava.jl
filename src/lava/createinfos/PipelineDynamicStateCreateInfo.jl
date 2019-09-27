@@ -1,5 +1,6 @@
 struct PipelineDynamicStateCreateInfo
     mHandleRef::Ref{vk.VkPipelineDynamicStateCreateInfo}
+    mPreserve::Vector{Any}
 
     function PipelineDynamicStateCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,
@@ -13,7 +14,7 @@ struct PipelineDynamicStateCreateInfo
             flags, #::VkPipelineDynamicStateCreateFlags
             length(states), #dynamicStateCount::UInt32
             pointer(states) #pDynamicStates::Ptr{VkDynamicState}
-        )))
+        )), [states])
     end
 end
 
