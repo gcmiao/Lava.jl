@@ -15,7 +15,7 @@ function deviceExtensions(this::IFeatureT)::Vector{String}
     return []
 end
 
-function onInstanceCreated(this::IFeatureT, instance::VkExt.VkInstance)
+function onInstanceCreated(this::IFeatureT, vkInstance::vk.VkInstance)
 end
 
 function onLogicalDeviceCreated(this::IFeatureT, device::vk.VkDevice)

@@ -6,18 +6,14 @@ include("VkExt.VkPhysicalDeviceFeatures.jl")
 const VK_TRUE = UInt32(vk.VK_TRUE)
 const VK_FALSE = UInt32(vk.VK_FALSE)
 
-struct VkInstance
-    vkInstance::vk.VkInstance
-end
-
 # instance
-function createInstance(info::vk.VkInstanceCreateInfo)::VkInstance
+function createInstance(info::vk.VkInstanceCreateInfo)::vk.VkInstance
     outInstance = Ref{vk.VkInstance}()
     err = vk.vkCreateInstance(Ref(info), C_NULL, outInstance)
     if err != vk.VK_SUCCESS
         error(err, "Failed to create instance!")
     end
-    return VkInstance(outInstance[])
+    return outInstance[]
 end
 
 function enumerateInstanceExtensionProperties()::Tuple{Vector{vk.VkExtensionProperties}, UInt32}
@@ -52,14 +48,14 @@ function createDebugReportCallbackEXT(instance::vk.VkInstance, createInfo::vk.Vk
 end
 
 # physical device
-function enumeratePhysicalDevices(this::VkInstance)
+function enumeratePhysicalDevices(vkInstance::vk.VkInstance)
     physicalDeviceCount = Ref{Cuint}(0)
-    vk.vkEnumeratePhysicalDevices(this.vkInstance, physicalDeviceCount, C_NULL)
+    vk.vkEnumeratePhysicalDevices(vkInstance, physicalDeviceCount, C_NULL)
     if (physicalDeviceCount[] == 0)
         error("failed to find GPUs with Vulkan support!")
     end
     physicalDevices = Vector{vk.VkPhysicalDevice}(undef, physicalDeviceCount[])
-    vk.vkEnumeratePhysicalDevices(this.vkInstance, physicalDeviceCount, physicalDevices)
+    vk.vkEnumeratePhysicalDevices(vkInstance, physicalDeviceCount, physicalDevices)
     return physicalDevices
 end
 

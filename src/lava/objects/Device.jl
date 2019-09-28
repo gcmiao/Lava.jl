@@ -1,5 +1,5 @@
 mutable struct Device
-    mInstance::VkExt.VkInstance
+    mVkInstance::vk.VkInstance
     mPhysicalDevice::vk.VkPhysicalDevice
     mVkDevice::vk.VkDevice
     
@@ -10,12 +10,12 @@ mutable struct Device
     mPhyProperties::vk.VkPhysicalDeviceProperties
 
 
-    function Device(instance::VkExt.VkInstance,
+    function Device(vkInstance::vk.VkInstance,
                features::Vector{features.IFeatureT},
                gpuSelectionStrategy::ISelectionStrategy,
                queues::Vector{QueueRequest})
         this = new()
-        this.mInstance = instance
+        this.mVkInstance = vkInstance
         this.mFeatures = features
         this.mQueues = Dict{String, Queue}()
         this.mPools = Dict{UInt32, vk.VkCommandPool}()
@@ -41,7 +41,7 @@ end
 # }
 
 function pickPhysicalDevice(this::Device, gpuSelectionStrategy::ISelectionStrategy)
-    devices = VkExt.enumeratePhysicalDevices(this.mInstance)
+    devices = VkExt.enumeratePhysicalDevices(this.mVkInstance)
     isGoodDevice = function(device::vk.VkPhysicalDevice)
         for feat in this.mFeatures
             if !features.supportsDevice(feat, device)

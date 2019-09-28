@@ -1,6 +1,6 @@
 mutable struct InstanceT
     mFeatures::Vector{features.IFeatureT}
-    mInstance::VkExt.VkInstance
+    mVkInstance::vk.VkInstance
 
     function InstanceT(inFeatures::Vector{features.IFeatureT})
         this = new()
@@ -41,10 +41,10 @@ mutable struct InstanceT
             StringHelper.strings2pp(requiredExtNames), #ppEnabledExtensionNames::Ptr{Cstring}
         )
 
-        this.mInstance = VkExt.createInstance(info)
+        this.mVkInstance = VkExt.createInstance(info)
 
         for feat in this.mFeatures
-            features.onInstanceCreated(feat, this.mInstance)
+            features.onInstanceCreated(feat, this.mVkInstance)
         end
 
         return this
@@ -62,7 +62,7 @@ function create(::Type{InstanceT}, inFeatures::Vector{features.IFeatureT})::Inst
 end
 
 function createDevice(this::InstanceT, queues::Vector{QueueRequest}, gpuSelectionStrategy::ISelectionStrategy)
-    device = Device(this.mInstance, this.mFeatures, gpuSelectionStrategy, queues)
+    device = Device(this.mVkInstance, this.mFeatures, gpuSelectionStrategy, queues)
     for feat in this.mFeatures
         features.onLogicalDeviceCreated(feat, getLogicalDevice(device), device)
     end

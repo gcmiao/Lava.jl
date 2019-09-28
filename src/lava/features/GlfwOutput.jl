@@ -1,10 +1,8 @@
-using GLFW
-using VulkanCore
-using VkExt
 #using lava: QueueRequest, createByFamily
 
+
 mutable struct GlfwOutputT <: IFeatureT
-    mInstance::VkExt.VkInstance
+    mVkInstance::vk.VkInstance
     mPhysicalDevice::vk.VkPhysicalDevice
     mVkDevice::vk.VkDevice
     mDevice
@@ -49,15 +47,15 @@ function deviceExtensions(this::GlfwOutputT)::Vector{String}
     return [vk.VK_KHR_SWAPCHAIN_EXTENSION_NAME]
 end
 
-function onInstanceCreated(this::GlfwOutputT, instance::VkExt.VkInstance)
-    this.mInstance = instance
+function onInstanceCreated(this::GlfwOutputT, vkInstance::vk.VkInstance)
+    this.mVkInstance = vkInstance
 
     GLFW.WindowHint(GLFW.CLIENT_API, GLFW.NO_API)
     GLFW.WindowHint(GLFW.VISIBLE, false)
     #GLFW.WindowHint(GLFW.RESIZABLE, false)
 
     this.mTempWindow = GLFW.CreateWindow(100, 100, "Vulkan")
-    this.mTempSurface = GLFW.CreateWindowSurface(this.mInstance.vkInstance, this.mTempWindow)
+    this.mTempSurface = GLFW.CreateWindowSurface(this.mVkInstance, this.mTempWindow)
 end
 
 function onLogicalDeviceCreated(this::GlfwOutputT, vkDevice::vk.VkDevice, device)

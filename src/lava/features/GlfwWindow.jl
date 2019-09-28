@@ -1,4 +1,3 @@
-using lava: graphicsQueue, namedQueue, family
 mutable struct GlfwWindow
     mPhysicalDevice::vk.VkPhysicalDevice
     mVkDevice::vk.VkDevice

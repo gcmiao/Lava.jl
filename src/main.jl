@@ -4,6 +4,7 @@ push!(LOAD_PATH, "lava/features")
 using lava
 using features
 using VulkanCore
+using VkExt
 using LinearAlgebra
 using StaticArrays
 

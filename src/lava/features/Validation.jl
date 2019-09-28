@@ -1,10 +1,5 @@
-using GLFW
-using VulkanCore
-using VkExt
-using StringHelper
-
 mutable struct Validation <: IFeatureT
-    mInstance::VkExt.VkInstance
+    mVkInstance::vk.VkInstance
     
     mPaused::Bool
     mMessageCount::UInt32
@@ -82,7 +77,8 @@ function debugCallback(flags::vk.VkDebugReportFlagsEXT,
     return VkExt.VK_FALSE
 end
 
-function onInstanceCreated(this::Validation, instance::VkExt.VkInstance)
+function onInstanceCreated(this::Validation, vkInstance::vk.VkInstance)
+    this.mVkInstance = vkInstance
     pfnCallback = @cfunction(debugCallback, vk.VkBool32, (vk.VkDebugReportFlagsEXT, vk.VkDebugReportObjectTypeEXT, Culonglong, Csize_t, Cint, Cstring, Cstring, Ptr{Cvoid}))
     validationRef = Ref(this)
     debug = vk.VkDebugReportCallbackCreateInfoEXT(
@@ -92,7 +88,7 @@ function onInstanceCreated(this::Validation, instance::VkExt.VkInstance)
         pfnCallback, #pfnCallback::PFN_vkDebugReportCallbackEXT
         Base.unsafe_convert(Ptr{Cvoid}, validationRef) #pUserData::Ptr{Cvoid}
     )
-    mCallback = VkExt.createDebugReportCallbackEXT(instance.vkInstance, debug);
+    mCallback = VkExt.createDebugReportCallbackEXT(vkInstance, debug);
 end
 
 # TODO
