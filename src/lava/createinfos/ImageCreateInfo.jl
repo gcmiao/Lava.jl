@@ -2,7 +2,7 @@ struct ImageCreateInfo
     mHandleRef::Ref{vk.VkImageCreateInfo}
     mViewType::vk.VkImageViewType
 
-    function ImageCreateInfo(;
+    function ImageCreateInfo(phyDevice::vk.VkPhysicalDevice;
         pNext = C_NULL, #::Ptr{Cvoid}
         flags = 0, #::VkImageCreateFlags
         imageType = vk.VK_IMAGE_TYPE_1D, #::VkImageType
@@ -19,33 +19,75 @@ struct ImageCreateInfo
         initialLayout = vk.VK_IMAGE_LAYOUT_UNDEFINED, #::VkImageLayout
         imageViewType = vk.VK_IMAGE_VIEW_TYPE_1D #vk.VkImageViewType
     )
-
-    this = new(Ref(vk.VkImageCreateInfo(
-        vk.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-        pNext, #Ptr{Cvoid}
-        flags, #VkImageCreateFlags
-        imageType, #VkImageType
-        format, #VkFormat
-        extent, #VkExtent3D
-        mipLevels, #UInt32
-        arrayLayers, #UInt32
-        samples, #VkSampleCountFlagBits
-        tiling, #VkImageTiling
-        usage, #VkImageUsageFlags
-        sharingMode, #VkSharingMode
-        queueFamilyIndexCount, #UInt32
-        pQueueFamilyIndices, #Ptr{UInt32}
-        initialLayout #VkImageLayout
-    )), imageViewType)
+        features = usageToFeatures(usage)
+        props = Ref{vk.VkFormatProperties}()
+        vk.vkGetPhysicalDeviceFormatProperties(phyDevice, format, props)
+        canUseOptimal = ((props[].optimalTilingFeatures & features) == features)
+        canUseLinear = ((props[].linearTilingFeatures & features) == features)
+        
+        if (!canUseOptimal && tiling == vk.VK_IMAGE_TILING_OPTIMAL)
+            if (canUseLinear)
+                println("The format selected for this image does not support optimal ",
+                        "tiling for the required features, falling back to linear ",
+                        "tiling.\n",
+                        "In order to optimize performance, use a format that supports ",
+                        "optimal tiling (e.g. use RGBA instead of RGB textures for ",
+                        "attachments)\n",
+                        "You can supress this warning by setting the tiling to linear ",
+                        "yourself.")
+                tiling = vk.VK_IMAGE_TILING_LINEAR
+            else
+                error("The format selected can't provide the requested ",
+                        "usages. Try another format (e.g. use RGBA ",
+                        "instead of RGB for attachments)")
+            end
+        elseif (!canUseLinear && tiling == vk.VK_IMAGE_TILING_LINEAR)
+            if (canUseOptimal)
+                println("The format selected for this image does not support linear ",
+                        "tiling for the required features, falling back to optimal ",
+                        "tiling.\n",
+                        "You can supress this warning by setting the tiling to optimal ",
+                        "yourself.")
+                tiling = vk.VK_IMAGE_TILING_OPTIMAL
+            else
+                error("The format selected can't provide the requested ",
+                        "usages. Try another format (e.g. use RGBA ",
+                        "instead of RGB for attachments)")
+            end
+        end
+        
+        this = new(Ref(vk.VkImageCreateInfo(
+            vk.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            pNext, #Ptr{Cvoid}
+            flags, #VkImageCreateFlags
+            imageType, #VkImageType
+            format, #VkFormat
+            extent, #VkExtent3D
+            mipLevels, #UInt32
+            arrayLayers, #UInt32
+            samples, #VkSampleCountFlagBits
+            tiling, #VkImageTiling
+            usage, #VkImageUsageFlags
+            sharingMode, #VkSharingMode
+            queueFamilyIndexCount, #UInt32
+            pQueueFamilyIndices, #Ptr{UInt32}
+            initialLayout #VkImageLayout
+        )), imageViewType)
+    end
 end
 
-function createImageCreateInfo(;others...)
-    return ImageCreateInfo(initialLayout = vk.VK_IMAGE_LAYOUT_UNDEFINED,
+function handleRef(this::ImageCreateInfo)::Ref{vk.VkImageCreateInfo}
+    return this.mHandleRef
+end
+
+function createImageCreateInfo(phyDevice::vk.VkPhysicalDevice; others...)
+    return ImageCreateInfo(phyDevice; initialLayout = vk.VK_IMAGE_LAYOUT_UNDEFINED,
                             mipLevels = 1, arrayLayers = 1,
                             samples = vk.VK_SAMPLE_COUNT_1_BIT,
                             sharingMode = vk.VK_SHARING_MODE_EXCLUSIVE,
                             tiling = vk.VK_IMAGE_TILING_OPTIMAL,
-                            usage = vk.VK_IMAGE_USAGE_TRANSFER_DST_BIT | vk.VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+                            usage = vk.VK_IMAGE_USAGE_TRANSFER_DST_BIT | vk.VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                            others...)
 end
 
 function getCombinedType(viewType::vk.VkImageViewType)
@@ -65,7 +107,8 @@ function getCombinedType(viewType::vk.VkImageViewType)
     return viewType, imgType, flags
 end
 
-function attachment2D(width::UInt32, height::UInt32, format::vk.VkFormat)::vk.VkImageCreateInfo
+function attachment2D(phyDevice::vk.VkPhysicalDevice,
+                    width::UInt32, height::UInt32, format::vk.VkFormat)::ImageCreateInfo
     viewType, imgType, flags = getCombinedType(vk.VK_IMAGE_VIEW_TYPE_2D)
     usage = vk.VK_IMAGE_USAGE_SAMPLED_BIT
     aspects = aspectsOf(format)
@@ -76,9 +119,9 @@ function attachment2D(width::UInt32, height::UInt32, format::vk.VkFormat)::vk.Vk
     if (aspects & vk.VK_IMAGE_ASPECT_COLOR_BIT != 0)
         usage |= vk.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
     end
-    info = createImageCreateInfo(imageViewType = viewType, imageType = imgType, flags = flags,
+    info = createImageCreateInfo(phyDevice, imageViewType = viewType, imageType = imgType, flags = flags,
                                 format = format,
                                 extent = vk.VkExtent3D(width, height, 1),
                                 usage = usage)
     return info
-}
+end

@@ -163,9 +163,9 @@ end
 function getSwapchainImagesKHR(logicalDevice::vk.VkDevice, swapchain::vk.VkSwapchainKHR)::Vector{vk.VkImage}
     imageCount = Ref{UInt32}()
     swapChainImages = Vector{vk.VkImage}()
-    vk.vkGetSwapchainImagesKHR(logicalDevice, swapChain, imageCount, C_NULL)
-    resize!(swapChainImages, imageCount)
-    vk.vkGetSwapchainImagesKHR(logicalDevice, swapChain, imageCount, swapChainImages)
+    vk.vkGetSwapchainImagesKHR(logicalDevice, swapchain, imageCount, C_NULL)
+    resize!(swapChainImages, imageCount[])
+    vk.vkGetSwapchainImagesKHR(logicalDevice, swapchain, imageCount, swapChainImages)
     return swapChainImages
 end
 # common

@@ -235,7 +235,7 @@ function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysical
             name = info.names[i]
             family = info.index
             queue = Ref{vk.VkQueue}()
-            vk.vkGetDeviceQueue(this.mVkDevice, family, i - 1, queue)
+            vk.vkGetDeviceQueue(this.mVkDevice, family, 0, queue)
             this.mQueues[name] = Queue(family, queue[], pool)
         end
     end
@@ -275,9 +275,8 @@ function createShaderFromFile(this::Device, filePath::String)::ShaderModule
 end
 
 function namedQueue(this::Device, name::String)::Queue
-    it = mQueues.find(name)
-    @assert hasKey(this.mQueues, name) "No Queue with this name exists."
-    return mQueues[name]
+    @assert haskey(this.mQueues, name) "No Queue with this name exists."
+    return this.mQueues[name]
 end
 
 function graphicsQueue(this::Device)::Queue
@@ -285,9 +284,9 @@ function graphicsQueue(this::Device)::Queue
 end
 
 function transferQueue(this::Device)::Queue
-    if hasKey(this.mQueues, "transfer")
-        return mQueues["transfer"]
+    if haskey(this.mQueues, "transfer")
+        return this.mQueues["transfer"]
     else
-        return graphicsQueue()
+        return graphicsQueue(this)
     end
 end

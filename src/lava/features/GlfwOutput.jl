@@ -4,8 +4,7 @@
 mutable struct GlfwOutputT <: IFeatureT
     mVkInstance::vk.VkInstance
     mPhysicalDevice::vk.VkPhysicalDevice
-    mVkDevice::vk.VkDevice
-    mDevice
+    mDevice #::Device
 
     mTempWindow::GLFW.Window
     mTempSurface::vk.VkSurfaceKHR
@@ -28,8 +27,8 @@ function layers(this::GlfwOutputT, available::Vector{String})::Vector{String}
     return []
 end
 
-function openWindow(this::GlfwOutputT, width::UInt32 = 800, height::UInt32 = 600, resizable::Bool = false, title::String = "Lava Window")::GlfwWindow
-    return GlfwWindow(this.mPhysicalDevice, this.mVkDevice, this.mDevice, this.mChainFormat, width, height, resizable, title)
+function openWindow(this::GlfwOutputT, width::UInt32 = UInt32(800), height::UInt32 = UInt32(600), resizable::Bool = false, title::String = "Lava Window")::GlfwWindow
+    return GlfwWindow(this.mVkInstance, this.mChainFormat, width, height, resizable, title)
 end
 
 function instanceExtensions(this::GlfwOutputT, available::Vector{String})::Vector{String}
@@ -58,8 +57,7 @@ function onInstanceCreated(this::GlfwOutputT, vkInstance::vk.VkInstance)
     this.mTempSurface = GLFW.CreateWindowSurface(this.mVkInstance, this.mTempWindow)
 end
 
-function onLogicalDeviceCreated(this::GlfwOutputT, vkDevice::vk.VkDevice, device)
-    this.mVkDevice = vkDevice
+function onLogicalDeviceCreated(this::GlfwOutputT, device)
     this.mDevice = device
 end
 

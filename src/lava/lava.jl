@@ -26,7 +26,7 @@ include("createinfos/PipelineTessellationStateCreateInfo.jl")
 include("createinfos/PipelineVertexInputStateCreateInfo.jl")
 include("createinfos/PipelineViewportStateCreateInfo.jl")
 include("createinfos/GraphicsPipelineCreateInfo.jl")
-
+include("createinfos/ImageCreateInfo.jl")
 
 include("gpuselection/SelectionStrategy.jl")
 
@@ -39,6 +39,9 @@ include("objects/RenderPass.jl")
 include("objects/GraphicsPipeline.jl")
 
 include("objects/Device.jl")
+include("objects/Image.jl")
+include("objects/ImageView.jl")
+include("objects/SwapChain.jl")
 include("objects/Instance.jl")
 
 end
