@@ -59,68 +59,74 @@ function enumeratePhysicalDevices(vkInstance::vk.VkInstance)
     return physicalDevices
 end
 
-function getProperties(phy::vk.VkPhysicalDevice)::vk.VkPhysicalDeviceProperties
+function getProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalDeviceProperties
     deviceProperties = Ref{vk.VkPhysicalDeviceProperties}()
-    vk.vkGetPhysicalDeviceProperties(phy, deviceProperties)
+    vk.vkGetPhysicalDeviceProperties(phyDevice, deviceProperties)
     return deviceProperties[]
 end
 
-function enumerateDeviceExtensionProperties(phy::vk.VkPhysicalDevice)
+function enumerateDeviceExtensionProperties(phyDevice::vk.VkPhysicalDevice)
     extensionCount = Ref{UInt32}(0)
-    vk.vkEnumerateDeviceExtensionProperties(phy, C_NULL, extensionCount, C_NULL)
+    vk.vkEnumerateDeviceExtensionProperties(phyDevice, C_NULL, extensionCount, C_NULL)
 
     availableExtensions = Vector{vk.VkExtensionProperties}(undef, extensionCount[])
-    vk.vkEnumerateDeviceExtensionProperties(phy, C_NULL, extensionCount, availableExtensions)
+    vk.vkEnumerateDeviceExtensionProperties(phyDevice, C_NULL, extensionCount, availableExtensions)
     return availableExtensions
 end
 
-function getQueueFamilyProperties(phy::vk.VkPhysicalDevice)::Vector{vk.VkQueueFamilyProperties}
+function getQueueFamilyProperties(phyDevice::vk.VkPhysicalDevice)::Vector{vk.VkQueueFamilyProperties}
     queueFamilyCount = Ref{Cuint}(0)
-    vk.vkGetPhysicalDeviceQueueFamilyProperties(phy, queueFamilyCount, C_NULL)
+    vk.vkGetPhysicalDeviceQueueFamilyProperties(phyDevice, queueFamilyCount, C_NULL)
     
     queueFamilies = Vector{vk.VkQueueFamilyProperties}(undef, queueFamilyCount[])
-    vk.vkGetPhysicalDeviceQueueFamilyProperties(phy, queueFamilyCount, queueFamilies)
+    vk.vkGetPhysicalDeviceQueueFamilyProperties(phyDevice, queueFamilyCount, queueFamilies)
     return queueFamilies
 end
 
-function createDevice(phy::vk.VkPhysicalDevice, createInfo::Ref{vk.VkDeviceCreateInfo})::vk.VkDevice
+function createDevice(phyDevice::vk.VkPhysicalDevice, createInfo::Ref{vk.VkDeviceCreateInfo})::vk.VkDevice
     logicalDevice = Ref{vk.VkDevice}()
-    err = vk.vkCreateDevice(phy, createInfo, C_NULL, logicalDevice)
+    err = vk.vkCreateDevice(phyDevice, createInfo, C_NULL, logicalDevice)
     if err != vk.VK_SUCCESS
          error(err, "failed to create logical device!")
     end
     return logicalDevice[]
 end
 
-function getSurfaceSupportKHR(phy::vk.VkPhysicalDevice, queueFamilyIndex::UInt32, surface::vk.VkSurfaceKHR)
+function getSurfaceSupportKHR(phyDevice::vk.VkPhysicalDevice, queueFamilyIndex::UInt32, surface::vk.VkSurfaceKHR)
     presentSupport = Ref{vk.VkBool32}(false)
-    err = vk.vkGetPhysicalDeviceSurfaceSupportKHR(phy, queueFamilyIndex, surface, presentSupport)
+    err = vk.vkGetPhysicalDeviceSurfaceSupportKHR(phyDevice, queueFamilyIndex, surface, presentSupport)
     if err != vk.VK_SUCCESS
         error(err, "failed to get physical device surface support!")
     end
     return presentSupport[]
 end
 
-function getSurfaceFormatsKHR(device::vk.VkPhysicalDevice, surface::vk.VkSurfaceKHR)::Vector{vk.VkSurfaceFormatKHR}
+function getSurfaceFormatsKHR(phyDevice::vk.VkPhysicalDevice, surface::vk.VkSurfaceKHR)::Vector{vk.VkSurfaceFormatKHR}
     surfaceFormats = Vector{vk.VkSurfaceFormatKHR}()
     formatCount = Ref{UInt32}()
-    vk.vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, formatCount, C_NULL)
+    vk.vkGetPhysicalDeviceSurfaceFormatsKHR(phyDevice, surface, formatCount, C_NULL)
     if (formatCount[] != 0)
         resize!(surfaceFormats, formatCount[])
-        vk.vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, formatCount, surfaceFormats)
+        vk.vkGetPhysicalDeviceSurfaceFormatsKHR(phyDevice, surface, formatCount, surfaceFormats)
     end
     return surfaceFormats
 end
 
-function getSurfacePresentModesKHR(device::vk.VkPhysicalDevice, surface::vk.VkSurfaceKHR)::Vector{vk.VkPresentModeKHR}
+function getSurfacePresentModesKHR(phyDevice::vk.VkPhysicalDevice, surface::vk.VkSurfaceKHR)::Vector{vk.VkPresentModeKHR}
     presentModes = Vector{vk.VkPresentModeKHR}(undef, 1)
     presentModeCount = Ref{UInt32}()
-    vk.vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, presentModeCount, C_NULL)
+    vk.vkGetPhysicalDeviceSurfacePresentModesKHR(phyDevice, surface, presentModeCount, C_NULL)
     if (presentModeCount != 0)
         resize!(presentModes, presentModeCount[])
-        vk.vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, presentModeCount, presentModes)
+        vk.vkGetPhysicalDeviceSurfacePresentModesKHR(phyDevice, surface, presentModeCount, presentModes)
     end
     return presentModes
+end
+
+function getMemoryProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalDeviceMemoryProperties
+    memoryProperties = Ref{vk.VkPhysicalDeviceMemoryProperties}()
+    vk.vkGetPhysicalDeviceMemoryProperties(phyDevice, memoryProperties)
+    return memoryProperties[]
 end
 
 # logical device
@@ -168,6 +174,19 @@ function getSwapchainImagesKHR(logicalDevice::vk.VkDevice, swapchain::vk.VkSwapc
     vk.vkGetSwapchainImagesKHR(logicalDevice, swapchain, imageCount, swapChainImages)
     return swapChainImages
 end
+
+function allocateMemory(logicalDevice::vk.VkDevice, allocateInfo::Ref{vk.VkMemoryAllocateInfo})::vk.VkDeviceMemory
+    memory = Ref{vk.VkDeviceMemory}()
+    vk.vkAllocateMemory(logicalDevice, allocateInfo, C_NULL, memory)
+    return memory[]
+end
+
+function getImageMemoryRequirements(logicalDevice::vk.VkDevice, image::vk.VkImage)::vk.VkMemoryRequirements
+    memoryRequirements = Ref{vk.VkMemoryRequirements}()
+    vk.vkGetImageMemoryRequirements(logicalDevice, image, memoryRequirements)
+    return memoryRequirements[]
+end
+
 # common
 mutable struct ClearValue
     mColor::vk.VkClearColorValue

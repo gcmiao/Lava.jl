@@ -4,6 +4,7 @@ mutable struct Image
     mCreateInfo::vk.VkImageCreateInfo
     mUnowned::Bool
     mDevice::Device
+    mMemory::MemoryChunk
 
     function Image(device::Device, createInfo::vk.VkImageCreateInfo, type::vk.VkImageViewType)
         this = new()
@@ -81,10 +82,7 @@ function getLogicalDeviceOf(this::Image)::vk.VkDevice
 end
 
 function realizeAttachment(this::Image)
-    # TODO
-    # auto device = mDevice->handle();
-    # auto req = device.getImageMemoryRequirements(mHandle);
-
-    # mMemory = mDevice->suballocator()->allocateDedicated(req, MemoryType::VRAM);
-    # mMemory->bindToImage(mHandle);
+    req = VkExt.getImageMemoryRequirements(getLogicalDevice(this.mDevice), this.mHandle)
+    this.mMemory = allocateDedicated(this.mDevice.mSuballocator, req, VRAM)
+    bindToImage(this.mMemory, this.mHandle)
 end

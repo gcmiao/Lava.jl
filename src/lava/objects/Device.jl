@@ -8,6 +8,7 @@ mutable struct Device
     mPools::Dict{UInt32, vk.VkCommandPool}
 
     mPhyProperties::vk.VkPhysicalDeviceProperties
+    mSuballocator::Suballocator
 
 
     function Device(vkInstance::vk.VkInstance,
@@ -23,6 +24,7 @@ mutable struct Device
         pickPhysicalDevice(this, gpuSelectionStrategy)
         createLogicalDevice(this, [this.mPhysicalDevice], queues)
 
+        this.mSuballocator = Suballocator(this, this.mPhyProperties.limits.bufferImageGranularity)
         return this
     end
 end

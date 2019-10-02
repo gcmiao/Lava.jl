@@ -38,6 +38,9 @@ include("objects/PipelineLayout.jl")
 include("objects/RenderPass.jl")
 include("objects/GraphicsPipeline.jl")
 
+include("objects/MemoryChunk.jl")
+include("objects/Suballocator.jl")
+
 include("objects/Device.jl")
 include("objects/Image.jl")
 include("objects/ImageView.jl")

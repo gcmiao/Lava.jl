@@ -82,6 +82,7 @@ function main()
     lava.buildSwapchainWith(swapChain, window, views::Vector{lava.ImageView}->begin
         depthImageCreateInfo = lava.attachment2D(lava.getPhysicalDevice(device), window.mWidth, window.mHeight, vk.VK_FORMAT_D32_SFLOAT)
         depthImage = lava.createImage(depthImageCreateInfo, device)
+        lava.realizeAttachment(depthImage)
     end)
     # features.buildSwapchainWith(window,
     #     [&](std::vector<lava::SharedImageView> const &views) {
