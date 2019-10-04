@@ -44,6 +44,7 @@ include("objects/Suballocator.jl")
 include("objects/Device.jl")
 include("objects/Image.jl")
 include("objects/ImageView.jl")
+include("objects/Framebuffer.jl")
 include("objects/SwapChain.jl")
 include("objects/Instance.jl")
 

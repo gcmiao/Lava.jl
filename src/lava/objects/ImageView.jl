@@ -51,3 +51,15 @@ function createView(image::Image, type::vk.VkImageViewType, range::vk.VkImageSub
     end
     return ImageView(image, type, range)
 end
+
+function handle(this::ImageView)::vk.VkImageView
+    return this.mHandle
+end
+
+function getImage(this::ImageView)::Image
+    return this.mImage
+end
+
+function getLayers(this::ImageView)::UInt32
+    return this.mCreateInfo.subresourceRange.layerCount
+end

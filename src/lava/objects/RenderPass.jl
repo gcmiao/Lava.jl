@@ -37,3 +37,7 @@ end
 function handleRef(this::RenderPass)::Ref{vk.VkRenderPass}
     return this.mHandleRef
 end
+
+function getVkDevice(this::RenderPass)::vk.VkDevice
+    return this.mVkDevice
+end

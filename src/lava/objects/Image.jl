@@ -86,3 +86,11 @@ function realizeAttachment(this::Image)
     this.mMemory = allocateDedicated(this.mDevice.mSuballocator, req, VRAM)
     bindToImage(this.mMemory, this.mHandle)
 end
+
+function getWidth(this::Image)::UInt32
+    return this.mCreateInfo.extent.width
+end
+
+function getHeight(this::Image)::UInt32
+    return this.mCreateInfo.extent.height
+end

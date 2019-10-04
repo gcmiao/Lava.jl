@@ -83,23 +83,18 @@ function main()
         depthImageCreateInfo = lava.attachment2D(lava.getPhysicalDevice(device), window.mWidth, window.mHeight, vk.VK_FORMAT_D32_SFLOAT)
         depthImage = lava.createImage(depthImageCreateInfo, device)
         lava.realizeAttachment(depthImage)
+        depthView = lava.createView(depthImage)
+        empty!(fbos)
+
+        for view in views
+            push!(fbos, lava.handle(lava.createFramebuffer(pass, [depthView, view])))
+        end
+        # TODO:
+        #         camera.setAspectRatio(float(window->width()) /
+        #                               float(window->height()));
+        #     });
     end)
-    # features.buildSwapchainWith(window,
-    #     [&](std::vector<lava::SharedImageView> const &views) {
-    #         auto depth_image =
-    #             lava::attachment2D(window->width(), window->height(),
-    #                                lava::Format::DEPTH_COMPONENT32F)
-    #                 .create(device);
-    #         depth_image->realizeAttachment();
-    #         auto depth_view = depth_image->createView();
 
-    #         fbos.clear();
-    #         for (auto &view : views)
-    #             fbos.push_back(pass->createFramebuffer({depth_view, view}));
-
-    #         camera.setAspectRatio(float(window->width()) /
-    #                               float(window->height()));
-    #     });
 end
 
 main()
