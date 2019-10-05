@@ -24,6 +24,30 @@ struct Vertex
     color::SVector{4, UInt8}
 end
 
+cubeVertices = [
+    Vertex(SVector{3, Float32}(-1.0, -1.0, -1.0), SVector{4, UInt8}(0, 0, 0, 255)),
+    Vertex(SVector{3, Float32}(-1.0, -1.0, 1.0), SVector{4, UInt8}(0, 0, 255, 255)),
+    Vertex(SVector{3, Float32}(-1.0, 1.0, -1.0), SVector{4, UInt8}(0, 255, 0, 255)),
+    Vertex(SVector{3, Float32}(-1.0, 1.0, 1.0), SVector{4, UInt8}(0, 255, 255, 255)),
+    Vertex(SVector{3, Float32}(1.0, -1.0, -1.0), SVector{4, UInt8}(255, 0, 0, 255)),
+    Vertex(SVector{3, Float32}(1.0, -1.0, 1.0), SVector{4, UInt8}(255, 0, 255, 255)),
+    Vertex(SVector{3, Float32}(1.0, 1.0, -1.0), SVector{4, UInt8}(255, 255, 0, 255)),
+    Vertex(SVector{3, Float32}(1.0, 1.0, 1.0), SVector{4, UInt8}(255, 255, 255, 255))
+]
+
+cubeIndices = Vector{UInt32}(  [0, 2, 3,
+                                0, 3, 1,
+                                0, 1, 5,
+                                0, 5, 4,
+                                2, 7, 3,
+                                2, 6, 7,
+                                1, 7, 5,
+                                1, 3, 7,
+                                0, 4, 6,
+                                0, 6, 2,
+                                4, 5, 7,
+                                4, 7, 6])
+
 function main()
     # Create a Vulkan instance, tell it we need glfw and the validation as
     # extension features

@@ -292,3 +292,7 @@ function transferQueue(this::Device)::Queue
         return graphicsQueue(this)
     end
 end
+
+function getSuballocator(this::Device)::Suballocator
+    return this.mSuballocator
+end

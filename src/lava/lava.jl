@@ -27,6 +27,7 @@ include("createinfos/PipelineVertexInputStateCreateInfo.jl")
 include("createinfos/PipelineViewportStateCreateInfo.jl")
 include("createinfos/GraphicsPipelineCreateInfo.jl")
 include("createinfos/ImageCreateInfo.jl")
+include("createinfos/BufferCreateInfo.jl")
 
 include("gpuselection/SelectionStrategy.jl")
 
@@ -37,6 +38,7 @@ include("objects/DescriptorSet.jl")
 include("objects/PipelineLayout.jl")
 include("objects/RenderPass.jl")
 include("objects/GraphicsPipeline.jl")
+include("objects/CommandBuffer.jl")
 
 include("objects/MemoryChunk.jl")
 include("objects/Suballocator.jl")
@@ -45,6 +47,7 @@ include("objects/Device.jl")
 include("objects/Image.jl")
 include("objects/ImageView.jl")
 include("objects/Framebuffer.jl")
+include("objects/Buffer.jl")
 include("objects/SwapChain.jl")
 include("objects/Instance.jl")
 

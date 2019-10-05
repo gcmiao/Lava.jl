@@ -187,6 +187,28 @@ function getImageMemoryRequirements(logicalDevice::vk.VkDevice, image::vk.VkImag
     return memoryRequirements[]
 end
 
+function getBufferMemoryRequirements(logicalDevice::vk.VkDevice, buffer::vk.VkBuffer)::vk.VkMemoryRequirements
+    memoryRequirements = Ref{vk.VkMemoryRequirements}()
+    vk.vkGetBufferMemoryRequirements(logicalDevice, buffer, memoryRequirements)
+    return memoryRequirements[]
+end
+
+function createBuffer(logicalDevice::vk.VkDevice, createInfo::Ref{vk.VkBufferCreateInfo})::vk.VkBuffer
+    buffer = Ref{vk.VkBuffer}()
+    if vk.vkCreateBuffer(logicalDevice, createInfo, C_NULL, buffer) != vk.VK_SUCCESS
+        error("Failed to create buffer!")
+    end
+    return buffer[]
+end
+
+function mapMemory(logicalDevice::vk.VkDevice, memory::vk.VkDeviceMemory, offset::vk.VkDeviceSize, size::vk.VkDeviceSize, flags::vk.VkMemoryMapFlags)::Ptr{Cvoid}
+    pData = Ref{Ptr{Cvoid}}()
+    if vk.vkMapMemory(logicalDevice, memory, offset, size, flags, pData) != vk.VK_SUCCESS
+        error("Failed to map memory!")
+    end
+    return pData[]
+end
+
 # common
 mutable struct ClearValue
     mColor::vk.VkClearColorValue
