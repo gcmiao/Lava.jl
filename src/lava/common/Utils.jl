@@ -1,3 +1,5 @@
+memmove(d, doff, s, soff, n) = ccall(:memmove, Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, Int), d + doff - 1, s + soff - 1, n)
+
 function sizeof_obj(x)
     total = 0;
     fieldNames = fieldnames(typeof(x));

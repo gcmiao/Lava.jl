@@ -3,6 +3,7 @@ mutable struct Buffer
     mCreateInfo::BufferCreateInfo
     mMemory::MemoryChunk
     mStagingBuffer::Buffer
+    mKeepStagingBuffer::Bool
 
     mHandle::vk.VkBuffer
 
@@ -11,6 +12,7 @@ mutable struct Buffer
         this.mDevice = device
         this.mCreateInfo = createInfo
         this.mHandle = C_NULL
+        this.mKeepStagingBuffer = false
         if (handleRef(createInfo)[].size > 0)
             this.mHandle = VkExt.createBuffer(getLogicalDevice(this.mDevice), handleRef(createInfo))
         end
@@ -36,9 +38,7 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
 
     if isMappable(this.mMemory) # For APUs / integrated GPUs
         mapped = map(this.mMemory)
-        #TODO
-        #memcpy(mapped.data(), data, size);
-        copyto!(getData(mapped), 0, data, 0, size)
+        memmove(getData(mapped), 0, pointer(data), 0, size)
     else
         staging::Buffer
         if isdefined(this, :mStagingBuffer)
@@ -49,11 +49,11 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
         end
         setDataRAM(staging, data, size)
 
-        copyFrom(staging);
-        # TODO
-        # if (mKeepStagingBuffer)
-        #     mStagingBuffer = std::move(staging);
-        # end
+        copyFrom(staging)
+
+        if this.mKeepStagingBuffer
+            this.mStagingBuffer = staging
+        end
     end
 end
 
@@ -64,14 +64,11 @@ function setDataRAM(this::Buffer, data, size::Csize_t)
     end
 
     mapped = map(this.mMemory)
-    #TODO
-    #memcpy(mapped.data(), data, size);
+    memmove(getData(mapped), 0, pointer(data), 0, size)
 end
 
 function initHandle(this::Buffer, dataLen::Csize_t)
-    println(this.mHandle)
     if (this.mHandle != C_NULL)
-        println("handle != null:")
         @assert (dataLen <= handleRef(this.mCreateInfo)[].size) "Buffers in Vulkan cannot be " *
                                                                 "enlarged. Create a new one or " *
                                                                 "start off with a bigger one."
@@ -86,9 +83,8 @@ function realizeRAM(this::Buffer)
     logicalDevice = getLogicalDevice(this.mDevice)
     req = VkExt.getBufferMemoryRequirements(logicalDevice, this.mHandle)
     this.mMemory = allocate(getSuballocator(this.mDevice), req, RAM)
-    println("ram memory:", this.mMemory)
     @assert (getOffset(this.mMemory) % req.alignment == 0)
-    bindToBuffer(logicalDevice, this.mHandle)
+    bindToBuffer(this.mMemory, this.mHandle)
 end
 
 function realizeVRAM(this::Buffer)
@@ -96,13 +92,13 @@ function realizeVRAM(this::Buffer)
     logicalDevice = getLogicalDevice(this.mDevice)
     req = VkExt.getBufferMemoryRequirements(logicalDevice, this.mHandle)
     this.mMemory = allocate(getSuballocator(this.mDevice), req, VRAM)
-    println("vram memory:", this.mMemory)
     @assert (getOffset(this.mMemory) % req.alignment == 0)
-    bindToBuffer(logicalDevice, this.mHandle)
+    bindToBuffer(this.mMemory, this.mHandle)
 end
 
 function copyFrom(this::Buffer, other::Buffer)
-    RecordingCommandBuffer::convenienceBufferCheck("Buffer::copyFrom()")
+    # TODO
+    # RecordingCommandBuffer::convenienceBufferCheck("Buffer::copyFrom()")
     queue = graphicsQueue(this.mDevice)
     cmd = queue.beginCommandBuffer()
     copyFrom(other, cmd)
@@ -123,4 +119,8 @@ function copyFrom(this::Buffer, other::Buffer, cmd::RecordingCommandBuffer)
     #     .addSrcAccess(vk::AccessFlagBits::eTransferWrite)
     #     .addDstStage(stagesForUsage(mCreateInfo.usage))
     #     .addDstAccess(accessForUsage(mCreateInfo.usage));
+end
+
+function keepStagingBuffer(this::Buffer, val::Bool = true)
+    this.mKeepStagingBuffer = val
 end

@@ -119,6 +119,12 @@ function main()
         #     });
     end)
 
+    #Upload of the cube mesh
+    vab = lava.createBuffer(device, lava.arrayBuffer())
+    lava.setDataVRAM(vab, cubeVertices, Vertex)
+    eab = lava.createBuffer(device, lava.indexBuffer())
+    lava.setDataVRAM(eab, cubeIndices, UInt32)
+
 end
 
 main()

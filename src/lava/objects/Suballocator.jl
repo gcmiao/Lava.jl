@@ -1,13 +1,37 @@
+mutable struct Hole
+    _begin::vk.VkDeviceSize
+    _end::vk.VkDeviceSize
+end
+
+struct MemoryBlock
+    memory::MemoryChunk
+    size::vk.VkDeviceSize
+    holes::Vector{Hole}
+end
+
 mutable struct Suballocator
     mDevice
     mBufferImageGranularity::vk.VkDeviceSize
     mMemoryProperties::vk.VkPhysicalDeviceMemoryProperties
+    mLargeHeapBlockSize::vk.VkDeviceSize
+    mSmallHeapBlockSize::vk.VkDeviceSize
+    mSmallHeapThreshold::vk.VkDeviceSize
+    mTypeBlocks::Vector{Vector{MemoryBlock}}
 
     function Suballocator(device, biGranularity::vk.VkDeviceSize)
         this = new()
         this.mDevice = device
         this.mBufferImageGranularity = biGranularity
         this.mMemoryProperties = VkExt.getMemoryProperties(getPhysicalDevice(this.mDevice))
+
+        this.mLargeHeapBlockSize = vk.VkDeviceSize(256 * 1024 * 1024)
+        this.mSmallHeapBlockSize = vk.VkDeviceSize(64 * 1024 * 1024)
+        this.mSmallHeapThreshold = vk.VkDeviceSize(512 * 1024 * 1024)
+
+        this.mTypeBlocks = Vector{Vector{MemoryBlock}}(undef, vk.VK_MAX_MEMORY_TYPES)
+        for i = 1 : length(this.mTypeBlocks)
+            this.mTypeBlocks[i] = Vector{MemoryBlock}()
+        end
         return this
     end
 end
@@ -22,73 +46,76 @@ function allocate(this::Suballocator, req::vk.VkMemoryRequirements, type::Memory
 end
 
 function allocate(this::Suballocator, req::vk.VkMemoryRequirements, flags::vk.VkMemoryPropertyFlags)::MemoryChunk
-    # TODO
-    # /// the bufferImageGranularity is the size of memory pages that must not be
-    # /// shared between linear resources (buffers) and non-linear resources
-    # /// (images). In order to limit complexity, we (for now) assume that every
-    # /// currently bound resource is of the "wrong" type
-    # /// => increase the alignment to the page size
-    # req.alignment = std::max(req.alignment, mBufferImageGranularity);
+    # the bufferImageGranularity is the size of memory pages that must not be
+    # shared between linear resources (buffers) and non-linear resources
+    # (images). In order to limit complexity, we (for now) assume that every
+    # currently bound resource is of the "wrong" type
+    # => increase the alignment to the page size
+    newAlignment = max(req.alignment, this.mBufferImageGranularity)
 
-    # uint32_t typeIdx = typeIndexFor(req, flags);
-    # auto type = mMemoryProperties.memoryTypes[typeIdx];
-    # auto heapIndex = type.heapIndex;
-    # auto heap = mMemoryProperties.memoryHeaps[heapIndex];
-    # auto blocksize = heap.size > mSmallHeapThreshold ? mLargeHeapBlockSize
-    #                                                  : mSmallHeapBlockSize;
+    typeIdx = typeIndexFor(this, req, flags)
+    type = this.mMemoryProperties.memoryTypes[typeIdx]
+    heapIndex = type.heapIndex # start from 1
+    heap = this.mMemoryProperties.memoryHeaps[heapIndex + 1]
+    # allocate a large block if heap.size exceed the threshold
+    blocksize = heap.size > this.mSmallHeapThreshold ? this.mLargeHeapBlockSize : this.mSmallHeapBlockSize
 
-    # if (req.size > blocksize)
-    #     return allocateDedicated(req, flags);
+    if (req.size > blocksize)
+        return allocateDedicated(this, req, flags)
+    end
 
-    # auto toAlign = [&](vk::DeviceSize offset) {
-    #     auto remainder = offset % req.alignment;
-    #     if (!remainder)
-    #         return offset;
-    #     return offset + req.alignment - remainder;
-    # };
+    toAlign = offset::vk.VkDeviceSize->begin
+        remainder = offset % newAlignment
+        if remainder == 0
+            return offset
+        end
+        return offset + newAlignment - remainder;
+    end
+    deallocator = chunk::MemoryChunk->begin
+        deallocate(this, chunk)
+    end
 
-    # auto deallocator = [this](MemoryChunk &chunk) { this->deallocate(chunk); };
-    # auto mappable =
-    #     !!(type.propertyFlags & vk::MemoryPropertyFlagBits::eHostVisible);
-    # auto &blocks = mTypeBlocks[typeIdx];
-    # for (auto &block : blocks) {
-    #     for (auto it = begin(block.holes); it != end(block.holes); ++it) {
-    #         auto &hole = *it;
-    #         auto diff = int64_t(hole.end) - int64_t(toAlign(hole.begin)) -
-    #                     int64_t(req.size);
+    mappable = (type.propertyFlags & vk.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
+    blocks = this.mTypeBlocks[typeIdx]
+    logicalDevice = getLogicalDevice(this.mDevice)
+    for block in blocks
+        count = length(block.holes)
+        for i = 1 : count
+            hole = block.holes[i]
+            diff = Int64(hole._end) - Int64(toAlign(hole._begin)) - Int64(req.size)
+            if (diff == 0)
+                # Allocation fits hole exactly, throw out the hole
+                deleteat!(block.holes, i)
+                return MemoryChunk(handle(block.memory), logicalDevice,
+                                    hole._begin, toAlign(hole._begin), req.size,
+                                    typeIdx, mappable, deallocator)
+            elseif (diff > 0)
+                # Put the allocation at the beginning of the hole
+                newBegin = hole._begin
+                # move the begin of the hole backward because the part is used for the new memory chunk
+                hole._begin = toAlign(newBegin) + req.size;
+                return MemoryChunk(handle(block.memory), logicalDevice,
+                                    newBegin, toAlign(newBegin), req.size,
+                                    typeIdx, mappable, deallocator)
+            end
+        end
+    end
 
-    #         if (diff == 0) {
-    #             // Allocation fits hole exactly, throw out the hole
-    #             block.holes.erase(it);
-    #             return std::make_shared<MemoryChunk>(
-    #                 block.memory->handle(), mDevice.shared_from_this(),
-    #                 hole.begin, toAlign(hole.begin), req.size, typeIdx,
-    #                 mappable, deallocator);
-    #         } else if (diff > 0) {
-    #             // Put the allocation at the beginning of the hole
-    #             auto begin = hole.begin;
-    #             hole.begin = toAlign(begin) + req.size;
-    #             return std::make_shared<MemoryChunk>(
-    #                 block.memory->handle(), mDevice.shared_from_this(), begin,
-    #                 toAlign(begin), req.size, typeIdx, mappable, deallocator);
-    #         }
-    #     }
-    # }
+    # Still no hole found, add a new block
+    createInfo = Ref(vk.VkMemoryAllocateInfo(
+        vk.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, #sType::VkStructureType
+        C_NULL, #pNext::Ptr{Cvoid}
+        blocksize, #allocationSize::VkDeviceSize
+        typeIdx #memoryTypeIndex::UInt32
+    ))
 
-    # // Still no hole found, add a new block
-    # vk::MemoryAllocateInfo info;
-    # info.memoryTypeIndex = typeIdx;
-    # info.allocationSize = blocksize;
-    # auto memory = mDevice.handle().allocateMemory(info);
-    # auto blockchunk = std::make_shared<MemoryChunk>(
-    #     memory, mDevice.shared_from_this(), 0, 0, blocksize, typeIdx, mappable,
-    #     MemoryChunk::Deallocator{});
-    # blocks.push_back(
-    #     MemoryBlock{blockchunk, blocksize, {{req.size, blocksize}}});
+    memory = VkExt.allocateMemory(logicalDevice, createInfo)
+    blockchunk = MemoryChunk(memory, logicalDevice,
+                            UInt64(0), UInt64(0), blocksize, typeIdx, mappable)
+    push!(blocks, MemoryBlock(blockchunk, blocksize, [Hole(req.size, blocksize)]))
 
-    # return std::make_shared<MemoryChunk>(
-    #     blocks.back().memory->handle(), mDevice.shared_from_this(), 0, 0,
-    #     req.size, typeIdx, mappable, deallocator);
+    return MemoryChunk(handle(blockchunk), logicalDevice,
+                            UInt64(0), UInt64(0), req.size, typeIdx, mappable, deallocator)
 end
 
 function allocateDedicated(this::Suballocator, req::vk.VkMemoryRequirements, type::MemoryType)::MemoryChunk
@@ -126,14 +153,14 @@ end
 function typeIndexFor(this::Suballocator, req::vk.VkMemoryRequirements, flags::vk.VkMemoryPropertyFlags)::UInt32
     memtype = typemax(UInt32)
     best_popcount::Csize_t = 0
-    for i::UInt32 = 1 : this.mMemoryProperties.memoryTypeCount
-        if (req.memoryTypeBits & (1 << (i - 1))) != 0
-            current_flags = this.mMemoryProperties.memoryTypes[i].propertyFlags
+    for i::UInt32 = 0 : this.mMemoryProperties.memoryTypeCount - 1
+        if (req.memoryTypeBits & (1 << i)) != 0
+            current_flags = this.mMemoryProperties.memoryTypes[i + 1].propertyFlags
             intersect = flags & current_flags
 
             if (intersect > best_popcount)
                 best_popcount = intersect
-                memtype = i
+                memtype = i + 1
             end
         end
     end
@@ -142,4 +169,8 @@ function typeIndexFor(this::Suballocator, req::vk.VkMemoryRequirements, flags::v
         error("Could not find appropriate memory class.")
     end
     return memtype
+end
+
+function deallocate(this::Suballocator, chunk::MemoryChunk)
+    # TODO Deconstruction
 end

@@ -11,7 +11,7 @@ mutable struct MemoryChunk
     function MemoryChunk(memory::vk.VkDeviceMemory, vkDevice::vk.VkDevice,
                          allocationOffset::vk.VkDeviceSize, offset::vk.VkDeviceSize,
                          size::vk.VkDeviceSize, type::UInt32, mappable::Bool,
-                         dealloc)
+                         dealloc = nothing)
         this = new()
         this.mMemory = memory
         this.mVkDevice = vkDevice
@@ -38,12 +38,12 @@ mutable struct MappedMemory
         this.mVkDevice = mem.mVkDevice
         this.mOffset = getOffset(mem) + dataOffset
         this.mSize = min(mem.mSize - dataOffset, size)
-        this.mData = VkExt.mapMemory(this.mVkDevice, this.mMemory, this.mOffset, this.mSize, 0)
+        this.mData = VkExt.mapMemory(this.mVkDevice, this.mMemory, this.mOffset, this.mSize, vk.VkFlags(0))
         return this
     end
 end
 
-# TODO
+# TODO Deconstruction
 # MappedMemory::~MappedMemory() {
 #     if (mMemory) {
 #         mDevice.flushMappedMemoryRanges(
@@ -61,6 +61,10 @@ end
 #     }
 # }
 
+function handle(this::MemoryChunk)::vk.VkDeviceMemory
+    return this.mMemory
+end
+
 function bindToImage(this::MemoryChunk, image::vk.VkImage)
     if vk.vkBindImageMemory(this.mVkDevice, image, this.mMemory, this.mOffset) != vk.VK_SUCCESS
         error("Failed to bind memory chunk to image!")
@@ -77,11 +81,11 @@ function getOffset(this::MemoryChunk)::vk.VkDeviceSize
     return this.mOffset
 end
 
-function isMappable(this::MemoryChunk)::bool
+function isMappable(this::MemoryChunk)::Bool
     return this.mMappable
 end
 
-function map(this::MemoryChunk, dataOffset::vk.VkDeviceSize = 0, size::vk.VkDeviceSize = vk.VK_WHOLE_SIZE)::MappedMemory
+function map(this::MemoryChunk, dataOffset::vk.VkDeviceSize = vk.VkDeviceSize(0), size::vk.VkDeviceSize = vk.VkDeviceSize(vk.VK_WHOLE_SIZE))::MappedMemory
     return MappedMemory(this, dataOffset, size)
 end
 

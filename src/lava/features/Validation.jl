@@ -25,14 +25,6 @@ function create(::Type{Validation})
     return Validation()
 end
 
-# TODO
-# Validation::~Validation() {
-#     if (mCallback) {
-#         mInstance.destroyDebugReportCallbackEXT(mCallback);
-#         mCallback = vk::DebugReportCallbackEXT{};
-#     }
-# }
-
 function layers(this::Validation, available::Vector{String})::Vector{String}
     return ["VK_LAYER_LUNARG_standard_validation"]
 end
