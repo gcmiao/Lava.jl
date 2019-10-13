@@ -1,6 +1,7 @@
 push!(LOAD_PATH, "lava")
 push!(LOAD_PATH, "lava/common")
 push!(LOAD_PATH, "lava/features")
+push!(LOAD_PATH, "lava/camera")
 using lava
 using features
 using VulkanCore
@@ -11,10 +12,10 @@ using StaticArrays
 shaderFolder = "../shaders/"
 
 struct CameraData
-    view::Matrix{Float32}
-    proj::Matrix{Float32}
+    view::SMatrix{4, 4, Float32}
+    proj::SMatrix{4, 4, Float32}
 
-    CameraData() = new(Matrix{Float32}(I, 4, 4), Matrix{Float32}(I, 4, 4))
+    CameraData() = new(SMatrix{4, 4, Float32}(1I), SMatrix{4, 4, Float32}(1I))
 end
 
 struct Vertex
@@ -100,6 +101,9 @@ function main()
     GC.@preserve ci begin
         pipeline = lava.GraphicsPipeline(lava.getLogicalDevice(device), lava.handleRef(ci))
     end
+
+    camera = lava.camera.GenericCamera()
+    lava.camera.setTarget(camera, lava.vec3(0.0, 0.0, 0.0))
     fbos = Vector{vk.VkFramebuffer}()
     window = features.openWindow(glfw)
     swapChain = lava.SwapChain(device)
@@ -113,10 +117,7 @@ function main()
         for view in views
             push!(fbos, lava.handle(lava.createFramebuffer(pass, [depthView, view])))
         end
-        # TODO:
-        #         camera.setAspectRatio(float(window->width()) /
-        #                               float(window->height()));
-        #     });
+            lava.camera.setAspectRatio(camera, Float32(features.getWidth(window)) / Float32(features.getHeight(window)))
     end)
 
     #Upload of the cube mesh
@@ -125,6 +126,10 @@ function main()
     eab = lava.createBuffer(device, lava.indexBuffer())
     lava.setDataVRAM(eab, cubeIndices, UInt32)
 
+    lava.camera.setPosition(camera, lava.vec3(2.0, 2.0, 2.0))
+    lava.camera.setTarget(camera, lava.vec3(0.0, 0.0, 0.0))
+    lava.camera.rotateAroundTarget_GlobalAxes(camera, 0.0, 0.001, 0.0)
+    CameraData(lava.camera.getViewMatrix(camera), lava.camera.getProjectionMatrix(camera))
 end
 
 main()

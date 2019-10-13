@@ -38,3 +38,11 @@ end
 function getSurfaceFormat(this::GlfwWindow)::vk.VkSurfaceFormatKHR
     return this.mChainFormat
 end
+
+function getWidth(this::GlfwWindow)
+    return this.mWidth
+end
+
+function getHeight(this::GlfwWindow)
+    return this.mHeight
+end

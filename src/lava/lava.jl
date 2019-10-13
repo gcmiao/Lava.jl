@@ -4,6 +4,7 @@ using VulkanCore
 using features
 using VkExt
 using StringHelper
+using camera
 
 include("common/Utils.jl")
 include("common/FormatInfo.jl")
