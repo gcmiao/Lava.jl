@@ -1,3 +1,5 @@
+using Utils: sizeof_obj
+
 mutable struct Device
     mVkInstance::vk.VkInstance
     mPhysicalDevice::vk.VkPhysicalDevice

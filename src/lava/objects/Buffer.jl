@@ -1,3 +1,4 @@
+using Utils: memmove
 mutable struct Buffer
     mDevice::Device
     mCreateInfo::BufferCreateInfo

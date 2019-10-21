@@ -5,8 +5,8 @@ using features
 using VkExt
 using StringHelper
 using camera
+using Utils
 
-include("common/Utils.jl")
 include("common/FormatInfo.jl")
 include("common/ShaderExtension.jl")
 

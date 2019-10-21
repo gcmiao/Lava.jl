@@ -1,3 +1,4 @@
+using Utils: indexOfField
 struct PipelineVertexInputStateCreateInfo
     mHandleRef::Ref{vk.VkPipelineVertexInputStateCreateInfo}
     mPreserve::Vector{Any}

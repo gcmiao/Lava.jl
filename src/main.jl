@@ -8,32 +8,34 @@ using VulkanCore
 using VkExt
 using LinearAlgebra
 using StaticArrays
+using Utils: vec3, mat4, u8vec4
 
 shaderFolder = "../shaders/"
 
 struct CameraData
-    view::SMatrix{4, 4, Float32}
-    proj::SMatrix{4, 4, Float32}
+    view::mat4
+    proj::mat4
 
-    CameraData() = new(SMatrix{4, 4, Float32}(1I), SMatrix{4, 4, Float32}(1I))
+    CameraData() = new(mat4(1I), mat4(1I))
+    CameraData(view::mat4, proj::mat4) = new(view, proj)
 end
 
 struct Vertex
     # glm::vec3 position
     # glm::u8vec4 color
-    position::SVector{3, Float32}
-    color::SVector{4, UInt8}
+    position::vec3
+    color::u8vec4
 end
 
 cubeVertices = [
-    Vertex(SVector{3, Float32}(-1.0, -1.0, -1.0), SVector{4, UInt8}(0, 0, 0, 255)),
-    Vertex(SVector{3, Float32}(-1.0, -1.0, 1.0), SVector{4, UInt8}(0, 0, 255, 255)),
-    Vertex(SVector{3, Float32}(-1.0, 1.0, -1.0), SVector{4, UInt8}(0, 255, 0, 255)),
-    Vertex(SVector{3, Float32}(-1.0, 1.0, 1.0), SVector{4, UInt8}(0, 255, 255, 255)),
-    Vertex(SVector{3, Float32}(1.0, -1.0, -1.0), SVector{4, UInt8}(255, 0, 0, 255)),
-    Vertex(SVector{3, Float32}(1.0, -1.0, 1.0), SVector{4, UInt8}(255, 0, 255, 255)),
-    Vertex(SVector{3, Float32}(1.0, 1.0, -1.0), SVector{4, UInt8}(255, 255, 0, 255)),
-    Vertex(SVector{3, Float32}(1.0, 1.0, 1.0), SVector{4, UInt8}(255, 255, 255, 255))
+    Vertex(vec3(-1.0, -1.0, -1.0), u8vec4(0, 0, 0, 255)),
+    Vertex(vec3(-1.0, -1.0, 1.0), u8vec4(0, 0, 255, 255)),
+    Vertex(vec3(-1.0, 1.0, -1.0), u8vec4(0, 255, 0, 255)),
+    Vertex(vec3(-1.0, 1.0, 1.0), u8vec4(0, 255, 255, 255)),
+    Vertex(vec3(1.0, -1.0, -1.0), u8vec4(255, 0, 0, 255)),
+    Vertex(vec3(1.0, -1.0, 1.0), u8vec4(255, 0, 255, 255)),
+    Vertex(vec3(1.0, 1.0, -1.0), u8vec4(255, 255, 0, 255)),
+    Vertex(vec3(1.0, 1.0, 1.0), u8vec4(255, 255, 255, 255))
 ]
 
 cubeIndices = Vector{UInt32}(  [0, 2, 3,
@@ -103,7 +105,7 @@ function main()
     end
 
     camera = lava.camera.GenericCamera()
-    lava.camera.setTarget(camera, lava.vec3(0.0, 0.0, 0.0))
+    lava.camera.setTarget(camera, vec3(0.0, 0.0, 0.0))
     fbos = Vector{vk.VkFramebuffer}()
     window = features.openWindow(glfw)
     swapChain = lava.SwapChain(device)
@@ -126,10 +128,10 @@ function main()
     eab = lava.createBuffer(device, lava.indexBuffer())
     lava.setDataVRAM(eab, cubeIndices, UInt32)
 
-    lava.camera.setPosition(camera, lava.vec3(2.0, 2.0, 2.0))
-    lava.camera.setTarget(camera, lava.vec3(0.0, 0.0, 0.0))
-    lava.camera.rotateAroundTarget_GlobalAxes(camera, 0.0, 0.001, 0.0)
-    CameraData(lava.camera.getViewMatrix(camera), lava.camera.getProjectionMatrix(camera))
+    lava.camera.setPosition(camera, vec3(2.0, 2.0, 2.0))
+    lava.camera.setTarget(camera, vec3(0.0, 0.0, 0.0))
+    lava.camera.rotateAroundTarget_GlobalAxes(camera, Float32(0.0), Float32(0.001), Float32(0.0))
+    println(CameraData(lava.camera.getViewMatrix(camera), lava.camera.getProjectionMatrix(camera)))
 end
 
 main()
