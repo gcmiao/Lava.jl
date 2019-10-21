@@ -152,14 +152,14 @@ end
 
 function typeIndexFor(this::Suballocator, req::vk.VkMemoryRequirements, flags::vk.VkMemoryPropertyFlags)::UInt32
     memtype = typemax(UInt32)
-    best_popcount::Csize_t = 0
+    best_popcount::Int = 0
     for i::UInt32 = 0 : this.mMemoryProperties.memoryTypeCount - 1
         if (req.memoryTypeBits & (1 << i)) != 0
             current_flags = this.mMemoryProperties.memoryTypes[i + 1].propertyFlags
-            intersect = flags & current_flags
+            ones = count_ones(flags & current_flags)
 
-            if (intersect > best_popcount)
-                best_popcount = intersect
+            if (ones > best_popcount)
+                best_popcount = ones
                 memtype = i + 1
             end
         end

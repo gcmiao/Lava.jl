@@ -95,7 +95,7 @@ function resolveQueueRequest(req::QueueRequest, families::Vector{vk.VkQueueFamil
         end
 
         if (family.queueFlags & req.flags > 0)
-            bitcount = family.queueFlags #TODO bitcount = bitsSet(uint32_t(family.queueFlags))
+            bitcount = count_ones(family.queueFlags)
             if (bitcount < bestBitcount)
                 req.index = i
                 bestBitcount = bitcount
