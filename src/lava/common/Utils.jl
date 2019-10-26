@@ -4,8 +4,7 @@ using LinearAlgebra
 using StaticArrays
 include("MathUtils.jl")
 
-memmove(d, doff, s, soff, n) = ccall(:memmove, Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, Int), d + doff - 1, s + soff - 1, n)
-#memmove(d, doff, s, soff, n) = ccall(:memcpy, Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, Int), d + doff - 1, s + soff - 1, n)
+memmove(dest, src, n) = ccall(:memmove, Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, Int), dest, src, n)
 
 function sizeof_obj(x)
     total = 0;

@@ -106,7 +106,7 @@ function allocate(this::Suballocator, req::vk.VkMemoryRequirements, flags::vk.Vk
         vk.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, #sType::VkStructureType
         C_NULL, #pNext::Ptr{Cvoid}
         blocksize, #allocationSize::VkDeviceSize
-        typeIdx #memoryTypeIndex::UInt32
+        typeIdx - 1 #memoryTypeIndex::UInt32
     ))
 
     memory = VkExt.allocateMemory(logicalDevice, createInfo)
