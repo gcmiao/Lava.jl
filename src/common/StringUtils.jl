@@ -1,3 +1,5 @@
+export strings2pp, chars2String
+
 strings2pp(names::Vector{String}) = (ptr = Base.cconvert(Ptr{Cstring}, names); GC.@preserve ptr Base.unsafe_convert(Ptr{Cstring}, ptr))
 
 function chars2String(chars)::String

@@ -1,8 +1,8 @@
 mutable struct InstanceT
-    mFeatures::Vector{features.IFeatureT}
+    mFeatures::Vector{IFeatureT}
     mVkInstance::vk.VkInstance
 
-    function InstanceT(inFeatures::Vector{features.IFeatureT})
+    function InstanceT(inFeatures::Vector{IFeatureT})
         this = new()
         this.mFeatures = inFeatures
 
@@ -10,22 +10,22 @@ mutable struct InstanceT
         availableExtensions, extCount = VkExt.enumerateInstanceExtensionProperties()
         avaliableExtNames = Vector{String}(undef, extCount)
         for i = 1 : extCount
-            avaliableExtNames[i] = StringHelper.chars2String(availableExtensions[i].extensionName)
+            avaliableExtNames[i] = chars2String(availableExtensions[i].extensionName)
         end
         
         # get required layer names
         avaliableLayers, layerCount = VkExt.enumerateInstanceLayerProperties()
         avaliableLayerNames = Vector{String}(undef, layerCount)
         for i = 1 : layerCount
-            avaliableLayerNames[i] = StringHelper.chars2String(avaliableLayers[i].layerName)
+            avaliableLayerNames[i] = chars2String(avaliableLayers[i].layerName)
         end
     
         requiredExtNames = Vector{String}()
         requiredLayerNames = Vector{String}()
         for feat in this.mFeatures
-            extNames = features.instanceExtensions(feat, avaliableExtNames)
+            extNames = instanceExtensions(feat, avaliableExtNames)
             append!(requiredExtNames, extNames)
-            layerNames = features.layers(feat, avaliableLayerNames)
+            layerNames = layers(feat, avaliableLayerNames)
             append!(requiredLayerNames, layerNames)
         end
 
@@ -36,15 +36,15 @@ mutable struct InstanceT
             UInt32(0), #flags::VkInstanceCreateFlags
             C_NULL, #pApplicationInfo::Ptr{VkApplicationInfo}
             length(requiredLayerNames), #enabledLayerCount::UInt32
-            StringHelper.strings2pp(requiredLayerNames), #ppEnabledLayerNames::Ptr{Cstring}
+            strings2pp(requiredLayerNames), #ppEnabledLayerNames::Ptr{Cstring}
             length(requiredExtNames), #enabledExtensionCount::UInt32
-            StringHelper.strings2pp(requiredExtNames), #ppEnabledExtensionNames::Ptr{Cstring}
+            strings2pp(requiredExtNames), #ppEnabledExtensionNames::Ptr{Cstring}
         )
 
         this.mVkInstance = VkExt.createInstance(info)
 
         for feat in this.mFeatures
-            features.onInstanceCreated(feat, this.mVkInstance)
+            onInstanceCreated(feat, this.mVkInstance)
         end
 
         return this
@@ -57,14 +57,14 @@ end
 #         feat->beforeInstanceDestruction();
 # }
 
-function create(::Type{InstanceT}, inFeatures::Vector{features.IFeatureT})::InstanceT
+function create(::Type{InstanceT}, inFeatures::Vector{IFeatureT})::InstanceT
     return InstanceT(inFeatures)
 end
 
 function createDevice(this::InstanceT, queues::Vector{QueueRequest}, gpuSelectionStrategy::ISelectionStrategy)
     device = Device(this.mVkInstance, this.mFeatures, gpuSelectionStrategy, queues)
     for feat in this.mFeatures
-        features.onLogicalDeviceCreated(feat, device)
+        onLogicalDeviceCreated(feat, device)
     end
     return device
 end

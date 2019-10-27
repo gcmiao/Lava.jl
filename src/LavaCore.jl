@@ -1,14 +1,20 @@
-module lava
+module LavaCore
 
 using VulkanCore
-using features
-using VkExt
-using StringHelper
-using camera
-using Utils
+include("common/VkExt.jl")
+using .VkExt
+export VkExt
+include("common/Utils.jl")
+using .Utils
+export Utils
+include("camera/Camera.jl")
+using .Camera
+export Camera
+
 
 include("common/FormatInfo.jl")
 include("common/ShaderExtension.jl")
+include("common/FeatureBase.jl")
 
 include("objects/ShaderModule.jl")
 
@@ -49,7 +55,6 @@ include("objects/Image.jl")
 include("objects/ImageView.jl")
 include("objects/Framebuffer.jl")
 include("objects/Buffer.jl")
-include("objects/SwapChain.jl")
 include("objects/Instance.jl")
 
 end

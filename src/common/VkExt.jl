@@ -161,7 +161,7 @@ function createSemaphore(logicalDevice::vk.VkDevice, createInfo::vk.VkSemaphoreC
                                                                                             ))
     semaphore = Ref{vk.VkSemaphore}()
     if (vk.vkCreateSemaphore(logicalDevice, Ref(createInfo), C_NULL, semaphore) != vk.VK_SUCCESS)
-        println("Failed to create semaphore!")
+        error("Failed to create semaphore!")
     end
     return semaphore[]
 end

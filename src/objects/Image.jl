@@ -1,3 +1,5 @@
+export Image
+
 mutable struct Image
     mHandle::vk.VkImage
     mType::vk.VkImageViewType

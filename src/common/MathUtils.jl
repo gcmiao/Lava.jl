@@ -1,5 +1,10 @@
 import Base.*
 import Base.getproperty
+export vec3, mat3, mat4,
+        make_vec4, make_vec3, make_mat4,
+        col_multiple, isOrthonormalMatrix, isApproxEqual,
+        distance, rotate,
+        getRow
 
 const vec3 = SVector{3, Float32}
 const vec4 = SVector{4, Float32}

@@ -1,9 +1,3 @@
-using Utils: vec3, mat3, mat4,
-             make_vec4, make_vec3, make_mat4,
-             col_multiple, isOrthonormalMatrix, isApproxEqual,
-             distance, rotate,
-             getRow
-
 # use the DX reverse mode with:
 # * an infinite far plane
 # * a float z-buffer

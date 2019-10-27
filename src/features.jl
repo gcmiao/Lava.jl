@@ -1,12 +1,10 @@
 module features
 
-using GLFW
 using VulkanCore
-using VkExt
-using StringHelper
+using ..VkExt
+using ..LavaCore
 
 include("features/GlfwWindow.jl")
-include("features/Feature.jl")
 include("features/GlfwOutput.jl")
 include("features/Validation.jl")
 

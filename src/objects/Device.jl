@@ -1,11 +1,14 @@
-using Utils: sizeof_obj
+export Device
+export nameQueue, getLogicalDevice, getPhysicalDevice, getInstance,
+        namedQueue, family, graphicsQueue,
+        attachment2D, handleRef, createView
 
 mutable struct Device
     mVkInstance::vk.VkInstance
     mPhysicalDevice::vk.VkPhysicalDevice
     mVkDevice::vk.VkDevice
     
-    mFeatures::Vector{features.IFeatureT}
+    mFeatures::Vector{IFeatureT}
     mQueues::Dict{String, Queue}
     mPools::Dict{UInt32, vk.VkCommandPool}
 
@@ -14,7 +17,7 @@ mutable struct Device
 
 
     function Device(vkInstance::vk.VkInstance,
-               features::Vector{features.IFeatureT},
+               features::Vector{IFeatureT},
                gpuSelectionStrategy::ISelectionStrategy,
                queues::Vector{QueueRequest})
         this = new()
@@ -38,6 +41,10 @@ end
 function getPhysicalDevice(this::Device)::vk.VkPhysicalDevice
     return this.mPhysicalDevice
 end
+
+function getInstance(this::Device)::vk.VkInstance
+    return this.mVkInstance
+end
 # TODO: Deconstruction
 # Device::~Device() {
 #     for (auto &&feat : mFeatures)
@@ -48,7 +55,7 @@ function pickPhysicalDevice(this::Device, gpuSelectionStrategy::ISelectionStrate
     devices = VkExt.enumeratePhysicalDevices(this.mVkInstance)
     isGoodDevice = function(device::vk.VkPhysicalDevice)
         for feat in this.mFeatures
-            if !features.supportsDevice(feat, device)
+            if !supportsDevice(feat, device)
                 return false
             end
         end
@@ -66,7 +73,7 @@ function pickPhysicalDevice(this::Device, gpuSelectionStrategy::ISelectionStrate
     this.mPhysicalDevice = selectFrom(gpuSelectionStrategy, devices)
 
     for feat in this.mFeatures
-        features.onPhysicalDeviceSelected(feat, this.mPhysicalDevice)
+        onPhysicalDeviceSelected(feat, this.mPhysicalDevice)
     end
 
     this.mPhyProperties = VkExt.getProperties(this.mPhysicalDevice)
@@ -102,26 +109,6 @@ function resolveQueueRequest(req::QueueRequest, families::Vector{vk.VkQueueFamil
             end
         end
     end
-end
-
-function queueRequests(this::features.IFeatureT, families::Vector{vk.VkQueueFamilyProperties})
-    return []
-end
-
-function queueRequests(this::features.GlfwOutputT, families::Vector{vk.VkQueueFamilyProperties})
-    result = Vector{QueueRequest}()
-    for i::UInt32 = 0 : length(families) - 1 #queueFamilyIndex should start from 0
-        if VkExt.getSurfaceSupportKHR(this.mPhysicalDevice, i, this.mTempSurface) == vk.VK_TRUE
-            this.mPresentIndex = i
-            push!(result, createByFamily(QueueRequest, "present", i, 1.0f0))
-            break
-        end
-    end
-    if length(result) == 0
-        error("Device can't present to this surface.")
-    end
-
-    return result
 end
 
 function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysicalDevice}, queues::Vector{QueueRequest})
@@ -167,14 +154,14 @@ function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysical
 
     extNames = Vector{String}()
     for feat in this.mFeatures
-        add = features.deviceExtensions(feat)
+        add = deviceExtensions(feat)
         append!(extNames, add)
     end
 
     deviceFatures = VkExt.VkPhysicalDeviceFeatures()
     VkExt.setSamplerAnisotropy(deviceFatures, VkExt.VK_TRUE)
     for feat in this.mFeatures
-        features.addPhysicalDeviceFeatures(feat, deviceFatures)
+        addPhysicalDeviceFeatures(feat, deviceFatures)
     end
 
     # TODO
@@ -216,7 +203,7 @@ function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysical
             0, #enabledLayerCount::UInt32, VilidationLayers is disabled
             C_NULL, #ppEnabledLayerNames::Ptr{Cstring}
             length(extNames), #enabledExtensionCount::UInt32
-            StringHelper.strings2pp(extNames), #ppEnabledExtensionNames::Ptr{Cstring}
+            strings2pp(extNames), #ppEnabledExtensionNames::Ptr{Cstring}
             Base.unsafe_convert(Ptr{vk.VkPhysicalDeviceFeatures}, enabledFeaturesRef)
         )
 
@@ -279,7 +266,7 @@ function createShaderFromFile(this::Device, filePath::String)::ShaderModule
 end
 
 function namedQueue(this::Device, name::String)::Queue
-    @assert haskey(this.mQueues, name) "No Queue with this name exists."
+    @assert haskey(this.mQueues, name) "No Queue with this name:" * name * " exists!"
     return this.mQueues[name]
 end
 

@@ -1,8 +1,8 @@
-module camera
+module Camera
 
 using LinearAlgebra
 using StaticArrays
-using Utils
+using ..Utils
 
 include("CameraBase.jl")
 include("GenericCamera.jl")

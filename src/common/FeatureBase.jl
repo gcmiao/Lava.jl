@@ -1,5 +1,4 @@
-using VulkanCore
-using VkExt
+export IFeatureT
 
 abstract type IFeatureT end
 
@@ -26,6 +25,10 @@ end
 
 function supportsDevice(this::IFeatureT, dev::vk.VkPhysicalDevice)::Bool
     return true
+end
+
+function queueRequests(this::IFeatureT, families::Vector{vk.VkQueueFamilyProperties})
+    return []
 end
 
 function addPhysicalDeviceFeatures(this::IFeatureT, outDeviceFeatures::VkExt.VkPhysicalDeviceFeatures)

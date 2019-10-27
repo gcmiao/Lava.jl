@@ -1,3 +1,5 @@
+export ImageView
+
 mutable struct ImageView
     mImage::Image
     mCreateInfo::vk.VkImageViewCreateInfo

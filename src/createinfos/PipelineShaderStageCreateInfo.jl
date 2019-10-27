@@ -1,5 +1,3 @@
-using Utils: object_to_pointer
-
 struct PipelineShaderStageCreateInfo
     mHandleRef::Ref{vk.VkPipelineShaderStageCreateInfo}
     mPreserve::Vector{Any}

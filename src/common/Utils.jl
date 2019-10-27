@@ -2,7 +2,10 @@ module Utils
 
 using LinearAlgebra
 using StaticArrays
+export object_to_pointer, indexOfField, memmove, sizeof_obj
+
 include("MathUtils.jl")
+include("StringUtils.jl")
 
 memmove(dest, src, n) = ccall(:memmove, Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, Int), dest, src, n)
 

@@ -1,10 +1,9 @@
-#using lava: QueueRequest, createByFamily
-
+using GLFW
 
 mutable struct GlfwOutputT <: IFeatureT
     mVkInstance::vk.VkInstance
     mPhysicalDevice::vk.VkPhysicalDevice
-    mDevice #::Device
+    mDevice::Device
 
     mTempWindow::GLFW.Window
     mTempSurface::vk.VkSurfaceKHR
@@ -23,42 +22,12 @@ function create(::Type{GlfwOutputT})
     return GlfwOutputT()
 end
 
-function layers(this::GlfwOutputT, available::Vector{String})::Vector{String}
-    return []
-end
-
 function openWindow(this::GlfwOutputT, width::UInt32 = UInt32(800), height::UInt32 = UInt32(600), resizable::Bool = false, title::String = "Lava Window")::GlfwWindow
-    return GlfwWindow(this.mVkInstance, this.mChainFormat, width, height, resizable, title)
+    return GlfwWindow(this.mDevice, this.mChainFormat, width, height, resizable, title)
 end
 
-function instanceExtensions(this::GlfwOutputT, available::Vector{String})::Vector{String}
-    ret = Vector{String}()
-    glfwReqExts = GLFW.GetRequiredInstanceExtensions()
-    extCount = length(glfwReqExts)
-    
-    # TODO: check availability
-    
-    append!(ret, glfwReqExts)
-    return ret
-end
-
-function deviceExtensions(this::GlfwOutputT)::Vector{String}
-    return [vk.VK_KHR_SWAPCHAIN_EXTENSION_NAME]
-end
-
-function onInstanceCreated(this::GlfwOutputT, vkInstance::vk.VkInstance)
-    this.mVkInstance = vkInstance
-
-    GLFW.WindowHint(GLFW.CLIENT_API, GLFW.NO_API)
-    GLFW.WindowHint(GLFW.VISIBLE, false)
-    #GLFW.WindowHint(GLFW.RESIZABLE, false)
-
-    this.mTempWindow = GLFW.CreateWindow(100, 100, "Vulkan")
-    this.mTempSurface = GLFW.CreateWindowSurface(this.mVkInstance, this.mTempWindow)
-end
-
-function onLogicalDeviceCreated(this::GlfwOutputT, device)
-    this.mDevice = device
+function format(this::GlfwOutputT)::vk.VkFormat
+    return this.mChainFormat.format
 end
 
 function bestFormat(dev::vk.VkPhysicalDevice, surface::vk.VkSurfaceKHR)::vk.VkSurfaceFormatKHR
@@ -92,12 +61,47 @@ function bestFormat(dev::vk.VkPhysicalDevice, surface::vk.VkSurfaceKHR)::vk.VkSu
     error("No suitable format found!")
 end
 
-function onPhysicalDeviceSelected(this::GlfwOutputT, phy::vk.VkPhysicalDevice)
+########## override begin ##########
+function LavaCore.:layers(this::GlfwOutputT, available::Vector{String})::Vector{String}
+    return []
+end
+
+function LavaCore.:instanceExtensions(this::GlfwOutputT, available::Vector{String})::Vector{String}
+    ret = Vector{String}()
+    glfwReqExts = GLFW.GetRequiredInstanceExtensions()
+    extCount = length(glfwReqExts)
+    
+    # TODO: check availability
+    
+    append!(ret, glfwReqExts)
+    return ret
+end
+
+function LavaCore.:deviceExtensions(this::GlfwOutputT)::Vector{String}
+    return [vk.VK_KHR_SWAPCHAIN_EXTENSION_NAME]
+end
+
+function LavaCore.:onInstanceCreated(this::GlfwOutputT, vkInstance::vk.VkInstance)
+    this.mVkInstance = vkInstance
+
+    GLFW.WindowHint(GLFW.CLIENT_API, GLFW.NO_API)
+    GLFW.WindowHint(GLFW.VISIBLE, false)
+    #GLFW.WindowHint(GLFW.RESIZABLE, false)
+
+    this.mTempWindow = GLFW.CreateWindow(100, 100, "Vulkan")
+    this.mTempSurface = GLFW.CreateWindowSurface(this.mVkInstance, this.mTempWindow)
+end
+
+function LavaCore.:onLogicalDeviceCreated(this::GlfwOutputT, device::Device)
+    this.mDevice = device
+end
+
+function LavaCore.:onPhysicalDeviceSelected(this::GlfwOutputT, phy::vk.VkPhysicalDevice)
     this.mPhysicalDevice = phy
     this.mChainFormat = bestFormat(phy, this.mTempSurface)
 end
 
-function supportsDevice(this::GlfwOutputT, dev::vk.VkPhysicalDevice)::Bool
+function LavaCore.:supportsDevice(this::GlfwOutputT, dev::vk.VkPhysicalDevice)::Bool
     families = VkExt.getQueueFamilyProperties(dev)
     for i::UInt32 = 0 : length(families) - 1 #queueFamilyIndex should start from 0
         if VkExt.getSurfaceSupportKHR(dev, i, this.mTempSurface) == vk.VK_TRUE
@@ -107,9 +111,23 @@ function supportsDevice(this::GlfwOutputT, dev::vk.VkPhysicalDevice)::Bool
     return false
 end
 
+function LavaCore.:queueRequests(this::features.GlfwOutputT, families::Vector{vk.VkQueueFamilyProperties})
+    result = Vector{QueueRequest}()
+    for i::UInt32 = 0 : length(families) - 1 #queueFamilyIndex should start from 0
+        if VkExt.getSurfaceSupportKHR(this.mPhysicalDevice, i, this.mTempSurface) == vk.VK_TRUE
+            this.mPresentIndex = i
+            push!(result, createByFamily(QueueRequest, "present", i, 1.0f0))
+            break
+        end
+    end
+    if length(result) == 0
+        error("Device can't present to this surface.")
+    end
+
+    return result
+end
+
 # function addPhysicalDeviceFeatures(this::GlfwOutputT, outDeviceFeatures::VkExt.VkPhysicalDeviceFeatures)
 # end
 
-function format(this::GlfwOutputT)::vk.VkFormat
-    return this.mChainFormat.format
-end
+########## override end ##########

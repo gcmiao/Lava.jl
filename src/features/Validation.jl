@@ -25,14 +25,6 @@ function create(::Type{Validation})
     return Validation()
 end
 
-function layers(this::Validation, available::Vector{String})::Vector{String}
-    return ["VK_LAYER_LUNARG_standard_validation"]
-end
-
-function instanceExtensions(this::Validation, available::Vector{String})::Vector{String}
-    return [vk.VK_EXT_DEBUG_REPORT_EXTENSION_NAME]
-end
-
 function paused(this::Validation)
     return this.mPaused
 end
@@ -69,7 +61,25 @@ function debugCallback(flags::vk.VkDebugReportFlagsEXT,
     return VkExt.VK_FALSE
 end
 
-function onInstanceCreated(this::Validation, vkInstance::vk.VkInstance)
+# TODO
+# void Validation::beforeInstanceDestruction()
+# {
+#     if (mCallback) {
+#         mInstance.destroyDebugReportCallbackEXT(mCallback);
+#         mCallback = vk::DebugReportCallbackEXT{};
+#     }
+# }
+
+########## override begin ##########
+function LavaCore.:layers(this::Validation, available::Vector{String})::Vector{String}
+    return ["VK_LAYER_LUNARG_standard_validation"]
+end
+
+function LavaCore.:instanceExtensions(this::Validation, available::Vector{String})::Vector{String}
+    return [vk.VK_EXT_DEBUG_REPORT_EXTENSION_NAME]
+end
+
+function LavaCore.:onInstanceCreated(this::Validation, vkInstance::vk.VkInstance)
     this.mVkInstance = vkInstance
     pfnCallback = @cfunction(debugCallback, vk.VkBool32, (vk.VkDebugReportFlagsEXT, vk.VkDebugReportObjectTypeEXT, Culonglong, Csize_t, Cint, Cstring, Cstring, Ptr{Cvoid}))
     validationRef = Ref(this)
@@ -82,12 +92,4 @@ function onInstanceCreated(this::Validation, vkInstance::vk.VkInstance)
     )
     mCallback = VkExt.createDebugReportCallbackEXT(vkInstance, debug);
 end
-
-# TODO
-# void Validation::beforeInstanceDestruction()
-# {
-#     if (mCallback) {
-#         mInstance.destroyDebugReportCallbackEXT(mCallback);
-#         mCallback = vk::DebugReportCallbackEXT{};
-#     }
-# }
+########## override end ##########
