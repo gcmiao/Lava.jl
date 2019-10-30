@@ -15,6 +15,7 @@ mutable struct GlfwWindow
     mImageReady::vk.VkSemaphore
     mRenderingComplete::vk.VkSemaphore
     
+    mPresentIndex::UInt32
     mQueue::Queue
 
     mChainImages::Vector{Image}
@@ -49,6 +50,27 @@ mutable struct GlfwWindow
 
         return this
     end
+end
+
+mutable struct Frame
+    mWindow::GlfwWindow
+
+    function Frame(parent::GlfwWindow)
+        this = new(parent)
+        return this
+    end
+end
+
+function imageIndex(this::Frame)::UInt32
+    return this.mWindow.mPresentIndex
+end
+
+function imageReady(this::Frame)::vk.VkSemaphore
+    return this.mWindow.mImageReady
+end
+
+function renderingComplete(this::Frame)::vk.VkSemaphore
+    return this.mWindow.mRenderingComplete
 end
 
 function setSize(this::GlfwWindow, width::UInt32, height::UInt32)
@@ -174,4 +196,27 @@ function bestMode(phyDev::vk.VkPhysicalDevice, surf::vk.VkSurfaceKHR)::vk.VkPres
         end
     end
     return modes[1]
+end
+
+function startFrame(this::GlfwWindow)::Frame
+    @assert this.mChain != C_NULL "You need to provide a handler for swapchain creation."
+
+    while (true)
+        vkDevice = getLogicalDevice(this.mDevice)
+        imageIndex = Ref{UInt32}()
+        res = vk.vkAcquireNextImageKHR(vkDevice, this.mChain, 1e9, this.mImageReady, C_NULL, imageIndex)
+        if (res == vk.VK_TIMEOUT)
+            error("GlfwWindow::startFrame(): acquireNextImage timed out (>1s)")
+            continue
+        end
+
+        if (res == vk.VK_ERROR_OUT_OF_DATE_KHR || res == vk.VK_SUBOPTIMAL_KHR)
+            vk.vkDeviceWaitIdle(vkDevice)
+            buildSwapchain(this)
+            continue;
+        end
+
+        this.mPresentIndex = imageIndex[]
+        return Frame(this)
+    end
 end

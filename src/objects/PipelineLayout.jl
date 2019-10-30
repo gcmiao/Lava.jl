@@ -44,3 +44,7 @@ end
 function handleRef(this::PipelineLayout)::Ref{vk.VkPipelineLayout}
     return this.mHandleRef
 end
+
+function getLogicalDevice(this::PipelineLayout)::vk.VkDevice
+    return this.mVkDevice
+end

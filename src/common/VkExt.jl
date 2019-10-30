@@ -209,6 +209,12 @@ function mapMemory(logicalDevice::vk.VkDevice, memory::vk.VkDeviceMemory, offset
     return pData[]
 end
 
+function waitForFences(logicalDevice::vk.VkDevice, fences::Vector{vk.VkFence}, waitAll::vk.VkBool32, timeout::UInt64)
+    if vk.vkWaitForFences(logicalDevice, length(fences), pointer(fences), waitAll, timeout) != vk.VK_SUCCESS
+        error("Failed to wait for fences!")
+    end
+end
+
 # common
 mutable struct ClearValue
     mColor::vk.VkClearColorValue

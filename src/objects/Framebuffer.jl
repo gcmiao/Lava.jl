@@ -60,3 +60,15 @@ end
 function handle(this::Framebuffer)::vk.VkFramebuffer
     return this.mHandle
 end
+
+function pass(this::Framebuffer)::RenderPass
+    return this.mPass
+end
+
+function getWidth(this::Framebuffer)::UInt32
+    return this.mCreateInfo.width
+end
+
+function getHeight(this::Framebuffer)::UInt32
+    return this.mCreateInfo.height
+end

@@ -1,6 +1,7 @@
 struct GraphicsPipelineCreateInfo
     mHandleRef::Ref{vk.VkGraphicsPipelineCreateInfo}
     mPreserve::Vector{Any}
+    mLayout
 
     function GraphicsPipelineCreateInfo(;
         pNext::Ptr{Cvoid} = C_NULL,
@@ -15,7 +16,7 @@ struct GraphicsPipelineCreateInfo
         depthStencilState = nothing, #vk.VkPipelineDepthStencilStateCreateInfo,
         colorBlendState = nothing, #vk.VkPipelineColorBlendStateCreateInfo,
         dynamicState = nothing, #vk.VkPipelineDynamicStateCreateInfo,
-        layout::vk.VkPipelineLayout, #required
+        layout, #required
         renderPass::vk.VkRenderPass, #required
         subpass::UInt32 = UInt32(0),
         basePipelineHandle::vk.VkPipeline = vk.VkPipeline(vk.VK_NULL_HANDLE),
@@ -36,14 +37,17 @@ struct GraphicsPipelineCreateInfo
             object_to_pointer(vk.VkPipelineDepthStencilStateCreateInfo, handleRef(depthStencilState)), #::Ptr{VkPipelineDepthStencilStateCreateInfo}
             object_to_pointer(vk.VkPipelineColorBlendStateCreateInfo, handleRef(colorBlendState)), #::Ptr{VkPipelineColorBlendStateCreateInfo}
             object_to_pointer(vk.VkPipelineDynamicStateCreateInfo, handleRef(dynamicState)), #::Ptr{VkPipelineDynamicStateCreateInfo}
-            layout, #::VkPipelineLayout
+            handleRef(layout)[], #::VkPipelineLayout
             renderPass, #::VkRenderPass
             subpass, #::UInt32
             basePipelineHandle, #::VkPipeline
             basePipelineIndex #::Int32
-            )), [stages, vertexInputState, inputAssemblyState, tessellationState,
+            )),
+            [stages, vertexInputState, inputAssemblyState, tessellationState,
                  viewportState, rasterizationState, multisampleState,
-                 depthStencilState, colorBlendState, dynamicState])
+                 depthStencilState, colorBlendState, dynamicState], #mPreserve
+            layout # mLayout
+        )
         return this
     end
 end
@@ -54,7 +58,7 @@ end
 
 function defaults(::Type{GraphicsPipelineCreateInfo};
     stages::Vector{vk.VkPipelineShaderStageCreateInfo} = Vector{vk.VkPipelineShaderStageCreateInfo}(),
-    layout::vk.VkPipelineLayout, #required
+    layout, #required
     renderPass::vk.VkRenderPass, #required
     subpass::UInt32 = UInt32(0),
     depthTestEnable::vk.VkBool32 = Vk.VK_FALSE,
@@ -120,7 +124,7 @@ function defaults(::Type{GraphicsPipelineCreateInfo};
         depthStencilState = depthStencilState, #::VkPipelineDepthStencilStateCreateInfo
         colorBlendState = colorBlendState, #::VkPipelineColorBlendStateCreateInfo
         dynamicState = dynamicState, #
-        layout = layout, #::VkPipelineLayout
+        layout = layout, #::PipelineLayout
         renderPass = renderPass, #::VkRenderPass
         subpass = subpass #::UInt32
     )

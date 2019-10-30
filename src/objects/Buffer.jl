@@ -20,6 +20,10 @@ mutable struct Buffer
     end
 end
 
+function handle(this::Buffer)::vk.VkBuffer
+    return this.mHandle
+end
+
 function createBuffer(device::Device, createInfo::BufferCreateInfo)::Buffer
     return Buffer(device, createInfo)
 end

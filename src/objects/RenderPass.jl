@@ -41,3 +41,7 @@ end
 function getVkDevice(this::RenderPass)::vk.VkDevice
     return this.mVkDevice
 end
+
+function getClearValues(this::RenderPass)::Vector{VkExt.ClearValue}
+    return this.mClearValues
+end

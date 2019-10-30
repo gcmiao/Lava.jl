@@ -45,7 +45,6 @@ include("objects/DescriptorSet.jl")
 include("objects/PipelineLayout.jl")
 include("objects/RenderPass.jl")
 include("objects/GraphicsPipeline.jl")
-include("objects/CommandBuffer.jl")
 
 include("objects/MemoryChunk.jl")
 include("objects/Suballocator.jl")
@@ -54,7 +53,10 @@ include("objects/Device.jl")
 include("objects/Image.jl")
 include("objects/ImageView.jl")
 include("objects/Framebuffer.jl")
+include("objects/CommandBuffer.jl")
 include("objects/Buffer.jl")
 include("objects/Instance.jl")
+
+include("raii/ActiveRenderPass.jl")
 
 end

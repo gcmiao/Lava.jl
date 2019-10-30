@@ -227,7 +227,7 @@ function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysical
             family = info.index
             queue = Ref{vk.VkQueue}()
             vk.vkGetDeviceQueue(this.mVkDevice, family, 0, queue)
-            this.mQueues[name] = Queue(family, queue[], pool)
+            this.mQueues[name] = Queue(family, queue[], pool, this.mVkDevice)
         end
     end
 end
