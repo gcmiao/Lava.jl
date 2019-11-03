@@ -125,3 +125,21 @@ end
 #     this.mLastLayout = getLayout(pip)
 #     vk.vkCmdBindPipeline(this.mBuffer, vk.VK_PIPELINE_BIND_POINT_COMPUTE, handleRef(pip)[])
 # end
+
+function pushConstantBlock(this::RecordingCommandBuffer, size::UInt32, data::Ptr{Cvoid})
+    ranges = getRanges(getCreateInfo(this.mLastLayout))
+    @assert (length(ranges) == 1) "Can only use pushConstantBlock with a single push constant range."
+    @assert (Base.first(ranges).size == size) "The size of the constant block doesn't match the one in the pipeline layout"
+    pushConstants(this, size, data, UInt32(0), vk.VkShaderStageFlags(vk.VK_SHADER_STAGE_ALL), this.mLastLayout);
+end
+
+function pushConstants(this::RecordingCommandBuffer, dataSize::UInt32, data::Ptr{Cvoid}, offset::UInt32,
+                 stageFlags::vk.VkShaderStageFlags, layout::PipelineLayout)
+    # if (layout) {
+    pipLayout = handleRef(layout)[]
+    # } else {
+    #     assert(mLastLayout);
+    #     pipLayout = mLastLayout->handle();
+    # }
+    vk.vkCmdPushConstants(handle(this.mBuffer), pipLayout, stageFlags, offset, dataSize, data)
+end

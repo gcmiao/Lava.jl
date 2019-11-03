@@ -48,3 +48,7 @@ end
 function getLogicalDevice(this::PipelineLayout)::vk.VkDevice
     return this.mVkDevice
 end
+
+function getCreateInfo(this::PipelineLayout)::PipelineLayoutCreateInfo
+    return this.mCreateInfo
+end

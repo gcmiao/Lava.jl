@@ -32,3 +32,7 @@ function handleRef(this::PipelineLayoutCreateInfo)::Ref{vk.VkPipelineLayoutCreat
     ))
     return this.mHandleRef
 end
+
+function getRanges(this::PipelineLayoutCreateInfo)::Vector{vk.VkPushConstantRange}
+    return this.mRanges
+end

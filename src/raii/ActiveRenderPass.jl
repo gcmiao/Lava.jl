@@ -55,3 +55,21 @@ function bindVertexBuffers(this::InlineSubpass, buffers::Vector{Buffer}, first::
 
     vk.vkCmdBindVertexBuffers(handle(this.mCommandBuffer), first, length(vkBuffers), pointer(vkBuffers), pointer(offsets))
 end
+
+function bindIndexBuffer(this::InlineSubpass, buffer::Buffer, type::vk.VkIndexType, offset::vk.VkDeviceSize)
+    vk.vkCmdBindIndexBuffer(handle(this.mCommandBuffer), handle(buffer), offset, type)
+end
+
+function pushConstantBlock(this::InlineSubpass, data::T) where T
+    pushConstantBlock(this, UInt32(sizeof_obj(data)), Base.unsafe_convert(Ptr{Cvoid}, Ref(data)))
+end
+
+function pushConstantBlock(this::InlineSubpass, size::UInt32, data::Ptr{Cvoid})
+    println(size)
+    pushConstantBlock(this.mCommandBuffer, size, data);
+end
+
+function drawIndexed(this::InlineSubpass, indices::UInt32, instances::UInt32 = UInt32(1), 
+             vertexOffset::UInt32 = UInt32(0), firstIndex::UInt32 = UInt32(0), firstInstance::UInt32 = UInt32(0))
+    vk.vkCmdDrawIndexed(handle(this.mCommandBuffer), indices, instances, firstIndex, vertexOffset, firstInstance)
+end
