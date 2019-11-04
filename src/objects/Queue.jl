@@ -34,6 +34,7 @@ mutable struct Queue
     mVkDevice::vk.VkDevice
 
     mSubmissionFences::Vector{vk.VkFence}
+    mSubmissionBuffers::Vector{vk.VkCommandBuffer}
 
     function Queue(family::UInt32, queue::vk.VkQueue, pool::vk.VkCommandPool, vkDevice::vk.VkDevice)
         this = new()
@@ -43,6 +44,7 @@ mutable struct Queue
         this.mVkDevice = vkDevice
 
         this.mSubmissionFences = Vector{vk.VkFence}()
+        this.mSubmissionBuffers = Vector{vk.VkCommandBuffer}()
         return this
     end
 end
@@ -66,17 +68,71 @@ function catchUp(this::Queue, inflightBuffers::Int32)
     end
 end
 
-# TODO
 function gc(this::Queue)
-#     // Garbage collection
-#     for (auto i = 0u; i < mSubmissionFences.size();) {
-#         auto fence = mSubmissionFences[i];
-#         if (mDevice->handle().getFenceStatus(fence) == vk::Result::eSuccess) {
-#             mFencePool.emplace_back(fence);
-#             mSubmissionFences.erase(begin(mSubmissionFences) + i);
-#             mSubmissionBuffers.erase(begin(mSubmissionBuffers) + i);
-#         } else {
-#             i++;
-#         }
-#     }
+    # Garbage collection of pool
+    # for (auto i = 0u; i < mSubmissionFences.size();) {
+    #     auto fence = mSubmissionFences[i];
+    #     if (mDevice->handle().getFenceStatus(fence) == vk::Result::eSuccess) {
+    #         mFencePool.emplace_back(fence);
+    #         mSubmissionFences.erase(begin(mSubmissionFences) + i);
+    #         mSubmissionBuffers.erase(begin(mSubmissionBuffers) + i);
+    #     } else {
+    #         i++;
+    #     }
+    # }
+
+    for i = 1 : length(this.mSubmissionFences)
+        fence = this.mSubmissionFences[i]
+        if vk.vkGetFenceStatus(this.mVkDevice, fence) == vk.VK_SUCCESS
+            deleteat(this.mSubmissionFences, i)
+            deleteat(this.mSubmissionBuffers, i)
+            i -= 1
+        end
+    end
 end
+
+function submit(this::Queue, cmd::vk.VkCommandBuffer,
+                  waitSemaphores::Vector{vk.VkSemaphore},
+                      waitStages::Vector{vk.VkPipelineStageFlags},
+                signalSemaphores::Vector{vk.VkSemaphore})
+    fence = findFreeFence(this)
+    push!(this.mSubmissionFences, fence)
+    push!(this.mSubmissionBuffers, cmd)
+
+    info = Ref(vk.VkSubmitInfo(
+        vk.VK_STRUCTURE_TYPE_SUBMIT_INFO, #sType::VkStructureType
+        C_NULL, #pNext::Ptr{Cvoid}
+        length(waitSemaphores), #waitSemaphoreCount::UInt32
+        pointer(waitSemaphores), #pWaitSemaphores::Ptr{VkSemaphore}
+        pointer(waitStages), #pWaitDstStageMask::Ptr{VkPipelineStageFlags}
+        1, #commandBufferCount::UInt32
+        Base.unsafe_convert(Ptr{vk.VkCommandBuffer}, Ref(cmd)), #pCommandBuffers::Ptr{VkCommandBuffer}
+        length(signalSemaphores), #signalSemaphoreCount::UInt32
+        pointer(signalSemaphores) #pSignalSemaphores::Ptr{VkSemaphore}
+    ))
+
+    if vk.vkQueueSubmit(this.mQueue, 1, info, fence) != vk.VK_SUCCESS
+        error("Failed to submit draw command buffer!")
+    end
+end
+
+ function findFreeFence(this::Queue)::vk.VkFence
+    # if (!mFencePool.empty()) {
+    #     auto result = mFencePool.back();
+    #     mFencePool.pop_back();
+    #     mDevice->handle().resetFences(result);
+    #     return result;
+    # } else {
+    #     try {
+    #        return mDevice->handle().createFence({});
+    #     } catch (vk::OutOfHostMemoryError const& e) {
+    #         lava::error() << "Queue::findFreeFence(): Ran out of memory trying "
+    #                          "to allocate a fence for CommandBuffer "
+    #                          "submission. \n Use Queue::catchUp to prevent "
+    #                          "oversized backlogs of submissions.";
+    #         throw e;
+    #     }
+    # }
+    
+    return VkExt.createFence(this.mVkDevice)
+ end

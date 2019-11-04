@@ -165,13 +165,14 @@ function buildSwapchain(this::GlfwWindow)
     imgCreateInfo = attachment2D(phyDevice, this.mWidth, this.mHeight, this.mChainFormat.format)
     for handle::vk.VkImage in chainHandles
         image = Image(this.mDevice, handleRef(imgCreateInfo)[], handle, vk.VK_IMAGE_VIEW_TYPE_2D)
-        #push!(this.mChainViews, createView(image)) ???
+        push!(this.mChainViews, createView(image))
         push!(this.mChainImages, image)
     end
 
-    for img in this.mChainImages
-        push!(this.mChainViews, createView(img))
-    end
+    # TODO Why duplicate?
+    # for img in this.mChainImages
+    #     push!(this.mChainViews, createView(img))
+    # end
 
     this.mSwapchainInfo = createInfo[]
     if this.mSwapchainHandler != nothing
@@ -205,6 +206,7 @@ function startFrame(this::GlfwWindow)::Frame
         vkDevice = getLogicalDevice(this.mDevice)
         imageIndex = Ref{UInt32}()
         res = vk.vkAcquireNextImageKHR(vkDevice, this.mChain, 1e9, this.mImageReady, C_NULL, imageIndex)
+        this.mPresentIndex = imageIndex[]
         if (res == vk.VK_TIMEOUT)
             error("GlfwWindow::startFrame(): acquireNextImage timed out (>1s)")
             continue
@@ -215,8 +217,6 @@ function startFrame(this::GlfwWindow)::Frame
             buildSwapchain(this)
             continue;
         end
-
-        this.mPresentIndex = imageIndex[]
         return Frame(this)
     end
 end

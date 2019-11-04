@@ -67,6 +67,10 @@ function beginRecord(this::CommandBuffer)::RecordingCommandBuffer
     return RecordingCommandBuffer(this)
 end
 
+function submit(this::CommandBuffer)
+    submit(this.mQueue, handle(this), this.mWaitSemaphores, this.mWaitStages, this.mSignalSemaphores)
+end
+
 function autoSubmit(this::RecordingCommandBuffer, val::Bool = true)
     this.mAutoSubmit = val
 end
@@ -84,6 +88,18 @@ function beginCommandBuffer(this::Queue)::RecordingCommandBuffer
     rec = beginRecord(buf)
     autoSubmit(rec)
     return rec
+end
+
+function endCommandBuffer(this::RecordingCommandBuffer)
+    if (this.mBuffer != nothing)
+        global sRecordingBufferCount -= 1
+
+        vk.vkEndCommandBuffer(handle(this.mBuffer))
+
+        if (this.mAutoSubmit)
+            submit(this.mBuffer)
+        end
+    end
 end
 
 # signals the given Semaphore once the CommandBuffer finished execution

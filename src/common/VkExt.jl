@@ -215,6 +215,19 @@ function waitForFences(logicalDevice::vk.VkDevice, fences::Vector{vk.VkFence}, w
     end
 end
 
+function createFence(logicalDevice::vk.VkDevice)::vk.VkFence
+    fenceInfo = Ref(vk.VkFenceCreateInfo(
+        vk.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, #sType::VkStructureType
+        C_NULL, #pNext::Ptr{Cvoid}
+        vk.VK_FENCE_CREATE_SIGNALED_BIT #flags::VkFenceCreateFlags
+    ))
+    outFence = Ref{vk.VkFence}()
+    if vk.vkCreateFence(logicalDevice, fenceInfo, C_NULL, outFence) != vk.VK_SUCCESS
+        error("Failed to create fence!")
+    end
+    return outFence[]
+end
+
 # common
 mutable struct ClearValue
     mColor::vk.VkClearColorValue

@@ -56,7 +56,7 @@ function bindVertexBuffers(this::InlineSubpass, buffers::Vector{Buffer}, first::
     vk.vkCmdBindVertexBuffers(handle(this.mCommandBuffer), first, length(vkBuffers), pointer(vkBuffers), pointer(offsets))
 end
 
-function bindIndexBuffer(this::InlineSubpass, buffer::Buffer, type::vk.VkIndexType, offset::vk.VkDeviceSize)
+function bindIndexBuffer(this::InlineSubpass, buffer::Buffer, type::vk.VkIndexType = vk.VkIndexType(vk.VK_INDEX_TYPE_UINT32), offset::vk.VkDeviceSize = vk.VkDeviceSize(0))
     vk.vkCmdBindIndexBuffer(handle(this.mCommandBuffer), handle(buffer), offset, type)
 end
 
