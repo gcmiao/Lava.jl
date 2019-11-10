@@ -24,6 +24,9 @@ function handle(this::Buffer)::vk.VkBuffer
     return this.mHandle
 end
 
+# TODO: Deconstruction
+# Buffer::~Buffer() { mDevice->handle().destroyBuffer(mHandle); }
+
 function createBuffer(device::Device, createInfo::BufferCreateInfo)::Buffer
     return Buffer(device, createInfo)
 end

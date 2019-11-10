@@ -20,6 +20,11 @@ function createFramebuffer(this::RenderPass, attachments::Vector{ImageView})::Fr
     return Framebuffer(this, attachments)
 end
 
+# TODO: Deconstruction
+# Framebuffer::~Framebuffer() {
+#     mPass->device()->handle().destroyFramebuffer(mHandle);
+# }
+
 function init(this::Framebuffer)
     empty!(this.mCreateInfoViews)
     for imageView in this.mViews

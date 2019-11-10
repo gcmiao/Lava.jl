@@ -33,6 +33,13 @@ function handle(this::CommandBuffer)::vk.VkCommandBuffer
     return this.mHandle
 end
 
+# TODO: Deconstruction
+# CommandBuffer::~CommandBuffer() {
+#     if (!mHandle)
+#         return;
+#     mQueue->device()->handle().freeCommandBuffers(mQueue->pool(), {mHandle});
+# }
+
 #thread_local
 sRecordingBufferCount = UInt32(0)
 mutable struct RecordingCommandBuffer

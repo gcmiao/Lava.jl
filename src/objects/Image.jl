@@ -36,6 +36,15 @@ mutable struct Image
     end
 end
 
+# TODO: Deconstruction
+# Image::~Image() {
+#     if (mUnowned)
+#         return;
+
+#     auto dev = mDevice->handle();
+#     dev.destroyImage(mHandle);
+# }
+
 function usageToFeatures(usage::vk.VkImageUsageFlags)::vk.VkFormatFeatureFlags
     result::vk.VkFormatFeatureFlags = 0
     if (usage & vk.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT != 0)

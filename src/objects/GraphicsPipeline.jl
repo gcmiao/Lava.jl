@@ -22,6 +22,7 @@ function handleRef(this::GraphicsPipeline)::Ref{vk.VkPipeline}
     this.mHandleRef
 end
 
+# TODO: Deconstruction
 # GraphicsPipeline::~GraphicsPipeline() {
 #     mDevice->handle().destroyPipeline(mHandle);
 # }
