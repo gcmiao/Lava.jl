@@ -147,7 +147,7 @@ function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysical
             # for this pCreateInfo->pQueueCreateInfos[0].queueFamilyIndex} (=0)
             # obtained previously from vkGetPhysicalDeviceQueueFamilyProperties
             1, #length(info.priorities), #queueCount::UInt32
-            Base.unsafe_convert(Ptr{Float32}, Ref(info.minPriority)) #pQueuePriorities::Ptr{Cfloat}
+            pointer([info.minPriority]) #pQueuePriorities::Ptr{Cfloat}
         )
         push!(queueCreateInfos, queueCreateInfo)
     end
@@ -207,7 +207,7 @@ function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysical
             Base.unsafe_convert(Ptr{vk.VkPhysicalDeviceFeatures}, enabledFeaturesRef)
         )
 
-        GC.@preserve enabledFeaturesRef begin
+        GC.@preserve enabledFeaturesRef createInfo begin
             this.mVkDevice = VkExt.createDevice(this.mPhysicalDevice, Ref(createInfo))
         end
     #}

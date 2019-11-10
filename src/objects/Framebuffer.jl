@@ -56,8 +56,11 @@ function init(this::Framebuffer)
     )
 
     framebuffer= Ref{vk.VkFramebuffer}()
-    if (vk.vkCreateFramebuffer(getVkDevice(this.mPass), Ref(this.mCreateInfo), C_NULL, framebuffer) != vk.VK_SUCCESS)
-        error("Failed to create framebuffer!")
+    infoRef = Ref(this.mCreateInfo)
+    GC.@preserve infoRef begin
+        if (vk.vkCreateFramebuffer(getVkDevice(this.mPass), infoRef, C_NULL, framebuffer) != vk.VK_SUCCESS)
+            error("Failed to create framebuffer!")
+        end
     end
     this.mHandle = framebuffer[]
 end

@@ -16,8 +16,11 @@ mutable struct Image
         this.mUnowned = false
         
         newImage = Ref{vk.VkImage}()
-        if (vk.vkCreateImage(getLogicalDevice(device), Ref(createInfo), C_NULL, newImage) != vk.VK_SUCCESS)
-            error("Failed to create image!")
+        infoRef = Ref(createInfo)
+        GC.@preserve infoRef begin
+            if (vk.vkCreateImage(getLogicalDevice(device), infoRef, C_NULL, newImage) != vk.VK_SUCCESS)
+                error("Failed to create image!")
+            end
         end
         this.mHandle = newImage[]
         return this

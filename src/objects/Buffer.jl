@@ -114,6 +114,7 @@ function copyFrom(this::Buffer, other::Buffer)
 end
 
 function copyFrom(this::Buffer, other::Buffer, cmd::RecordingCommandBuffer)
+    error("copy from")
     region = vk.VkBufferCopy(
         0, #srcOffset::VkDeviceSize
         0, #dstOffset::VkDeviceSize

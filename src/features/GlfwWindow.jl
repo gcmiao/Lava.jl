@@ -231,6 +231,7 @@ function endFrame(this::Frame)
     semaphores = [renderingComplete(this)]
     indices = [imageIndex(this)]
     preserves = [chains, semaphores, indices]
+    println("img idx:", indices)
     info = Ref(vk.VkPresentInfoKHR(
         vk.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, #sType::VkStructureType
         C_NULL, #pNext::Ptr{Cvoid}
@@ -242,12 +243,11 @@ function endFrame(this::Frame)
         C_NULL #pResults::Ptr{VkResult}
     ))
 
-    GC.@preserve preserves begin
+    GC.@preserve preserves semaphores indices chains begin
         err = vk.vkQueuePresentKHR(LavaCore.handle(this.mWindow.mQueue), info)
+        vk.vkDeviceWaitIdle(getLogicalDevice(this.mWindow.mDevice))
         if err == vk.VK_ERROR_OUT_OF_DATE_KHR
-            # window->mDevice->handle().waitIdle();
-            # window->buildSwapchain();
-            error(vk.VK_ERROR_OUT_OF_DATE_KHR)
+            buildSwapchain(this.mWindow)
         end
     end
 end

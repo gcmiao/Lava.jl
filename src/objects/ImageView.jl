@@ -39,8 +39,11 @@ mutable struct ImageView
         )
 
         newImageView = Ref{vk.VkImageView}()
-        if (vk.vkCreateImageView(getLogicalDeviceOf(this.mImage), Ref(this.mCreateInfo), C_NULL, newImageView) != vk.VK_SUCCESS)
-            error("Failed to create image view!")
+        infoRef = Ref(this.mCreateInfo)
+        GC.@preserve infoRef begin
+            if (vk.vkCreateImageView(getLogicalDeviceOf(this.mImage), infoRef, C_NULL, newImageView) != vk.VK_SUCCESS)
+                error("Failed to create image view!")
+            end
         end
         this.mHandle = newImageView[]
         return this

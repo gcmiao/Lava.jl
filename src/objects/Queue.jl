@@ -98,7 +98,7 @@ function submit(this::Queue, cmd::vk.VkCommandBuffer,
     fence = findFreeFence(this)
     push!(this.mSubmissionFences, fence)
     push!(this.mSubmissionBuffers, cmd)
-    cmdRef = Ref(cmd)
+    cmds = [cmd]
     info = Ref(vk.VkSubmitInfo(
         vk.VK_STRUCTURE_TYPE_SUBMIT_INFO, #sType::VkStructureType
         C_NULL, #pNext::Ptr{Cvoid}
@@ -106,12 +106,12 @@ function submit(this::Queue, cmd::vk.VkCommandBuffer,
         pointer(waitSemaphores), #pWaitSemaphores::Ptr{VkSemaphore}
         pointer(waitStages), #pWaitDstStageMask::Ptr{VkPipelineStageFlags}
         1, #commandBufferCount::UInt32
-        Base.unsafe_convert(Ptr{vk.VkCommandBuffer}, cmdRef), #pCommandBuffers::Ptr{VkCommandBuffer}
+        pointer(cmds), #pCommandBuffers::Ptr{VkCommandBuffer}
         length(signalSemaphores), #signalSemaphoreCount::UInt32
         pointer(signalSemaphores) #pSignalSemaphores::Ptr{VkSemaphore}
     ))
 
-    GC.@preserve cmdRef begin
+    GC.@preserve cmds info begin
         if vk.vkQueueSubmit(this.mQueue, 1, info, fence) != vk.VK_SUCCESS
             error("Failed to submit draw command buffer!")
         end
@@ -122,7 +122,6 @@ end
     if !isempty(this.mFencePool)
         ret = pop!(this.mFencePool)
         vk.vkResetFences(this.mVkDevice, 1, Ref(ret))
-        mDevice->handle().resetFences(ret)
         return ret
     else
         ret = VkExt.createFence(this.mVkDevice)
