@@ -29,13 +29,13 @@ function depth(this::SubpassDescription, index::UInt32)
 end
 
 function colors(this::SubpassDescription, indices::Vector{UInt32})
-        resize!(this.colorAttachments, length(indices))
-        for idx in indices
-            push!(this.colorAttachments, vk.VkAttachmentReference(
-                                            idx, #attachment::UInt32
-                                            vk.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL #layout::VkImageLayout
-                                        ))
-        end
+    resize!(this.colorAttachments, length(indices))
+    for idx in indices
+        push!(this.colorAttachments, vk.VkAttachmentReference(
+                                        idx, #attachment::UInt32
+                                        vk.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL #layout::VkImageLayout
+                                    ))
+    end
 end
 
 function inputsColor(this::SubpassDescription, indices::Vector{UInt32})

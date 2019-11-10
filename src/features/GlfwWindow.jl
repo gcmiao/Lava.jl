@@ -161,9 +161,9 @@ function buildSwapchain(this::GlfwWindow)
         error("Failed to create swap chain!")
     end
     this.mChain = swapChain[]
-    chainHandles = VkExt.getSwapchainImagesKHR(vkDevice, this.mChain)
+    chainImageHandles = VkExt.getSwapchainImagesKHR(vkDevice, this.mChain)
     imgCreateInfo = attachment2D(phyDevice, this.mWidth, this.mHeight, this.mChainFormat.format)
-    for handle::vk.VkImage in chainHandles
+    for handle::vk.VkImage in chainImageHandles
         image = Image(this.mDevice, handleRef(imgCreateInfo)[], handle, vk.VK_IMAGE_VIEW_TYPE_2D)
         push!(this.mChainViews, createView(image))
         push!(this.mChainImages, image)

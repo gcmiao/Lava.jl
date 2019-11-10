@@ -1,7 +1,7 @@
 mutable struct Framebuffer
     mPass::RenderPass
     mViews::Vector{ImageView}
-    mCreateInfoViews::Vector{vk.VkImageView}
+    mViewHandles::Vector{vk.VkImageView}
     mCreateInfo::vk.VkFramebufferCreateInfo
     
     mHandle::vk.VkFramebuffer
@@ -10,7 +10,7 @@ mutable struct Framebuffer
         this = new()
         this.mPass = pass
         this.mViews = views
-        this.mCreateInfoViews = Vector{vk.VkImageView}()
+        this.mViewHandles = Vector{vk.VkImageView}()
         init(this)
         return this
     end
@@ -26,9 +26,9 @@ end
 # }
 
 function init(this::Framebuffer)
-    empty!(this.mCreateInfoViews)
+    empty!(this.mViewHandles)
     for imageView in this.mViews
-        push!(this.mCreateInfoViews, handle(imageView))
+        push!(this.mViewHandles, handle(imageView))
     end
 
     width = typemax(Int32)
@@ -48,8 +48,8 @@ function init(this::Framebuffer)
         C_NULL, #pNext::Ptr{Cvoid}
         0, #flags::VkFramebufferCreateFlags
         handleRef(this.mPass)[], #renderPass::VkRenderPass
-        length(this.mCreateInfoViews), #attachmentCount::UInt32
-        pointer(this.mCreateInfoViews), #pAttachments::Ptr{VkImageView}
+        length(this.mViewHandles), #attachmentCount::UInt32
+        pointer(this.mViewHandles), #pAttachments::Ptr{VkImageView}
         width, #width::UInt32
         height, #height::UInt32
         layers, #layers::UInt32
