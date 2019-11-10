@@ -33,6 +33,7 @@ mutable struct Queue
     mPool::vk.VkCommandPool
     mVkDevice::vk.VkDevice
 
+    mFencePool::Vector{vk.VkFence}
     mSubmissionFences::Vector{vk.VkFence}
     mSubmissionBuffers::Vector{vk.VkCommandBuffer}
 
@@ -43,10 +44,15 @@ mutable struct Queue
         this.mPool = pool
         this.mVkDevice = vkDevice
 
+        this.mFencePool = Vector{vk.VkFence}()
         this.mSubmissionFences = Vector{vk.VkFence}()
         this.mSubmissionBuffers = Vector{vk.VkCommandBuffer}()
         return this
     end
+end
+
+function handle(this::Queue)::vk.VkQueue
+    return this.mQueue
 end
 
 function family(this::Queue)::UInt32
@@ -63,30 +69,24 @@ end
 
 function catchUp(this::Queue, inflightBuffers::Int32)
     while(length(this.mSubmissionFences) > inflightBuffers)
-        VkExt.waitForFences(this.mVkDevice, this.mSubmissionFences, vk.VK_FALSE, -1)
+        VkExt.waitForFences(this.mVkDevice, this.mSubmissionFences, vk.VkBool32(vk.VK_FALSE), typemax(UInt64))
         gc(this)
     end
 end
 
 function gc(this::Queue)
     # Garbage collection of pool
-    # for (auto i = 0u; i < mSubmissionFences.size();) {
-    #     auto fence = mSubmissionFences[i];
-    #     if (mDevice->handle().getFenceStatus(fence) == vk::Result::eSuccess) {
-    #         mFencePool.emplace_back(fence);
-    #         mSubmissionFences.erase(begin(mSubmissionFences) + i);
-    #         mSubmissionBuffers.erase(begin(mSubmissionBuffers) + i);
-    #     } else {
-    #         i++;
-    #     }
-    # }
-
-    for i = 1 : length(this.mSubmissionFences)
+    len = length(this.mSubmissionFences)
+    i = 1
+    while i <= len
         fence = this.mSubmissionFences[i]
         if vk.vkGetFenceStatus(this.mVkDevice, fence) == vk.VK_SUCCESS
-            deleteat(this.mSubmissionFences, i)
-            deleteat(this.mSubmissionBuffers, i)
-            i -= 1
+            push!(this.mFencePool, fence)
+            deleteat!(this.mSubmissionFences, i)
+            deleteat!(this.mSubmissionBuffers, i)
+            len -= 1
+        else
+            i += 1
         end
     end
 end
@@ -98,7 +98,7 @@ function submit(this::Queue, cmd::vk.VkCommandBuffer,
     fence = findFreeFence(this)
     push!(this.mSubmissionFences, fence)
     push!(this.mSubmissionBuffers, cmd)
-
+    cmdRef = Ref(cmd)
     info = Ref(vk.VkSubmitInfo(
         vk.VK_STRUCTURE_TYPE_SUBMIT_INFO, #sType::VkStructureType
         C_NULL, #pNext::Ptr{Cvoid}
@@ -106,33 +106,26 @@ function submit(this::Queue, cmd::vk.VkCommandBuffer,
         pointer(waitSemaphores), #pWaitSemaphores::Ptr{VkSemaphore}
         pointer(waitStages), #pWaitDstStageMask::Ptr{VkPipelineStageFlags}
         1, #commandBufferCount::UInt32
-        Base.unsafe_convert(Ptr{vk.VkCommandBuffer}, Ref(cmd)), #pCommandBuffers::Ptr{VkCommandBuffer}
+        Base.unsafe_convert(Ptr{vk.VkCommandBuffer}, cmdRef), #pCommandBuffers::Ptr{VkCommandBuffer}
         length(signalSemaphores), #signalSemaphoreCount::UInt32
         pointer(signalSemaphores) #pSignalSemaphores::Ptr{VkSemaphore}
     ))
 
-    if vk.vkQueueSubmit(this.mQueue, 1, info, fence) != vk.VK_SUCCESS
-        error("Failed to submit draw command buffer!")
+    GC.@preserve cmdRef begin
+        if vk.vkQueueSubmit(this.mQueue, 1, info, fence) != vk.VK_SUCCESS
+            error("Failed to submit draw command buffer!")
+        end
     end
 end
 
  function findFreeFence(this::Queue)::vk.VkFence
-    # if (!mFencePool.empty()) {
-    #     auto result = mFencePool.back();
-    #     mFencePool.pop_back();
-    #     mDevice->handle().resetFences(result);
-    #     return result;
-    # } else {
-    #     try {
-    #        return mDevice->handle().createFence({});
-    #     } catch (vk::OutOfHostMemoryError const& e) {
-    #         lava::error() << "Queue::findFreeFence(): Ran out of memory trying "
-    #                          "to allocate a fence for CommandBuffer "
-    #                          "submission. \n Use Queue::catchUp to prevent "
-    #                          "oversized backlogs of submissions.";
-    #         throw e;
-    #     }
-    # }
-    
-    return VkExt.createFence(this.mVkDevice)
+    if !isempty(this.mFencePool)
+        ret = pop!(this.mFencePool)
+        vk.vkResetFences(this.mVkDevice, 1, Ref(ret))
+        mDevice->handle().resetFences(ret)
+        return ret
+    else
+        ret = VkExt.createFence(this.mVkDevice)
+        return ret
+    end
  end

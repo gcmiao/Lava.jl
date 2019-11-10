@@ -219,10 +219,14 @@ function createFence(logicalDevice::vk.VkDevice)::vk.VkFence
     fenceInfo = Ref(vk.VkFenceCreateInfo(
         vk.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, #sType::VkStructureType
         C_NULL, #pNext::Ptr{Cvoid}
-        vk.VK_FENCE_CREATE_SIGNALED_BIT #flags::VkFenceCreateFlags
+        0 #flags::VkFenceCreateFlags
     ))
     outFence = Ref{vk.VkFence}()
-    if vk.vkCreateFence(logicalDevice, fenceInfo, C_NULL, outFence) != vk.VK_SUCCESS
+    err = vk.vkCreateFence(logicalDevice, fenceInfo, C_NULL, outFence)
+    if err == vk.VK_ERROR_OUT_OF_HOST_MEMORY
+        error("Queue::findFreeFence(): Ran out of memory trying to allocate a fence for CommandBuffer submission. \n" *
+              "Use Queue::catchUp to prevent oversized backlogs of submissions.")
+    elseif err != vk.VK_SUCCESS
         error("Failed to create fence!")
     end
     return outFence[]

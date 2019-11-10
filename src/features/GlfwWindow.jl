@@ -220,3 +220,34 @@ function startFrame(this::GlfwWindow)::Frame
         return Frame(this)
     end
 end
+
+# When ~Frame is called
+function endFrame(this::Frame)
+    if (this.mWindow == nothing)
+        return
+    end
+
+    chains = [this.mWindow.mChain]
+    semaphores = [renderingComplete(this)]
+    indices = [imageIndex(this)]
+    preserves = [chains, semaphores, indices]
+    info = Ref(vk.VkPresentInfoKHR(
+        vk.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, #sType::VkStructureType
+        C_NULL, #pNext::Ptr{Cvoid}
+        1, #waitSemaphoreCount::UInt32
+        pointer(semaphores), #pWaitSemaphores::Ptr{VkSemaphore}
+        1, #swapchainCount::UInt32
+        pointer(chains), #pSwapchains::Ptr{VkSwapchainKHR}
+        pointer(indices), #pImageIndices::Ptr{UInt32}
+        C_NULL #pResults::Ptr{VkResult}
+    ))
+
+    GC.@preserve preserves begin
+        err = vk.vkQueuePresentKHR(LavaCore.handle(this.mWindow.mQueue), info)
+        if err == vk.VK_ERROR_OUT_OF_DATE_KHR
+            # window->mDevice->handle().waitIdle();
+            # window->buildSwapchain();
+            error(vk.VK_ERROR_OUT_OF_DATE_KHR)
+        end
+    end
+end

@@ -37,6 +37,13 @@ function startInlineSubpass(this::ActiveRenderPass)::InlineSubpass
     return InlineSubpass(this, this.mNextSubpass, this.mCmd)
 end
 
+# When ~ActiveRenderPass is called
+function endRenderPass(this::ActiveRenderPass)
+    if this.mNextSubpass != 0
+        vk.vkCmdEndRenderPass(handle(this.mCmd))
+    end
+end
+
 function bindPipeline(this::InlineSubpass, pip::GraphicsPipeline)
     setLastLayout(this.mCommandBuffer, getLayout(pip))
     vk.vkCmdBindPipeline(handle(this.mCommandBuffer), vk.VK_PIPELINE_BIND_POINT_GRAPHICS, handleRef(pip)[])

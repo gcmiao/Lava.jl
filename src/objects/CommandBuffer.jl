@@ -97,6 +97,7 @@ function beginCommandBuffer(this::Queue)::RecordingCommandBuffer
     return rec
 end
 
+# When ~RecordingCommandBuffer is called
 function endCommandBuffer(this::RecordingCommandBuffer)
     if (this.mBuffer != nothing)
         global sRecordingBufferCount -= 1
