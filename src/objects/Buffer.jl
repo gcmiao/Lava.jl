@@ -43,6 +43,7 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
     if isMappable(this.mMemory) # For APUs / integrated GPUs
         mapped = map(this.mMemory)
         memmove(getData(mapped), pointer(data), size)
+        unmap(mapped)
     else
         staging::Buffer
         if isdefined(this, :mStagingBuffer)
@@ -69,6 +70,7 @@ function setDataRAM(this::Buffer, data, size::Csize_t)
 
     mapped = map(this.mMemory)
     memmove(getData(mapped), pointer(data), size)
+    unmap(mapped)
 end
 
 function initHandle(this::Buffer, dataLen::Csize_t)

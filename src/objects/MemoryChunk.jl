@@ -44,13 +44,6 @@ mutable struct MappedMemory
 end
 
 # TODO Deconstruction
-# MappedMemory::~MappedMemory() {
-#     if (mMemory) {
-#         mDevice.flushMappedMemoryRanges(
-#             {vk::MappedMemoryRange(mMemory, mOffset, VK_WHOLE_SIZE)});
-#         mDevice.unmapMemory(mMemory);
-#     }
-# }
 # MemoryChunk::~MemoryChunk() {
 #     if (mSize == 0)
 #         return;
@@ -87,6 +80,21 @@ end
 
 function map(this::MemoryChunk, dataOffset::vk.VkDeviceSize = vk.VkDeviceSize(0), size::vk.VkDeviceSize = vk.VkDeviceSize(vk.VK_WHOLE_SIZE))::MappedMemory
     return MappedMemory(this, dataOffset, size)
+end
+
+# When ~MappedMemory is called
+function unmap(this::MappedMemory)
+    if this.mMemory != C_NULL
+        range = [vk.VkMappedMemoryRange(
+                    vk.VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE, #sType::VkStructureType
+                    C_NULL, #pNext::Ptr{Cvoid}
+                    this.mMemory, #memory::VkDeviceMemory
+                    this.mOffset, #offset::VkDeviceSize
+                    vk.VK_WHOLE_SIZE #size::VkDeviceSize
+                )]
+        vk.vkFlushMappedMemoryRanges(this.mVkDevice, 1, pointer(range))
+        vk.vkUnmapMemory(this.mVkDevice, this.mMemory)
+    end
 end
 
 function getData(this::MappedMemory)::Ptr{Cvoid}
