@@ -75,7 +75,7 @@ function beginRecord(this::CommandBuffer)::RecordingCommandBuffer
 end
 
 function submit(this::CommandBuffer)
-    submit(this.mQueue, handle(this), this.mWaitSemaphores, this.mWaitStages, this.mSignalSemaphores)
+    submit(this.mQueue, this, this.mWaitSemaphores, this.mWaitStages, this.mSignalSemaphores)
 end
 
 function autoSubmit(this::RecordingCommandBuffer, val::Bool = true)

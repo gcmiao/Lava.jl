@@ -35,7 +35,7 @@ mutable struct Queue
 
     mFencePool::Vector{vk.VkFence}
     mSubmissionFences::Vector{vk.VkFence}
-    mSubmissionBuffers::Vector{vk.VkCommandBuffer}
+    mSubmissionBuffers
 
     function Queue(family::UInt32, queue::vk.VkQueue, pool::vk.VkCommandPool, vkDevice::vk.VkDevice)
         this = new()
@@ -46,7 +46,7 @@ mutable struct Queue
 
         this.mFencePool = Vector{vk.VkFence}()
         this.mSubmissionFences = Vector{vk.VkFence}()
-        this.mSubmissionBuffers = Vector{vk.VkCommandBuffer}()
+        this.mSubmissionBuffers = []
         return this
     end
 end
@@ -91,14 +91,14 @@ function gc(this::Queue)
     end
 end
 
-function submit(this::Queue, cmd::vk.VkCommandBuffer,
+function submit(this::Queue, cmd,
                   waitSemaphores::Vector{vk.VkSemaphore},
                       waitStages::Vector{vk.VkPipelineStageFlags},
                 signalSemaphores::Vector{vk.VkSemaphore})
     fence = findFreeFence(this)
     push!(this.mSubmissionFences, fence)
     push!(this.mSubmissionBuffers, cmd)
-    cmds = [cmd]
+    cmds = [handle(cmd)]
     info = Ref(vk.VkSubmitInfo(
         vk.VK_STRUCTURE_TYPE_SUBMIT_INFO, #sType::VkStructureType
         C_NULL, #pNext::Ptr{Cvoid}
