@@ -72,7 +72,6 @@ function pushConstantBlock(this::InlineSubpass, data::T) where T
 end
 
 function pushConstantBlock(this::InlineSubpass, size::UInt32, data::Ptr{Cvoid})
-    println(size)
     pushConstantBlock(this.mCommandBuffer, size, data);
 end
 

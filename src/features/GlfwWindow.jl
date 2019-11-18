@@ -157,8 +157,10 @@ function buildSwapchain(this::GlfwWindow)
 
     vkDevice = getLogicalDevice(this.mDevice)
     swapChain = Ref{vk.VkSwapchainKHR}()
-    if (vk.vkCreateSwapchainKHR(vkDevice, createInfo, C_NULL, swapChain) != vk.VK_SUCCESS)
-        error("Failed to create swap chain!")
+    GC.@preserve createInfo families begin
+        if (vk.vkCreateSwapchainKHR(vkDevice, createInfo, C_NULL, swapChain) != vk.VK_SUCCESS)
+            error("Failed to create swap chain!")
+        end
     end
     this.mChain = swapChain[]
     chainImageHandles = VkExt.getSwapchainImagesKHR(vkDevice, this.mChain)
@@ -243,7 +245,7 @@ function endFrame(this::Frame)
         C_NULL #pResults::Ptr{VkResult}
     ))
 
-    GC.@preserve preserves semaphores indices chains begin
+    GC.@preserve info preserves semaphores indices chains begin
         err = vk.vkQueuePresentKHR(LavaCore.handle(this.mWindow.mQueue), info)
         vk.vkDeviceWaitIdle(getLogicalDevice(this.mWindow.mDevice))
         if err == vk.VK_ERROR_OUT_OF_DATE_KHR

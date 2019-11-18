@@ -28,7 +28,6 @@ function createWithDepth24Stencil8(::Type{AttachmentDescription})::AttachmentDes
     result.stencilStoreOp = vk.VK_ATTACHMENT_STORE_OP_STORE #stencilStoreOp::VkAttachmentStoreOp
     result.initialLayout = vk.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL #initialLayout::VkImageLayout
     result.finalLayout = vk.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL #finalLayout::VkImageLayout
-    commit(result)
     return result;
 end
 
@@ -42,7 +41,6 @@ function createWithDepth16(::Type{AttachmentDescription})::AttachmentDescription
     result.stencilStoreOp = vk.VK_ATTACHMENT_LOAD_OP_DONT_CARE #stencilStoreOp::VkAttachmentStoreOp
     result.initialLayout = vk.VK_IMAGE_LAYOUT_UNDEFINED #initialLayout::VkImageLayout
     result.finalLayout = vk.VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL #finalLayout::VkImageLayout
-    commit(result)
     return result
 end
 
@@ -56,7 +54,6 @@ function createWithDepth32float(::Type{AttachmentDescription})::AttachmentDescri
     result.stencilStoreOp = vk.VK_ATTACHMENT_STORE_OP_STORE #stencilStoreOp::VkAttachmentStoreOp
     result.initialLayout = vk.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL #initialLayout::VkImageLayout
     result.finalLayout = vk.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL #finalLayout::VkImageLayout
-    commit(result)
     return result
 end
 
@@ -70,8 +67,7 @@ end
     result.stencilStoreOp = vk.VK_ATTACHMENT_STORE_OP_DONT_CARE #stencilStoreOp::VkAttachmentStoreOp
     result.initialLayout = vk.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL #initialLayout::VkImageLayout
     result.finalLayout = vk.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL #finalLayout::VkImageLayout
-    commit(result)
-    return result;
+    return result
 end
 
 function clear(this::AttachmentDescription)

@@ -28,11 +28,13 @@ function createSimpleForward(::Type{RenderPassCreateInfo}, colorFormat::vk.VkFor
     depth = createWithDepth32float(AttachmentDescription)
     clear(depth)
     discard(depth)
+    commit(depth)
     addAttachment(info, depth)
 
     color = createWithColor(AttachmentDescription, colorFormat)
     clear(color)
     finalLayout(color, vk.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+    commit(color)
     addAttachment(info, color)
 
     addSubpass(info, createFullSubpass(info))
