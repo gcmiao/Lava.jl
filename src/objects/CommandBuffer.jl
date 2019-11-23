@@ -43,13 +43,13 @@ end
 #thread_local
 sRecordingBufferCount = UInt32(0)
 mutable struct RecordingCommandBuffer
-    mBuffer::CommandBuffer
+    mCmdBuffer::CommandBuffer
     mLastLayout::PipelineLayout
     mAutoSubmit::Bool
 
-    function RecordingCommandBuffer(buffer::CommandBuffer)
+    function RecordingCommandBuffer(cmdBuffer::CommandBuffer)
         this = new()
-        this.mBuffer = buffer
+        this.mCmdBuffer = cmdBuffer
         this.mAutoSubmit = false
 
         global sRecordingBufferCount += 1
@@ -59,7 +59,7 @@ mutable struct RecordingCommandBuffer
             vk.VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT, #flags::VkCommandBufferUsageFlags
             C_NULL #pInheritanceInfo::Ptr{VkCommandBufferInheritanceInfo}
         ))
-        if (vk.vkBeginCommandBuffer(handle(this.mBuffer), beginInfo) != vk.VK_SUCCESS)
+        if (vk.vkBeginCommandBuffer(handle(this.mCmdBuffer), beginInfo) != vk.VK_SUCCESS)
             error("Failed to begin recording command buffer!")
         end
         return this
@@ -67,7 +67,7 @@ mutable struct RecordingCommandBuffer
 end
 
 function handle(this::RecordingCommandBuffer)::vk.VkCommandBuffer
-    return this.mBuffer.mHandle
+    return this.mCmdBuffer.mHandle
 end
 
 function beginRecord(this::CommandBuffer)::RecordingCommandBuffer
@@ -83,7 +83,7 @@ function autoSubmit(this::RecordingCommandBuffer, val::Bool = true)
 end
 
 function getBuffer(this::RecordingCommandBuffer)::CommandBuffer
-    return this.mBuffer
+    return this.mCmdBuffer
 end
 
 function setLastLayout(this::RecordingCommandBuffer, layout::PipelineLayout)
@@ -99,25 +99,25 @@ end
 
 # When ~RecordingCommandBuffer is called
 function endCommandBuffer(this::RecordingCommandBuffer)
-    if (this.mBuffer != nothing)
+    if (this.mCmdBuffer != nothing)
         global sRecordingBufferCount -= 1
 
-        vk.vkEndCommandBuffer(handle(this.mBuffer))
+        vk.vkEndCommandBuffer(handle(this.mCmdBuffer))
 
         if (this.mAutoSubmit)
-            submit(this.mBuffer)
+            submit(this.mCmdBuffer)
         end
     end
 end
 
 # signals the given Semaphore once the CommandBuffer finished execution
 function signal(this::RecordingCommandBuffer, sem::vk.VkSemaphore)
-    signal(this.mBuffer, sem)
+    signal(this.mCmdBuffer, sem)
 end
 
 # waits for the given Semaphore before executing
 function wait(this::RecordingCommandBuffer,sem::vk.VkSemaphore)
-    wait(this.mBuffer, sem)
+    wait(this.mCmdBuffer, sem)
 end
 
 function signal(this::CommandBuffer, sem::vk.VkSemaphore)
@@ -147,7 +147,7 @@ end
 # TODO
 # function bindPipeline(this::RecordingCommandBuffer, pip::ComputePipeline)
 #     this.mLastLayout = getLayout(pip)
-#     vk.vkCmdBindPipeline(this.mBuffer, vk.VK_PIPELINE_BIND_POINT_COMPUTE, handleRef(pip)[])
+#     vk.vkCmdBindPipeline(this.mCmdBuffer, vk.VK_PIPELINE_BIND_POINT_COMPUTE, handleRef(pip)[])
 # end
 
 function pushConstantBlock(this::RecordingCommandBuffer, size::UInt32, data::Ptr{Cvoid})
@@ -165,5 +165,5 @@ function pushConstants(this::RecordingCommandBuffer, dataSize::UInt32, data::Ptr
     #     assert(mLastLayout);
     #     pipLayout = mLastLayout->handle();
     # }
-    vk.vkCmdPushConstants(handle(this.mBuffer), pipLayout, stageFlags, offset, dataSize, data)
+    vk.vkCmdPushConstants(handle(this.mCmdBuffer), pipLayout, stageFlags, offset, dataSize, data)
 end

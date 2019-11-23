@@ -68,14 +68,14 @@ function bindIndexBuffer(this::InlineSubpass, buffer::Buffer, type::vk.VkIndexTy
 end
 
 function pushConstantBlock(this::InlineSubpass, data::T) where T
-    pushConstantBlock(this, UInt32(sizeof_obj(data)), Base.unsafe_convert(Ptr{Cvoid}, Ref(data)))
+    pushConstantBlock(this, UInt32(sizeof_obj(data)), Base.unsafe_convert(Ptr{Cvoid}, pointer_from_objref(data)))
 end
 
 function pushConstantBlock(this::InlineSubpass, size::UInt32, data::Ptr{Cvoid})
     pushConstantBlock(this.mCommandBuffer, size, data);
 end
 
-function drawIndexed(this::InlineSubpass, indices::UInt32, instances::UInt32 = UInt32(1), 
+function drawIndexed(this::InlineSubpass, indices::UInt32, instances::UInt32 = UInt32(1),
              vertexOffset::UInt32 = UInt32(0), firstIndex::UInt32 = UInt32(0), firstInstance::UInt32 = UInt32(0))
     vk.vkCmdDrawIndexed(handle(this.mCommandBuffer), indices, instances, firstIndex, vertexOffset, firstInstance)
 end
