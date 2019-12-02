@@ -1,7 +1,6 @@
 module Utils
 
 using LinearAlgebra
-using StaticArrays
 export object_to_pointer, indexOfField, memmove, sizeof_obj
 
 include("MathUtils.jl")

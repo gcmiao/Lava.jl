@@ -1,7 +1,8 @@
 module Camera
 
 using LinearAlgebra
-using StaticArrays
+using GeometryTypes
+using Rotations
 using ..Utils
 
 include("CameraBase.jl")

@@ -68,7 +68,10 @@ function bindIndexBuffer(this::InlineSubpass, buffer::Buffer, type::vk.VkIndexTy
 end
 
 function pushConstantBlock(this::InlineSubpass, data::T) where T
-    pushConstantBlock(this, UInt32(sizeof_obj(data)), Base.unsafe_convert(Ptr{Cvoid}, pointer_from_objref(data)))
+    ref = Ref(data)
+    GC.@preserve ref begin
+        pushConstantBlock(this, UInt32(sizeof_obj(data)), Base.unsafe_convert(Ptr{Cvoid}, pointer_from_objref(ref)))
+    end
 end
 
 function pushConstantBlock(this::InlineSubpass, size::UInt32, data::Ptr{Cvoid})

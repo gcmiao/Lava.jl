@@ -11,7 +11,7 @@ include("camera/Camera.jl")
 using .Camera
 export Camera
 
-
+using GeometryTypes
 include("common/FormatInfo.jl")
 include("common/ShaderExtension.jl")
 include("common/FeatureBase.jl")
