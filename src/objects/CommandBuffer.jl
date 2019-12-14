@@ -59,8 +59,9 @@ mutable struct RecordingCommandBuffer
             vk.VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT, #flags::VkCommandBufferUsageFlags
             C_NULL #pInheritanceInfo::Ptr{VkCommandBufferInheritanceInfo}
         ))
-        if (vk.vkBeginCommandBuffer(handle(this.mCmdBuffer), beginInfo) != vk.VK_SUCCESS)
-            error("Failed to begin recording command buffer!")
+        ret = vk.vkBeginCommandBuffer(handle(this.mCmdBuffer), beginInfo)
+        if (ret != vk.VK_SUCCESS)
+            error("Failed to begin recording command buffer! Error code:", ret)
         end
         return this
     end

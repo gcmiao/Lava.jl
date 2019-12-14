@@ -233,7 +233,7 @@ function endFrame(this::Frame)
     semaphores = [renderingComplete(this)]
     indices = [imageIndex(this)]
     preserves = [chains, semaphores, indices]
-    println("img idx:", indices)
+    
     info = Ref(vk.VkPresentInfoKHR(
         vk.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, #sType::VkStructureType
         C_NULL, #pNext::Ptr{Cvoid}

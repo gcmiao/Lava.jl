@@ -1,15 +1,15 @@
 mutable struct RenderPass
     mVkDevice::vk.VkDevice
     mInfo::RenderPassCreateInfo
-    mClearValues::Vector{VkExt.ClearValue}
-    
+    mClearValues::Vector{vk.VkClearValue}
+
     mHandleRef::Ref{vk.VkRenderPass}
 
     function RenderPass(device::vk.VkDevice, info::RenderPassCreateInfo)
         this = new()
         this.mVkDevice = device
         this.mInfo = info
-        this.mClearValues = Vector{VkExt.ClearValue}()
+        this.mClearValues = Vector{vk.VkClearValue}()
 
         this.mHandleRef = Ref{vk.VkRenderPass}()
         if (vk.vkCreateRenderPass(this.mVkDevice, handleRef(this.mInfo), C_NULL, this.mHandleRef) != vk.VK_SUCCESS)
@@ -42,6 +42,6 @@ function getVkDevice(this::RenderPass)::vk.VkDevice
     return this.mVkDevice
 end
 
-function getClearValues(this::RenderPass)::Vector{VkExt.ClearValue}
+function getClearValues(this::RenderPass)::Vector{vk.VkClearValue}
     return this.mClearValues
 end

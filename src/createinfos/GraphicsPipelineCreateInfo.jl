@@ -87,11 +87,13 @@ function defaults(::Type{GraphicsPipelineCreateInfo};
 
     rasterizationState = PipelineRasterizationStateCreateInfo(
                             polygonMode = vk.VK_POLYGON_MODE_FILL, #::VkPolygonMode
-                            frontFace = vk.VK_FRONT_FACE_COUNTER_CLOCKWISE, #::VkFrontFace
+                            frontFace = frontFace, #::VkFrontFace
                             lineWidth = Cfloat(1.0) #::Cfloat
                         )
 
     depthStencilState = PipelineDepthStencilStateCreateInfo(
+                            depthTestEnable = depthTestEnable,
+                            depthWriteEnable = depthWriteEnable,
                             depthCompareOp = vk.VK_COMPARE_OP_GREATER, #::VkCompareOp
                         )
 

@@ -233,21 +233,12 @@ function createFence(logicalDevice::vk.VkDevice)::vk.VkFence
 end
 
 # common
-mutable struct ClearValue
-    mColor::vk.VkClearColorValue
-    mDepthStencil::vk.VkClearDepthStencilValue
+function ClearValue(color::vk.VkClearColorValue)
+    return vk.VkClearValue(color)
+end
 
-    function ClearValue(color::vk.VkClearColorValue)
-        this = new()
-        this.mColor = color
-        return this
-    end
-
-    function ClearValue(depthStencil::vk.VkClearDepthStencilValue)
-        this = new()
-        this.mDepthStencil = depthStencil
-        return this
-    end
+function ClearValue(depthStencil::vk.VkClearDepthStencilValue)
+    vk.VkClearValue(vk.VkClearColorValue((depthStencil.depth, depthStencil.stencil, 0, 0)))
 end
 
 end #module
