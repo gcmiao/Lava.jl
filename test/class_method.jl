@@ -7,13 +7,13 @@ macro class(Type, MethodList)
         end
 
         function Base.getproperty(obj::$Type, sym::Symbol)
-            if in(sym, methodMap)
+            #if in(sym, methodMap)
                 return (args...) -> begin
                     getfield(Main, sym)(obj, args...)
                 end
-            else
-                return getfield(obj, sym)
-            end
+            # else
+            #     return getfield(obj, sym)
+            # end
         end
     end)
 end
@@ -27,7 +27,7 @@ struct A
         return this
     end
 end
-@class A [:test, :test3]
+@class A [:test, :test3, :benchmark, :benchmark2]
 
 mutable struct B
     x::Float32
@@ -52,6 +52,18 @@ function test3(this::A, b::Integer)
     println("------ test3 ", this, " ", b)
 end
 
+function benchmark(this::A)
+    return 1
+end
+
+function benchmark2(this::A, b::Integer, c::Float32)
+    return b + c
+end
+
+function benchmark2(this::A, b::Integer)
+    return b - 1
+end
+
 function funA(this::B, b::Integer, c::Float32)
     println("------ funA ", this, " ", b, " ", c)
 end
@@ -64,13 +76,17 @@ function funB(this::B)
     println("------ funB ", this)
 end
 
-a = A(1.2f0, 3, false)
-a.test3(11, 1.f0)
-a.test3(22)
-a.test()
+function testClassMethod()
+    a = A(1.2f0, 3, false)
+    a.test3(11, 1.f0)
+    a.test3(22)
+    a.test()
 
 
-b = B(4.5f0, 6, true)
-b.funA(33, 3.f0)
-b.funA(44)
-b.funB()
+    b = B(4.5f0, 6, true)
+    b.funA(33, 3.f0)
+    b.funA(44)
+    b.funB()
+
+    return 0
+end
