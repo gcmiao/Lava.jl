@@ -1,5 +1,14 @@
 using GLFW
 
+struct Frame
+    mWindow
+
+    function Frame(parent)
+        this = new(parent)
+        return this
+    end
+end
+
 mutable struct GlfwWindow
     mDevice::Device
     mChainFormat::vk.VkSurfaceFormatKHR
@@ -14,15 +23,17 @@ mutable struct GlfwWindow
 
     mImageReady::vk.VkSemaphore
     mRenderingComplete::vk.VkSemaphore
-    
+
     mPresentIndex::UInt32
     mQueue::Queue
 
     mChainImages::Vector{Image}
     mChainViews::Vector{ImageView}
     mSwapchainHandler#::SwapchainBuildHandler
-    
+
     mSwapchainInfo::vk.VkSwapchainCreateInfoKHR
+
+    mFrameProxy::Frame
 
     function GlfwWindow(device::Device, format::vk.VkSurfaceFormatKHR,
                         width::UInt32, height::UInt32, resizable::Bool, title::String)
@@ -48,15 +59,8 @@ mutable struct GlfwWindow
         this.mImageReady = VkExt.createSemaphore(vkDevice)
         this.mRenderingComplete = VkExt.createSemaphore(vkDevice)
 
-        return this
-    end
-end
+        this.mFrameProxy = Frame(this)
 
-mutable struct Frame
-    mWindow::GlfwWindow
-
-    function Frame(parent::GlfwWindow)
-        this = new(parent)
         return this
     end
 end
@@ -219,7 +223,7 @@ function startFrame(this::GlfwWindow)::Frame
             buildSwapchain(this)
             continue;
         end
-        return Frame(this)
+        return this.mFrameProxy
     end
 end
 
@@ -233,7 +237,7 @@ function endFrame(this::Frame)
     semaphores = [renderingComplete(this)]
     indices = [imageIndex(this)]
     preserves = [chains, semaphores, indices]
-    
+
     info = Ref(vk.VkPresentInfoKHR(
         vk.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, #sType::VkStructureType
         C_NULL, #pNext::Ptr{Cvoid}

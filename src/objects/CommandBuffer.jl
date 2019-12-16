@@ -33,12 +33,12 @@ function handle(this::CommandBuffer)::vk.VkCommandBuffer
     return this.mHandle
 end
 
-# TODO: Deconstruction
-# CommandBuffer::~CommandBuffer() {
-#     if (!mHandle)
-#         return;
-#     mQueue->device()->handle().freeCommandBuffers(mQueue->pool(), {mHandle});
-# }
+function freeCommandBuffer(this::CommandBuffer)
+    if (this.mHandle != C_NULL)
+        vk.vkFreeCommandBuffers(getLogicalDevice(this.mQueue), getPool(this.mQueue), 1, [this.mHandle])
+        println("destroy cmd buffer")
+    end
+end
 
 #thread_local
 sRecordingBufferCount = UInt32(0)
@@ -98,7 +98,6 @@ function beginCommandBuffer(this::Queue)::RecordingCommandBuffer
     return rec
 end
 
-# When ~RecordingCommandBuffer is called
 function endCommandBuffer(this::RecordingCommandBuffer)
     if (this.mCmdBuffer != nothing)
         global sRecordingBufferCount -= 1

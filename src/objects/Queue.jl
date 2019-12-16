@@ -83,6 +83,7 @@ function gc(this::Queue)
         if vk.vkGetFenceStatus(this.mVkDevice, fence) == vk.VK_SUCCESS
             push!(this.mFencePool, fence)
             deleteat!(this.mSubmissionFences, i)
+            freeCommandBuffer(this.mSubmissionBuffers[i])
             deleteat!(this.mSubmissionBuffers, i)
             len -= 1
         else
