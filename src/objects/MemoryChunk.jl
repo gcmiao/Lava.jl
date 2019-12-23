@@ -11,7 +11,7 @@ mutable struct MemoryChunk
     function MemoryChunk(memory::vk.VkDeviceMemory, vkDevice::vk.VkDevice,
                          allocationOffset::vk.VkDeviceSize, offset::vk.VkDeviceSize,
                          size::vk.VkDeviceSize, type::UInt32, mappable::Bool,
-                         dealloc = nothing)
+                         deallocator = nothing)
         this = new()
         this.mMemory = memory
         this.mVkDevice = vkDevice
@@ -20,8 +20,21 @@ mutable struct MemoryChunk
         this.mSize = size
         this.mType = type
         this.mMappable = mappable
-        this.mDeallocate = dealloc
+        this.mDeallocate = deallocator
         return this
+    end
+end
+
+function destroy(this::MemoryChunk)
+    println("Destroy MemoryChunk")
+    if (this.mSize == 0)
+        return
+    end
+    if (this.mDeallocate != nothing)
+        this.mDeallocate(this)
+    else
+        vk.vkFreeMemory(this.mVkDevice, this.mMemory, C_NULL)
+        println("Free Memory")
     end
 end
 
@@ -42,17 +55,6 @@ mutable struct MappedMemory
         return this
     end
 end
-
-# TODO Deconstruction
-# MemoryChunk::~MemoryChunk() {
-#     if (mSize == 0)
-#         return;
-#     if (mDeallocate) {
-#         mDeallocate(*this);
-#     } else {
-#         mDevice->handle().freeMemory(mMemory);
-#     }
-# }
 
 function handle(this::MemoryChunk)::vk.VkDeviceMemory
     return this.mMemory
@@ -85,6 +87,7 @@ end
 # When ~MappedMemory is called
 function unmap(this::MappedMemory)
     if this.mMemory != C_NULL
+        println("Unmap memory")
         range = [vk.VkMappedMemoryRange(
                     vk.VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE, #sType::VkStructureType
                     C_NULL, #pNext::Ptr{Cvoid}

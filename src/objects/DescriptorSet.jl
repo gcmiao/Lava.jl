@@ -27,18 +27,17 @@ mutable struct DescriptorSet
         this.mHandleRef = Ref(descriptorSets[0])
         println("descriptor set:", this.mHandleRef)
     end
-    
-    
+
+
     # TODO
     # // Keep Samplers/Views etc. to keep them from being destroyed while in use
     # using ResourceList = std::vector<std::shared_ptr<void>>;
     # std::unordered_map<uint32_t, ResourceList> mBindingResources;
 end
 
-# TODO: Deconstruction
-# DescriptorSet::~DescriptorSet() {
-#     mDevice->handle().freeDescriptorSets(mPool->handle(), 1, &mHandle);
-# }
+function destroy(this::DescriptorSet)
+    vk.vkFreeDescriptorSets(this.mVkDevice, handleRef(this.mPool)[], 1, this.mHandleRef[])
+end
 
 function handleRef(this::DescriptorSet)::Ref{vk.VkDescriptorSet}
     return this.mHandleRef

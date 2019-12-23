@@ -173,4 +173,5 @@ end
 
 function deallocate(this::Suballocator, chunk::MemoryChunk)
     # TODO Deconstruction
+    println("deallocate in Suballocator")
 end

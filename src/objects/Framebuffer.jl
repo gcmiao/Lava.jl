@@ -3,7 +3,7 @@ mutable struct Framebuffer
     mViews::Vector{ImageView}
     mViewHandles::Vector{vk.VkImageView}
     mCreateInfo::vk.VkFramebufferCreateInfo
-    
+
     mHandle::vk.VkFramebuffer
 
     function Framebuffer(pass::RenderPass, views::Vector{ImageView})
@@ -16,14 +16,15 @@ mutable struct Framebuffer
     end
 end
 
-function createFramebuffer(this::RenderPass, attachments::Vector{ImageView})::Framebuffer
-    return Framebuffer(this, attachments)
+function createFramebuffer(renderPass::RenderPass, attachments::Vector{ImageView})::Framebuffer
+    return Framebuffer(renderPass, attachments)
 end
 
-# TODO: Deconstruction
-# Framebuffer::~Framebuffer() {
-#     mPass->device()->handle().destroyFramebuffer(mHandle);
-# }
+function destroy(this::Framebuffer)
+    vk.vkDestroyFramebuffer(getVkDevice(this.mPass), this.mHandle, C_NULL)
+    this.mHandle = C_NULL
+    println("Destroy Framebuffer")
+end
 
 function init(this::Framebuffer)
     empty!(this.mViewHandles)

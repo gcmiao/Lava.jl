@@ -17,14 +17,10 @@ mutable struct DescriptorPool
     end
 end
 
+function destroy(this::DescriptorPool)
+    vk.vkDestroyDescriptorPool(this.mVkDevice, this.mHandleRef[], C_NULL)
+end
 
-# TODO Deconstruction
-# DescriptorPool::~DescriptorPool()
-# {
-#     mDevice->handle().destroyDescriptorPool(mHandle);
-# }
-
-#function createDescriptorSet(this::DescriptorPool, layout::DescriptorSetLayout)::SharedDescriptorSet
 function createDescriptorSet(this::DescriptorPool, layout)::DescriptorSet
     return DescriptorSet(this.mDevice, this, layout)
 end

@@ -11,12 +11,12 @@ mutable struct DescriptorSetLayout
         this = new()
         this.mVkDevice = device
         this.mCreateInfo = info
-        
+
         this.mHandleRef = Ref{vk.VkDescriptorSetLayout}()
         if vk.vkCreateDescriptorSetLayout(this.mVkDevice, handleRef(this.mCreateInfo), C_NULL, this.mHandleRef) != vk.VK_SUCCESS
             error("Failed to create descriptor set layout!")
         end
-        println("descriptor set layout:", this.mHandleRef)
+
         if poolSize != 0
             sizes = Dict{vk.VkDescriptorType, UInt32}()
             for b in info.mBindings
@@ -38,11 +38,9 @@ mutable struct DescriptorSetLayout
 
 end
 
-# TODO: Deconstruction
-# DescriptorSetLayout::~DescriptorSetLayout()
-# {
-#     mDevice->handle().destroyDescriptorSetLayout(mHandle);
-# }
+function destroy(this::DescriptorSetLayout)
+    vk.vkDestroyDescriptorSetLayout(this.mVkDevice, this.mHandleRef[], C_NULL)
+end
 
 function handleRef(this::DescriptorSetLayout)::Ref{vk.VkDescriptorSetLayout}
     return this.mHandleRef

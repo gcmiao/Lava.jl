@@ -45,11 +45,17 @@ end
 function getInstance(this::Device)::vk.VkInstance
     return this.mVkInstance
 end
-# TODO: Deconstruction
-# Device::~Device() {
-#     for (auto &&feat : mFeatures)
-#         feat->beforeDeviceDestruction();
-# }
+
+function destroy(this::Device)
+    for feat in this.mFeatures
+        beforeDeviceDestruction(feat)
+    end
+    println("Pools count:", length(this.mPools))
+    for pool in this.mPools
+        println("Destroy command pool: ", pool.second)
+        vk.vkDestroyCommandPool(this.mVkDevice, pool.second, C_NULL)
+    end
+end
 
 function pickPhysicalDevice(this::Device, gpuSelectionStrategy::ISelectionStrategy)
     devices = VkExt.enumeratePhysicalDevices(this.mVkInstance)

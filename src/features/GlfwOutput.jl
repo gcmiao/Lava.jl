@@ -18,6 +18,18 @@ mutable struct GlfwOutputT <: IFeatureT
     end
 end
 
+function LavaCore.:destroy(this::GlfwOutputT)
+    println("Destroy GlfwOutput")
+    if isdefined(this, :mTempSurface)
+        println("Destroy temp surface: ", this.mTempSurface)
+        vk.vkDestroySurfaceKHR(getLogicalDevice(this.mDevice), this.mTempSurface, C_NULL)
+    end
+    if isdefined(this, :mTempWindow)
+        println("Destroy temp window")
+        GLFW.DestroyWindow(this.mTempWindow)
+    end
+end
+
 function create(::Type{GlfwOutputT})
     return GlfwOutputT()
 end

@@ -36,7 +36,6 @@ end
 function freeCommandBuffer(this::CommandBuffer)
     if (this.mHandle != C_NULL)
         vk.vkFreeCommandBuffers(getLogicalDevice(this.mQueue), getPool(this.mQueue), 1, [this.mHandle])
-        println("destroy cmd buffer")
     end
 end
 

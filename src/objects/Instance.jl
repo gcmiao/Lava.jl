@@ -51,11 +51,16 @@ mutable struct InstanceT
     end
 end
 
-# TODO: Deconstruction
-# Instance::~Instance() {
-#     for (auto &&feat : mFeatures)
-#         feat->beforeInstanceDestruction();
-# }
+function destroy(this::InstanceT)
+    for feat in this.mFeatures
+        beforeInstanceDestruction(feat)
+    end
+    destroy(this.mFeatures)
+end
+
+function handle(this::InstanceT)::vk.VkInstance
+    return this.mVkInstance
+end
 
 function create(::Type{InstanceT}, inFeatures::Vector{IFeatureT})::InstanceT
     return InstanceT(inFeatures)

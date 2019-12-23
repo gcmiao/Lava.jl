@@ -39,14 +39,14 @@ mutable struct Image
     end
 end
 
-# TODO: Deconstruction
-# Image::~Image() {
-#     if (mUnowned)
-#         return;
-
-#     auto dev = mDevice->handle();
-#     dev.destroyImage(mHandle);
-# }
+function destroy(this::Image)
+    if (this.mUnowned)
+        return
+    end
+    vk.vkDestroyImage(getLogicalDevice(this.mDevice), this.mHandle, C_NULL)
+    println("Destroy Image")
+    destroy(this.mMemory)
+end
 
 function usageToFeatures(usage::vk.VkImageUsageFlags)::vk.VkFormatFeatureFlags
     result::vk.VkFormatFeatureFlags = 0

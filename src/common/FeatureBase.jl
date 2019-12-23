@@ -17,10 +17,16 @@ end
 function onInstanceCreated(this::IFeatureT, vkInstance::vk.VkInstance)
 end
 
+function beforeInstanceDestruction(this::IFeatureT)
+end
+
 function onLogicalDeviceCreated(this::IFeatureT, device)
 end
 
 function onPhysicalDeviceSelected(this::IFeatureT, phy::vk.VkPhysicalDevice)
+end
+
+function beforeDeviceDestruction(this::IFeatureT)
 end
 
 function supportsDevice(this::IFeatureT, dev::vk.VkPhysicalDevice)::Bool

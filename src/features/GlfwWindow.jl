@@ -65,6 +65,30 @@ mutable struct GlfwWindow
     end
 end
 
+function LavaCore.:destroy(this::GlfwWindow)
+    println("Destroy GlfwWindow")
+    LavaCore.destroy(this.mChainViews)
+    empty!(this.mChainViews)
+
+    vkDevice = getLogicalDevice(this.mDevice)
+    if isdefined(this, :mImageReady)
+        vk.vkDestroySemaphore(vkDevice, this.mImageReady, C_NULL)
+    end
+    if isdefined(this, :mRenderingComplete)
+        vk.vkDestroySemaphore(vkDevice, this.mRenderingComplete, C_NULL)
+    end
+
+    if isdefined(this, :mChain)
+        vk.vkDestroySwapchainKHR(vkDevice, this.mChain, C_NULL)
+    end
+
+    vk.vkDestroySurfaceKHR(getInstance(this.mDevice), this.mSurface, C_NULL)
+
+    if isdefined(this, :mWindow)
+        GLFW.DestroyWindow(this.mWindow)
+    end
+end
+
 function imageIndex(this::Frame)::UInt32
     return this.mWindow.mPresentIndex
 end

@@ -35,11 +35,10 @@ mutable struct PipelineLayout
     end
 end
 
-# TODO: Deconstruction
-# PipelineLayout::~PipelineLayout()
-# {
-#     mDevice->handle().destroyPipelineLayout(mHandle);
-# }
+function destroy(this::PipelineLayout)
+    println("Destroy PipelineLayout")
+    vk.vkDestroyPipelineLayout(this.mVkDevice, this.mHandleRef[], C_NULL)
+end
 
 function handleRef(this::PipelineLayout)::Ref{vk.VkPipelineLayout}
     return this.mHandleRef

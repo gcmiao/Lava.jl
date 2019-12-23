@@ -50,10 +50,10 @@ mutable struct ImageView
     end
 end
 
-# TODO: Deconstruction
-# ImageView::~ImageView() {
-#     mDevice->handle().destroyImageView(mHandle);
-# }
+function destroy(this::ImageView)
+    vk.vkDestroyImageView(getLogicalDeviceOf(this.mImage), this.mHandle, C_NULL)
+    println("Destroy ImageView")
+end
 
 function createView(image::Image, type::vk.VkImageViewType, range::vk.VkImageSubresourceRange = vk.VkImageSubresourceRange(0, 0, 0, 0, 0))
     if range == vk.VkImageSubresourceRange(0, 0, 0, 0, 0)

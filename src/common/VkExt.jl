@@ -38,15 +38,23 @@ function vkCreateDebugReportCallbackEXT(instance, callbackInfoRef, allocatorRef,
                                Ptr{vk.VkDebugReportCallbackEXT}), instance, callbackInfoRef, allocatorRef, callbackRef)
 end
 
-function createDebugReportCallbackEXT(instance::vk.VkInstance, createInfo::vk.VkDebugReportCallbackCreateInfoEXT)
+function createDebugReportCallbackEXT(instance::vk.VkInstance, createInfo::vk.VkDebugReportCallbackCreateInfoEXT)::vk.VkDebugReportCallbackEXT
     callback = Ref{vk.VkDebugReportCallbackEXT}()
     err = vkCreateDebugReportCallbackEXT(instance, Ref(createInfo), C_NULL, callback)
     if err != vk.VK_SUCCESS
-        error(err, "create debug report callback ext failed!")
+        error(err, "Create debug report callback ext failed!")
     end
     return callback[]
 end
 
+function destroyDebugReportCallbackEXT(instance::vk.VkInstance, callback::vk.VkDebugReportCallbackEXT)
+    fnptr = vk.vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT") |> vk.PFN_vkDestroyDebugReportCallbackEXT
+    err = ccall(fnptr, vk.VkResult, (vk.VkInstance, vk.VkDebugReportCallbackEXT, Ptr{vk.VkAllocationCallbacks}),
+                                     instance, callback, C_NULL)
+    if err != vk.VK_SUCCESS
+       error(err, "Destroy debug report callback ext failed!")
+    end
+end
 # physical device
 function enumeratePhysicalDevices(vkInstance::vk.VkInstance)
     physicalDeviceCount = Ref{Cuint}(0)
@@ -77,7 +85,7 @@ end
 function getQueueFamilyProperties(phyDevice::vk.VkPhysicalDevice)::Vector{vk.VkQueueFamilyProperties}
     queueFamilyCount = Ref{Cuint}(0)
     vk.vkGetPhysicalDeviceQueueFamilyProperties(phyDevice, queueFamilyCount, C_NULL)
-    
+
     queueFamilies = Vector{vk.VkQueueFamilyProperties}(undef, queueFamilyCount[])
     vk.vkGetPhysicalDeviceQueueFamilyProperties(phyDevice, queueFamilyCount, queueFamilies)
     return queueFamilies
@@ -154,11 +162,12 @@ function createCommandPool(logicalDevice::vk.VkDevice, createInfo::vk.VkCommandP
     return commandPool[]
 end
 
-function createSemaphore(logicalDevice::vk.VkDevice, createInfo::vk.VkSemaphoreCreateInfo = vk.VkSemaphoreCreateInfo(
-                                                                                                vk.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, #sType::VkStructureType
-                                                                                                C_NULL, #pNext::Ptr{Cvoid}
-                                                                                                0 #flags::VkSemaphoreCreateFlags
-                                                                                            ))
+function createSemaphore(logicalDevice::vk.VkDevice,
+                            createInfo::vk.VkSemaphoreCreateInfo = vk.VkSemaphoreCreateInfo(
+                                                                        vk.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, #sType::VkStructureType
+                                                                        C_NULL, #pNext::Ptr{Cvoid}
+                                                                        0 #flags::VkSemaphoreCreateFlags
+                                                                    ))
     semaphore = Ref{vk.VkSemaphore}()
     if (vk.vkCreateSemaphore(logicalDevice, Ref(createInfo), C_NULL, semaphore) != vk.VK_SUCCESS)
         error("Failed to create semaphore!")

@@ -24,8 +24,14 @@ function handle(this::Buffer)::vk.VkBuffer
     return this.mHandle
 end
 
-# TODO: Deconstruction
-# Buffer::~Buffer() { mDevice->handle().destroyBuffer(mHandle); }
+function destroy(this::Buffer)
+    vk.vkDestroyBuffer(getLogicalDevice(this.mDevice), this.mHandle, C_NULL)
+    println("Destroy Buffer")
+    destroy(this.mMemory)
+    if isdefined(this, :mStagingBuffer)
+        destroy(this.mStagingBuffer)
+    end
+end
 
 function createBuffer(device::Device, createInfo::BufferCreateInfo)::Buffer
     return Buffer(device, createInfo)
@@ -44,10 +50,12 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
     end
 
     if isMappable(this.mMemory) # For APUs / integrated GPUs
+        println("Is mappable")
         mapped = map(this.mMemory)
         memmove(getData(mapped), pointer(data), size)
         unmap(mapped)
     else
+        println("Is unmappable")
         staging::Buffer
         if isdefined(this, :mStagingBuffer)
             staging = this.mStagingBuffer;
@@ -114,7 +122,7 @@ function copyFrom(this::Buffer, other::Buffer)
 end
 
 function copyFrom(this::Buffer, other::Buffer, cmd::RecordingCommandBuffer)
-    error("copy from")
+    error("copyFrom has not been implemented!")
     region = vk.VkBufferCopy(
         0, #srcOffset::VkDeviceSize
         0, #dstOffset::VkDeviceSize

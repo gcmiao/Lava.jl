@@ -22,10 +22,10 @@ function handleRef(this::GraphicsPipeline)::Ref{vk.VkPipeline}
     this.mHandleRef
 end
 
-# TODO: Deconstruction
-# GraphicsPipeline::~GraphicsPipeline() {
-#     mDevice->handle().destroyPipeline(mHandle);
-# }
+function destroy(this::GraphicsPipeline)
+    println("Destroy Pipeline")
+    vk.vkDestroyPipeline(this.mVkDevice, this.mHandleRef[], C_NULL)
+end
 
 function getLayout(this::GraphicsPipeline)::PipelineLayout
     return this.mCreateInfo.mLayout

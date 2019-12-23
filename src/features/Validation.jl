@@ -13,13 +13,14 @@ mutable struct Validation <: IFeatureT
     end
 end
 
-#TODO: Deconstruction
-# Validation::~Validation() {
-#     if (mCallback) {
-#         mInstance.destroyDebugReportCallbackEXT(mCallback);
-#         mCallback = vk::DebugReportCallbackEXT{};
-#     }
-# }
+function LavaCore.:destroy(this::Validation)
+    return
+    println("Destroy Validation: ", this.mCallback)
+    if this.mCallback != 0
+        VkExt.destroyDebugReportCallbackEXT(this.mVkInstance, this.mCallback)
+        this.mCallback = vk.VkDebugReportCallbackEXT(0)
+    end
+end
 
 function create(::Type{Validation})
     return Validation()
@@ -61,14 +62,13 @@ function debugCallback(flags::vk.VkDebugReportFlagsEXT,
     return VkExt.VK_FALSE
 end
 
-# TODO
-# void Validation::beforeInstanceDestruction()
-# {
-#     if (mCallback) {
-#         mInstance.destroyDebugReportCallbackEXT(mCallback);
-#         mCallback = vk::DebugReportCallbackEXT{};
-#     }
-# }
+function beforeInstanceDestruction(this::Validation)
+    println("Before instance destruct in Validation: ", this.mCallback)
+    if this.mCallback != 0
+        VkExt.destroyDebugReportCallbackEXT(this.mVkInstance, this.mCallback)
+        this.mCallback = vk.VkDebugReportCallbackEXT(0)
+    end
+end
 
 ########## override begin ##########
 function LavaCore.:layers(this::Validation, available::Vector{String})::Vector{String}
@@ -90,6 +90,6 @@ function LavaCore.:onInstanceCreated(this::Validation, vkInstance::vk.VkInstance
         pfnCallback, #pfnCallback::PFN_vkDebugReportCallbackEXT
         Base.unsafe_convert(Ptr{Cvoid}, validationRef) #pUserData::Ptr{Cvoid}
     )
-    mCallback = VkExt.createDebugReportCallbackEXT(vkInstance, debug);
+    this.mCallback = VkExt.createDebugReportCallbackEXT(vkInstance, debug);
 end
 ########## override end ##########
