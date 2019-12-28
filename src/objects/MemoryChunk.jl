@@ -76,6 +76,14 @@ function getOffset(this::MemoryChunk)::vk.VkDeviceSize
     return this.mOffset
 end
 
+function getSize(this::MemoryChunk)::vk.VkDeviceSize
+    return this.mSize
+end
+
+function getAllocationOffset(this::MemoryChunk)::vk.VkDeviceSize
+    return this.mAllocationOffset
+end
+
 function isMappable(this::MemoryChunk)::Bool
     return this.mMappable
 end

@@ -172,6 +172,32 @@ function typeIndexFor(this::Suballocator, req::vk.VkMemoryRequirements, flags::v
 end
 
 function deallocate(this::Suballocator, chunk::MemoryChunk)
-    # TODO Deconstruction
-    println("deallocate in Suballocator")
+    blocks = this.mTypeBlocks[chunk.mType]
+    it = findfirst(block->begin return handle(block.memory) == handle(chunk) end, blocks)
+    @assert (it != nothing) "Couldn't find the block this chunk belongs to."
+
+    block = blocks[it]
+    holes = block.holes
+
+    directlyBefore = findfirst(hole->begin hole._end == getAllocationOffset(chunk) end, holes)
+    directlyAfter = findfirst(hole->begin hole._begin == getOffset(chunk) + getSize(chunk) end, holes)
+
+    realsize = getSize(chunk) + (getOffset(chunk) - getAllocationOffset(chunk))
+    if (directlyBefore != nothing && directlyAfter != nothing)
+        # the chunk connects two holes to one
+        # => resize the first, delete the second
+        holes[directlyBefore]._end = holes[directlyAfter]._end
+        deleteat!(holes, directlyAfter)
+    elseif (directlyBefore != nothing)
+        holes[directlyBefore]._end += realsize
+    elseif (directlyAfter != nothing)
+        holes[directlyAfter]._begin = getAllocationOffset(chunk)
+    else
+        push!(holes, Hole(getAllocationOffset(chunk), getOffset(chunk) + getSize(chunk)))
+    end
+
+    if (length(holes) == 1 && holes[1]._begin == 0 && holes[1]._end == block.size)
+        # give completely empty blocks back to the driver
+        deleteat!(blocks, it)
+    end
 end
