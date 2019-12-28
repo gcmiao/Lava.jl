@@ -1,23 +1,6 @@
-macro class(Type, MethodList)
-    esc(quote
-        local methodMap = Set{Symbol}($MethodList)
-
-        function Base.propertynames(t::$Type)
-            return vcat(collect(keys(methodMap)), collect(fieldnames($Type)))
-        end
-
-        function Base.getproperty(obj::$Type, sym::Symbol)
-            #if in(sym, methodMap)
-                return (args...) -> begin
-                    getfield(Main, sym)(obj, args...)
-                end
-            # else
-            #     return getfield(obj, sym)
-            # end
-        end
-    end)
-end
-
+module MA
+include("../src/common/ClassMacro.jl")
+export A, benchmark, benchmark2
 struct A
     x::Float32
     y::Integer
@@ -28,17 +11,6 @@ struct A
     end
 end
 @class A [:test, :test3, :benchmark, :benchmark2]
-
-mutable struct B
-    x::Float32
-    y::Integer
-    z::Bool
-    function B(x::Float32, y::Integer, z::Bool)
-        this = new(x, y, z)
-        return this
-    end
-end
-@class B [:funA, :funB]
 
 function test(this::A)
     println("------ test ", this)
@@ -63,6 +35,21 @@ end
 function benchmark2(this::A, b::Integer)
     return b - 1
 end
+end
+
+module MB
+include("../src/common/ClassMacro.jl")
+export B
+mutable struct B
+    x::Float32
+    y::Integer
+    z::Bool
+    function B(x::Float32, y::Integer, z::Bool)
+        this = new(x, y, z)
+        return this
+    end
+end
+@class B [:funA, :funB]
 
 function funA(this::B, b::Integer, c::Float32)
     println("------ funA ", this, " ", b, " ", c)
@@ -76,11 +63,18 @@ function funB(this::B)
     println("------ funB ", this)
 end
 
+end
+
+using .MA, .MB
 function testClassMethod()
     a = A(1.2f0, 3, false)
+    println(Base.hasfield(A, :test3))
+    println(Base.hasproperty(a, :test3))
+    println(Base.hasproperty(a, :test33))
     a.test3(11, 1.f0)
     a.test3(22)
     a.test()
+    println(a.x)
 
 
     b = B(4.5f0, 6, true)

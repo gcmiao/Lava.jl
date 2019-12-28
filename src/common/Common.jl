@@ -1,3 +1,5 @@
+include("ClassMacro.jl")
+
 export destroy
 
 function destroy(objList::Vector{T}) where T
