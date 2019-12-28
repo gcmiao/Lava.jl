@@ -23,7 +23,6 @@ end
 function destroy(this::Framebuffer)
     vk.vkDestroyFramebuffer(getVkDevice(this.mPass), this.mHandle, C_NULL)
     this.mHandle = C_NULL
-    println("Destroy Framebuffer")
 end
 
 function init(this::Framebuffer)

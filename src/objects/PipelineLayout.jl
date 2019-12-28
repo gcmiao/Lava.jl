@@ -36,7 +36,6 @@ mutable struct PipelineLayout
 end
 
 function destroy(this::PipelineLayout)
-    println("Destroy PipelineLayout")
     vk.vkDestroyPipelineLayout(this.mVkDevice, this.mHandleRef[], C_NULL)
 end
 

@@ -14,8 +14,6 @@ mutable struct Validation <: IFeatureT
 end
 
 function LavaCore.:destroy(this::Validation)
-    return
-    println("Destroy Validation: ", this.mCallback)
     if this.mCallback != 0
         VkExt.destroyDebugReportCallbackEXT(this.mVkInstance, this.mCallback)
         this.mCallback = vk.VkDebugReportCallbackEXT(0)

@@ -44,7 +44,6 @@ function destroy(this::Image)
         return
     end
     vk.vkDestroyImage(getLogicalDevice(this.mDevice), this.mHandle, C_NULL)
-    println("Destroy Image")
     destroy(this.mMemory)
 end
 

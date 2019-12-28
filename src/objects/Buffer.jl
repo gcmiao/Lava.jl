@@ -26,7 +26,6 @@ end
 
 function destroy(this::Buffer)
     vk.vkDestroyBuffer(getLogicalDevice(this.mDevice), this.mHandle, C_NULL)
-    println("Destroy Buffer")
     destroy(this.mMemory)
     if isdefined(this, :mStagingBuffer)
         destroy(this.mStagingBuffer)
@@ -50,12 +49,10 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
     end
 
     if isMappable(this.mMemory) # For APUs / integrated GPUs
-        println("Is mappable")
         mapped = map(this.mMemory)
         memmove(getData(mapped), pointer(data), size)
         unmap(mapped)
     else
-        println("Is unmappable")
         staging::Buffer
         if isdefined(this, :mStagingBuffer)
             staging = this.mStagingBuffer;

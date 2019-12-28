@@ -34,7 +34,6 @@ end
 function destroy(this::RenderPass)
     vk.vkDestroyRenderPass(this.mVkDevice, this.mHandleRef[], C_NULL)
     this.mHandleRef = C_NULL
-    println("Destroy RenderPass")
 end
 
 function handleRef(this::RenderPass)::Ref{vk.VkRenderPass}

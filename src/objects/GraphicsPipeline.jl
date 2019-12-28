@@ -23,7 +23,6 @@ function handleRef(this::GraphicsPipeline)::Ref{vk.VkPipeline}
 end
 
 function destroy(this::GraphicsPipeline)
-    println("Destroy Pipeline")
     vk.vkDestroyPipeline(this.mVkDevice, this.mHandleRef[], C_NULL)
 end
 

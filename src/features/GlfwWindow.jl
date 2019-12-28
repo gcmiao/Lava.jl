@@ -66,7 +66,6 @@ mutable struct GlfwWindow
 end
 
 function LavaCore.:destroy(this::GlfwWindow)
-    println("Destroy GlfwWindow")
     LavaCore.destroy(this.mChainViews)
     empty!(this.mChainViews)
 

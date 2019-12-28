@@ -26,7 +26,6 @@ mutable struct MemoryChunk
 end
 
 function destroy(this::MemoryChunk)
-    println("Destroy MemoryChunk")
     if (this.mSize == 0)
         return
     end
@@ -34,7 +33,6 @@ function destroy(this::MemoryChunk)
         this.mDeallocate(this)
     else
         vk.vkFreeMemory(this.mVkDevice, this.mMemory, C_NULL)
-        println("Free Memory")
     end
 end
 
@@ -95,7 +93,6 @@ end
 # When ~MappedMemory is called
 function unmap(this::MappedMemory)
     if this.mMemory != C_NULL
-        println("Unmap memory")
         range = [vk.VkMappedMemoryRange(
                     vk.VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE, #sType::VkStructureType
                     C_NULL, #pNext::Ptr{Cvoid}

@@ -13,7 +13,6 @@ end
 function destroy(this::ShaderModule)
     vk.vkDestroyShaderModule(this.mVkDevice, this.mHandle, C_NULL)
     this.mHandle = C_NULL
-    println("Destroy ShaderModule")
 end
 
 function handle(this::ShaderModule)::vk.VkShaderModule
