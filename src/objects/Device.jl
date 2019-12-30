@@ -7,8 +7,8 @@ mutable struct Device
     mVkInstance::vk.VkInstance
     mPhysicalDevice::vk.VkPhysicalDevice
     mVkDevice::vk.VkDevice
-    
-    mFeatures::Vector{IFeatureT}
+
+    mFeatures::Vector{IFeature}
     mQueues::Dict{String, Queue}
     mPools::Dict{UInt32, vk.VkCommandPool}
 
@@ -17,7 +17,7 @@ mutable struct Device
 
 
     function Device(vkInstance::vk.VkInstance,
-               features::Vector{IFeatureT},
+               features::Vector{IFeature},
                gpuSelectionStrategy::ISelectionStrategy,
                queues::Vector{QueueRequest})
         this = new()

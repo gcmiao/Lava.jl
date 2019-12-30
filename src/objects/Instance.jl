@@ -1,8 +1,8 @@
-mutable struct InstanceT
-    mFeatures::Vector{IFeatureT}
+mutable struct Instance
+    mFeatures::Vector{IFeature}
     mVkInstance::vk.VkInstance
 
-    function InstanceT(inFeatures::Vector{IFeatureT})
+    function Instance(inFeatures::Vector{IFeature})
         this = new()
         this.mFeatures = inFeatures
 
@@ -51,22 +51,22 @@ mutable struct InstanceT
     end
 end
 
-function destroy(this::InstanceT)
+function destroy(this::Instance)
     for feat in this.mFeatures
         beforeInstanceDestruction(feat)
     end
     destroy(this.mFeatures)
 end
 
-function handle(this::InstanceT)::vk.VkInstance
+function handle(this::Instance)::vk.VkInstance
     return this.mVkInstance
 end
 
-function create(::Type{InstanceT}, inFeatures::Vector{IFeatureT})::InstanceT
-    return InstanceT(inFeatures)
+function create(::Type{Instance}, inFeatures::Vector{IFeature})::Instance
+    return Instance(inFeatures)
 end
 
-function createDevice(this::InstanceT, queues::Vector{QueueRequest}, gpuSelectionStrategy::ISelectionStrategy)
+function createDevice(this::Instance, queues::Vector{QueueRequest}, gpuSelectionStrategy::ISelectionStrategy)
     device = Device(this.mVkInstance, this.mFeatures, gpuSelectionStrategy, queues)
     for feat in this.mFeatures
         onLogicalDeviceCreated(feat, device)

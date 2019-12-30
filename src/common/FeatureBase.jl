@@ -1,41 +1,41 @@
-export IFeatureT
+export IFeature
 
-abstract type IFeatureT end
+abstract type IFeature end
 
-function layers(this::IFeatureT, available::Vector{String})::Vector{String}
+function layers(this::IFeature, available::Vector{String})::Vector{String}
     return []
 end
 
-function instanceExtensions(this::IFeatureT, available::Vector{String})::Vector{String}
+function instanceExtensions(this::IFeature, available::Vector{String})::Vector{String}
     return []
 end
 
-function deviceExtensions(this::IFeatureT)::Vector{String}
+function deviceExtensions(this::IFeature)::Vector{String}
     return []
 end
 
-function onInstanceCreated(this::IFeatureT, vkInstance::vk.VkInstance)
+function onInstanceCreated(this::IFeature, vkInstance::vk.VkInstance)
 end
 
-function beforeInstanceDestruction(this::IFeatureT)
+function beforeInstanceDestruction(this::IFeature)
 end
 
-function onLogicalDeviceCreated(this::IFeatureT, device)
+function onLogicalDeviceCreated(this::IFeature, device)
 end
 
-function onPhysicalDeviceSelected(this::IFeatureT, phy::vk.VkPhysicalDevice)
+function onPhysicalDeviceSelected(this::IFeature, phy::vk.VkPhysicalDevice)
 end
 
-function beforeDeviceDestruction(this::IFeatureT)
+function beforeDeviceDestruction(this::IFeature)
 end
 
-function supportsDevice(this::IFeatureT, dev::vk.VkPhysicalDevice)::Bool
+function supportsDevice(this::IFeature, dev::vk.VkPhysicalDevice)::Bool
     return true
 end
 
-function queueRequests(this::IFeatureT, families::Vector{vk.VkQueueFamilyProperties})
+function queueRequests(this::IFeature, families::Vector{vk.VkQueueFamilyProperties})
     return []
 end
 
-function addPhysicalDeviceFeatures(this::IFeatureT, outDeviceFeatures::VkExt.VkPhysicalDeviceFeatures)
+function addPhysicalDeviceFeatures(this::IFeature, outDeviceFeatures::VkExt.VkPhysicalDeviceFeatures)
 end

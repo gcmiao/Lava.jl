@@ -1,4 +1,4 @@
-mutable struct Validation <: IFeatureT
+mutable struct Validation <: IFeature
     mVkInstance::vk.VkInstance
     
     mPaused::Bool
