@@ -51,6 +51,8 @@ mutable struct Instance
     end
 end
 
+@class Instance
+
 function destroy(this::Instance)
     for feat in this.mFeatures
         beforeInstanceDestruction(feat)

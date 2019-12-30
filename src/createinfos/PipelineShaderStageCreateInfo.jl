@@ -23,6 +23,8 @@ struct PipelineShaderStageCreateInfo
     end
 end
 
+@class PipelineShaderStageCreateInfo
+
 function handleRef(this::PipelineShaderStageCreateInfo)::Ref{vk.VkPipelineShaderStageCreateInfo}
     this.mHandleRef
 end

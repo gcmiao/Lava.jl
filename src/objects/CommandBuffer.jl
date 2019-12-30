@@ -29,6 +29,8 @@ mutable struct CommandBuffer
     end
 end
 
+@class CommandBuffer
+
 function handle(this::CommandBuffer)::vk.VkCommandBuffer
     return this.mHandle
 end
@@ -65,6 +67,8 @@ mutable struct RecordingCommandBuffer
         return this
     end
 end
+
+@class RecordingCommandBuffer
 
 function handle(this::RecordingCommandBuffer)::vk.VkCommandBuffer
     return this.mCmdBuffer.mHandle

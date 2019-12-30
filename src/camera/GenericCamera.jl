@@ -40,6 +40,8 @@ mutable struct GenericCamera <: CameraBase
     end
 end
 
+@class GenericCamera
+
 function setRotationMatrix(this::GenericCamera, _matrix::Mat3f0)
     this.mRotationMatrix = _matrix
     @assert isOrthonormalMatrix(this.mRotationMatrix) "Rotation matrix must be orthonormal!"

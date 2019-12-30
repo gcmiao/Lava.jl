@@ -18,6 +18,8 @@ mutable struct GraphicsPipeline
     end
 end
 
+@class GraphicsPipeline
+
 function handleRef(this::GraphicsPipeline)::Ref{vk.VkPipeline}
     this.mHandleRef
 end

@@ -16,6 +16,9 @@ mutable struct Framebuffer
     end
 end
 
+@class Framebuffer
+
+
 function createFramebuffer(renderPass::RenderPass, attachments::Vector{ImageView})::Framebuffer
     return Framebuffer(renderPass, attachments)
 end
@@ -28,26 +31,26 @@ end
 function init(this::Framebuffer)
     empty!(this.mViewHandles)
     for imageView in this.mViews
-        push!(this.mViewHandles, handle(imageView))
+        push!(this.mViewHandles, imageView.handle())
     end
 
     width = typemax(Int32)
     height = typemax(Int32)
     layers = typemax(Int32)
     for imageView in this.mViews
-        image = getImage(imageView)
+        image = imageView.getImage()
         if (image != nothing)
-            width = min(width, getWidth(image))
-            height = min(height, getHeight(image))
+            width = min(width, image.getWidth())
+            height = min(height, image.getHeight())
         end
-        layers = min(layers, getLayers(imageView))
+        layers = min(layers, imageView.getLayers())
     end
 
     this.mCreateInfo = vk.VkFramebufferCreateInfo(
         vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, #sType::VkStructureType
         C_NULL, #pNext::Ptr{Cvoid}
         0, #flags::VkFramebufferCreateFlags
-        handleRef(this.mPass)[], #renderPass::VkRenderPass
+        this.mPass.handleRef()[], #renderPass::VkRenderPass
         length(this.mViewHandles), #attachmentCount::UInt32
         pointer(this.mViewHandles), #pAttachments::Ptr{VkImageView}
         width, #width::UInt32
@@ -58,7 +61,7 @@ function init(this::Framebuffer)
     framebuffer= Ref{vk.VkFramebuffer}()
     infoRef = Ref(this.mCreateInfo)
     GC.@preserve infoRef begin
-        if (vk.vkCreateFramebuffer(getVkDevice(this.mPass), infoRef, C_NULL, framebuffer) != vk.VK_SUCCESS)
+        if (vk.vkCreateFramebuffer(this.mPass.getVkDevice(), infoRef, C_NULL, framebuffer) != vk.VK_SUCCESS)
             error("Failed to create framebuffer!")
         end
     end

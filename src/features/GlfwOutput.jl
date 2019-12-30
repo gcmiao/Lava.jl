@@ -18,6 +18,8 @@ mutable struct GlfwOutput <: IFeature
     end
 end
 
+@class GlfwOutput
+
 function LavaCore.:destroy(this::GlfwOutput)
     if isdefined(this, :mTempSurface)
         vk.vkDestroySurfaceKHR(getLogicalDevice(this.mDevice), this.mTempSurface, C_NULL)

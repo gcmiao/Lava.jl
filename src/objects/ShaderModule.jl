@@ -10,6 +10,8 @@ mutable struct ShaderModule
     end
 end
 
+@class ShaderModule
+
 function destroy(this::ShaderModule)
     vk.vkDestroyShaderModule(this.mVkDevice, this.mHandle, C_NULL)
     this.mHandle = C_NULL

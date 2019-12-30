@@ -36,6 +36,8 @@ mutable struct Suballocator
     end
 end
 
+@class Suballocator
+
 @enum MemoryType begin
     VRAM = 1
     RAM = 2

@@ -9,6 +9,8 @@ struct Frame
     end
 end
 
+@class Frame
+
 mutable struct GlfwWindow
     mDevice::Device
     mChainFormat::vk.VkSurfaceFormatKHR
@@ -64,6 +66,8 @@ mutable struct GlfwWindow
         return this
     end
 end
+
+@class GlfwWindow
 
 function LavaCore.:destroy(this::GlfwWindow)
     LavaCore.destroy(this.mChainViews)

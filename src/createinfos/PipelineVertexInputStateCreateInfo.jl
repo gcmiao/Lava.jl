@@ -21,6 +21,8 @@ struct PipelineVertexInputStateCreateInfo
     end
 end
 
+@class PipelineVertexInputStateCreateInfo
+
 function handleRef(this::PipelineVertexInputStateCreateInfo)::Ref{vk.VkPipelineVertexInputStateCreateInfo}
     this.mHandleRef
 end

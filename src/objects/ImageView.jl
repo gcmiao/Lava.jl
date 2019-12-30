@@ -50,6 +50,8 @@ mutable struct ImageView
     end
 end
 
+@class ImageView [:handle, :destroy]
+
 function destroy(this::ImageView)
     vk.vkDestroyImageView(getLogicalDeviceOf(this.mImage), this.mHandle, C_NULL)
 end

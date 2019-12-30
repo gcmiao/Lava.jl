@@ -20,6 +20,8 @@ mutable struct Buffer
     end
 end
 
+@class Buffer
+
 function handle(this::Buffer)::vk.VkBuffer
     return this.mHandle
 end

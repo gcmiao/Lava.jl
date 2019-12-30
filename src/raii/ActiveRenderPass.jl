@@ -12,6 +12,8 @@ mutable struct ActiveRenderPass
     end
 end
 
+@class ActiveRenderPass
+
 mutable struct InlineSubpass
     mPass::ActiveRenderPass
     mSubpassIndex::UInt32
@@ -25,6 +27,8 @@ mutable struct InlineSubpass
         return this
     end
 end
+
+@class InlineSubpass
 
 function startInlineSubpass(this::ActiveRenderPass)::InlineSubpass
     cmd = handle(getBuffer(this.mCmd))

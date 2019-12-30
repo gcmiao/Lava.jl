@@ -39,6 +39,8 @@ mutable struct Image
     end
 end
 
+@class Image [:handle, :destroy]
+
 function destroy(this::Image)
     if (this.mUnowned)
         return

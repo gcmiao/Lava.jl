@@ -31,6 +31,8 @@ mutable struct RenderPass
     end
 end
 
+@class RenderPass
+
 function destroy(this::RenderPass)
     vk.vkDestroyRenderPass(this.mVkDevice, this.mHandleRef[], C_NULL)
     this.mHandleRef = C_NULL

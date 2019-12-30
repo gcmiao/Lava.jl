@@ -51,6 +51,8 @@ mutable struct Queue
     end
 end
 
+@class Queue
+
 function handle(this::Queue)::vk.VkQueue
     return this.mQueue
 end

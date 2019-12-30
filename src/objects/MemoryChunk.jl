@@ -25,6 +25,8 @@ mutable struct MemoryChunk
     end
 end
 
+@class MemoryChunk
+
 function destroy(this::MemoryChunk)
     if (this.mSize == 0)
         return

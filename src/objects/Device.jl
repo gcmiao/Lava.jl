@@ -34,6 +34,8 @@ mutable struct Device
     end
 end
 
+@class Device
+
 function getLogicalDevice(this::Device)::vk.VkDevice
     return this.mVkDevice
 end
