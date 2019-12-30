@@ -1,5 +1,7 @@
 module LavaCore
 
+include("common/Common.jl")
+
 using VulkanCore
 include("common/VkExt.jl")
 using .VkExt
@@ -12,7 +14,6 @@ using .Camera
 export Camera
 
 using GeometryTypes
-include("common/Common.jl")
 include("common/FormatInfo.jl")
 include("common/ShaderExtension.jl")
 include("common/FeatureBase.jl")

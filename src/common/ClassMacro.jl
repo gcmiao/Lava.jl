@@ -1,3 +1,5 @@
+export @class
+
 macro class(Type, MethodList = [])
     esc(quote
         local methodMap = Set{Symbol}($MethodList)
