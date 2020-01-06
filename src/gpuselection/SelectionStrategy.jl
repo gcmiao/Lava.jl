@@ -26,3 +26,26 @@ function selectFrom(this::NthOfTypeStrategy, phys::Vector{vk.VkPhysicalDevice}):
     return vk.VK_NULL_HANDLE
 end
 
+abstract type IGroupAssemblyStrategy end
+
+function assembleFrom(this::IGroupAssemblyStrategy, groups::Vector{vk.VkPhysicalDeviceGroupProperties})::Vector{vk.VkPhysicalDevice}
+    return []
+end
+
+mutable struct NthGroupStrategy <: IGroupAssemblyStrategy
+    mN::UInt32
+
+    # n start from 0
+    NthGroupStrategy(n::Integer) = new(n)
+end
+
+function assembleFrom(this::NthGroupStrategy, groups::Vector{vk.VkPhysicalDeviceGroupProperties})::Vector{vk.VkPhysicalDevice}
+    @assert(length(groups) > this.mN)
+
+    group = groups[this.mN + 1]
+    ret = []
+    for i = 1 : group.physicalDeviceCount
+        push!(ret, group.physicalDevices[i])
+    end
+    return ret
+end

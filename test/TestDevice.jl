@@ -28,6 +28,17 @@ function testSelectionStrategy(instance)
     pd = lava.selectFrom(lava.NthOfTypeStrategy(vk.VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU), devices)
     pd = lava.selectFrom(lava.NthOfTypeStrategy(vk.VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU), devices)
 
+    phyDevices = ntuple(i -> Base.unsafe_convert(vk.VkPhysicalDevice, Ref(2 * i)), 32)
+    gpps = [vk.VkPhysicalDeviceGroupProperties(
+        vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES, # sType::VkStructureType
+        C_NULL, # pNext::Ptr{Cvoid}
+        length(phyDevices), # physicalDeviceCount::UInt32
+        phyDevices, # physicalDevices::NTuple{32, VkPhysicalDevice}
+        VkExt.VK_FALSE # subsetAllocation::VkBool32
+    )]
+    pds = lava.assembleFrom(lava.NthGroupStrategy(0), gpps)
+    @test length(pds) == length(phyDevices)
+    @test pds[1] == phyDevices[1] && pds[2] == phyDevices[2] && pds[3] == phyDevices[3]
     return true
 end
 
