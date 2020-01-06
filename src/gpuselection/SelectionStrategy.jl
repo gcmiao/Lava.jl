@@ -8,7 +8,7 @@ mutable struct NthOfTypeStrategy <: ISelectionStrategy
     mType::vk.VkPhysicalDeviceType
     mN::UInt32
 
-    NthOfTypeStrategy(type::vk.VkPhysicalDeviceType) = new(type, 1)
+    NthOfTypeStrategy(type::vk.VkPhysicalDeviceType) = new(type, 0)
 end
 
 function selectFrom(this::NthOfTypeStrategy, phys::Vector{vk.VkPhysicalDevice})::vk.VkPhysicalDevice
@@ -16,12 +16,13 @@ function selectFrom(this::NthOfTypeStrategy, phys::Vector{vk.VkPhysicalDevice}):
     for dev in phys
         props = VkExt.getProperties(dev)
         if (props.deviceType == this.mType)
-            counter += 1
             if (counter == this.mN)
                 return dev;
             end
+            counter += 1
         end
     end
-    error("Failed to select physical device.")
+    println("Failed to select physical device.")
     return vk.VK_NULL_HANDLE
 end
+

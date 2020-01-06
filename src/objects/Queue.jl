@@ -6,24 +6,25 @@ mutable struct QueueRequest
     flags::vk.VkQueueFlags
     index::UInt32
 end
+const QUEUE_REQUEST_INDEX_NO_INDEX = typemax(UInt32)
 
 function createGraphics(::Type{QueueRequest}, name::String)
-    return QueueRequest(name, 1.0, vk.VK_QUEUE_GRAPHICS_BIT, typemax(UInt32))
+    return QueueRequest(name, 1.0, vk.VK_QUEUE_GRAPHICS_BIT, QUEUE_REQUEST_INDEX_NO_INDEX)
 end
 
 function createTransfer(::Type{QueueRequest}, name::String)
-    return QueueRequest(name, 1.0, vk.VK_QUEUE_TRANSFER_BIT, typemax(UInt32))
+    return QueueRequest(name, 1.0, vk.VK_QUEUE_TRANSFER_BIT, QUEUE_REQUEST_INDEX_NO_INDEX)
 end
 
 function createCompute(::Type{QueueRequest}, name::String)
-    return QueueRequest(name, 1.0, vk.VK_QUEUE_COMPUTE_BIT, typemax(UInt32))
+    return QueueRequest(name, 1.0, vk.VK_QUEUE_COMPUTE_BIT, QUEUE_REQUEST_INDEX_NO_INDEX)
 end
 
 function createByFlags(::Type{QueueRequest}, name::String, flags::vk.VkQueueFlags, priority::Float32)
-    return QueueRequest(name, priority, flags, typemax(UInt32))
+    return QueueRequest(name, priority, flags, QUEUE_REQUEST_INDEX_NO_INDEX)
 end
 
-function createByFamily(::Type{QueueRequest}, name::String, index::UInt32, priority::Float32)
+function createByFamily(::Type{QueueRequest}, name::String, index::Integer, priority::Float32)
     return QueueRequest(name, priority, 0, index)
 end
 

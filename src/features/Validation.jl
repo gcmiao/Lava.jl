@@ -7,8 +7,8 @@ mutable struct Validation <: IFeature
 
     function Validation()
         this = new()
-        mPaused = false
-        mMessageCount = 0
+        this.mPaused = false
+        this.mMessageCount = 0
         return this
     end
 end

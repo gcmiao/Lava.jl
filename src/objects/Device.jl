@@ -55,6 +55,7 @@ function destroy(this::Device)
     for pool in this.mPools
         vk.vkDestroyCommandPool(this.mVkDevice, pool.second, C_NULL)
     end
+    empty!(this.mPools)
 end
 
 function pickPhysicalDevice(this::Device, gpuSelectionStrategy::ISelectionStrategy)
