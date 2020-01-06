@@ -1,7 +1,10 @@
 using Test
-include("class_method.jl")
-include("class_method_benchmark.jl")
+include("TestAPIs.jl")
 
-println("Testing...")
-@test testClassMethod() == 0
-@test benchmarkClassMethod() == 0
+# include("class_method.jl")
+# include("class_method_benchmark.jl")
+#
+# println("Testing...")
+# @test testClassMethod() == 0
+# @test benchmarkClassMethod() == 0
+
