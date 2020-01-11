@@ -1,4 +1,3 @@
-using Lava
 using Lava: @class
 using VulkanCore
 include("TestInstance.jl")
