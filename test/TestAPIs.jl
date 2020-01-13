@@ -4,6 +4,7 @@ include("TestInstance.jl")
 include("TestQueueRequest.jl")
 include("TestDevice.jl")
 include("ShaderTest.jl")
+include("SamplerTest.jl")
 
 instanceRef = Ref{lava.Instance}()
 @test testInstance(instanceRef)
@@ -16,3 +17,5 @@ deviceRef = Ref{lava.Device}()
 @test testDevice(instanceRef[], queues, lava.NthGroupStrategy(0))
 
 @test testDescriptorSetLayout(deviceRef[])
+
+@test testSampler(deviceRef[].mVkDevice)

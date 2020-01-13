@@ -37,6 +37,7 @@ include("createinfos/PipelineViewportStateCreateInfo.jl")
 include("createinfos/GraphicsPipelineCreateInfo.jl")
 include("createinfos/ImageCreateInfo.jl")
 include("createinfos/BufferCreateInfo.jl")
+include("createinfos/SamplerCreateInfo.jl")
 
 include("gpuselection/SelectionStrategy.jl")
 
@@ -58,6 +59,7 @@ include("objects/Framebuffer.jl")
 include("objects/CommandBuffer.jl")
 include("objects/Buffer.jl")
 include("objects/Instance.jl")
+include("objects/Sampler.jl")
 
 include("raii/ActiveRenderPass.jl")
 
