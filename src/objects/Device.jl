@@ -117,7 +117,7 @@ mutable struct FamilyInfo
     names::Vector{String}
     priorities::Vector{Float32}
     minPriority::Float32
-    
+
     FamilyInfo() = new(typemax(UInt32), Vector{String}(), Vector{Float32}(), typemax(Float32))
 end
 
@@ -244,7 +244,7 @@ function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysical
             this.mVkDevice = VkExt.createDevice(this.mPhysicalDevice, Ref(createInfo))
         end
     #}
-    
+
     for pair in familyInfoDict
         info = pair.second
         pool = VkExt.createCommandPool(this.mVkDevice, vk.VkCommandPoolCreateInfo(
@@ -289,6 +289,10 @@ end
 
 function createRenderPass(this::Device, info::RenderPassCreateInfo)::RenderPass
     return RenderPass(this.mVkDevice, info)
+end
+
+# TODO
+function createShader(this::Device, code)
 end
 
 function createShaderFromFile(this::Device, filePath::String)::ShaderModule

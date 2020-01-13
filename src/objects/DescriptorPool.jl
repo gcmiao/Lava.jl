@@ -12,7 +12,6 @@ mutable struct DescriptorPool
         if vk.vkCreateDescriptorPool(this.mVkDevice, handleRef(this.mCreateInfo), C_NULL, this.mHandleRef) != vk.VK_SUCCESS
             error("Failed to create descriptor pool!")
         end
-        println("descriptor pool:", this.mHandleRef)
         return this
     end
 end
