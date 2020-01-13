@@ -11,7 +11,7 @@ end
 
 @class Frame
 
-mutable struct GlfwWindow
+mutable struct GlfwWindow <: IFeature
     mDevice::Device
     mChainFormat::vk.VkSurfaceFormatKHR
 

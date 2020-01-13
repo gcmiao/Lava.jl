@@ -1,3 +1,6 @@
+export ISelectionStrategy, NthOfTypeStrategy
+export IGroupAssemblyStrategy, NthGroupStrategy
+
 abstract type ISelectionStrategy end
 
 function selectFrom(this::ISelectionStrategy, phys::Vector{vk.VkPhysicalDevice})::vk.VkPhysicalDevice
@@ -10,6 +13,7 @@ mutable struct NthOfTypeStrategy <: ISelectionStrategy
 
     NthOfTypeStrategy(type::vk.VkPhysicalDeviceType) = new(type, 0)
 end
+@class NthOfTypeStrategy
 
 function selectFrom(this::NthOfTypeStrategy, phys::Vector{vk.VkPhysicalDevice})::vk.VkPhysicalDevice
     counter::UInt32 = 0
@@ -22,7 +26,7 @@ function selectFrom(this::NthOfTypeStrategy, phys::Vector{vk.VkPhysicalDevice}):
             counter += 1
         end
     end
-    println("Failed to select physical device.")
+    println("Failed to select physical device of ", this.mType, ".")
     return vk.VK_NULL_HANDLE
 end
 
@@ -38,6 +42,7 @@ mutable struct NthGroupStrategy <: IGroupAssemblyStrategy
     # n start from 0
     NthGroupStrategy(n::Integer) = new(n)
 end
+@class NthGroupStrategy
 
 function assembleFrom(this::NthGroupStrategy, groups::Vector{vk.VkPhysicalDeviceGroupProperties})::Vector{vk.VkPhysicalDevice}
     @assert(length(groups) > this.mN)

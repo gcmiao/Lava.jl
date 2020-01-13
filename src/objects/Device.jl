@@ -17,17 +17,43 @@ mutable struct Device
 
 
     function Device(vkInstance::vk.VkInstance,
-               features::Vector{IFeature},
-               gpuSelectionStrategy::ISelectionStrategy,
-               queues::Vector{QueueRequest})
+                      features::Vector{IFeature},
+          gpuSelectionStrategy::ISelectionStrategy,
+                        queues::Vector{QueueRequest})
         this = new()
         this.mVkInstance = vkInstance
         this.mFeatures = features
         this.mQueues = Dict{String, Queue}()
         this.mPools = Dict{UInt32, vk.VkCommandPool}()
 
-        pickPhysicalDevice(this, gpuSelectionStrategy)
-        createLogicalDevice(this, [this.mPhysicalDevice], queues)
+        this.pickPhysicalDevice(gpuSelectionStrategy)
+        this.createLogicalDevice([this.mPhysicalDevice], queues)
+
+        this.mSuballocator = Suballocator(this, this.mPhyProperties.limits.bufferImageGranularity)
+        return this
+    end
+
+    function Device(vkInstance::vk.VkInstance,
+                      features::Vector{IFeature},
+                 groupAssembly::IGroupAssemblyStrategy,
+                        queues::Vector{QueueRequest})
+        this = new()
+        this.mVkInstance = vkInstance
+        this.mFeatures = features
+        this.mQueues = Dict{String, Queue}()
+        this.mPools = Dict{UInt32, vk.VkCommandPool}()
+
+        # pickPhysicalDevice
+        groups = VkExt.enumeratePhysicalDeviceGroups(this.mVkInstance)
+        group = groupAssembly.assembleFrom(groups)
+        this.mPhysicalDevice = Base.first(group)
+
+        for feat in this.mFeatures
+            onPhysicalDeviceSelected(feat, this.mPhysicalDevice)
+        end
+        this.mPhyProperties = VkExt.getProperties(this.mPhysicalDevice)
+
+        this.createLogicalDevice(group, queues);
 
         this.mSuballocator = Suballocator(this, this.mPhyProperties.limits.bufferImageGranularity)
         return this
@@ -77,7 +103,7 @@ function pickPhysicalDevice(this::Device, gpuSelectionStrategy::ISelectionStrate
         end
     end
     resize!(devices, deviceCount)
-    this.mPhysicalDevice = selectFrom(gpuSelectionStrategy, devices)
+    this.mPhysicalDevice = gpuSelectionStrategy.selectFrom(devices)
 
     for feat in this.mFeatures
         onPhysicalDeviceSelected(feat, this.mPhysicalDevice)

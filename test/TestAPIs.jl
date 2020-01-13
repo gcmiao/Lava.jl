@@ -12,3 +12,4 @@ queues = [lava.createGraphics(lava.QueueRequest, "graphics")]
 
 deviceRef = Ref{lava.Device}()
 @test testDevice(instanceRef[], queues, deviceRef)
+@test testDevice(instanceRef[], queues, lava.NthGroupStrategy(0))

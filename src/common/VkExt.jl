@@ -60,11 +60,22 @@ function enumeratePhysicalDevices(vkInstance::vk.VkInstance)
     physicalDeviceCount = Ref{Cuint}(0)
     vk.vkEnumeratePhysicalDevices(vkInstance, physicalDeviceCount, C_NULL)
     if (physicalDeviceCount[] == 0)
-        error("failed to find GPUs with Vulkan support!")
+        error("Failed to find GPUs with Vulkan support!")
     end
     physicalDevices = Vector{vk.VkPhysicalDevice}(undef, physicalDeviceCount[])
     vk.vkEnumeratePhysicalDevices(vkInstance, physicalDeviceCount, physicalDevices)
     return physicalDevices
+end
+
+function enumeratePhysicalDeviceGroups(vkInstance::vk.VkInstance)
+    groupCount = Ref{Cuint}(0)
+    vk.vkEnumeratePhysicalDeviceGroups(vkInstance, groupCount, C_NULL)
+    if (groupCount[] == 0)
+        error("Failed to find GPU groups with Vulkan support!")
+    end
+    groupProps = Vector{vk.VkPhysicalDeviceGroupProperties}(undef, groupCount[])
+    vk.vkEnumeratePhysicalDeviceGroups(vkInstance, groupCount, groupProps)
+    return groupProps
 end
 
 function getProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalDeviceProperties

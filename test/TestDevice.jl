@@ -54,6 +54,16 @@ function testDevice(instance, queues, outDevice::Ref)
 
     device.destroy()
     @test checkDestroiedDevice(device)
+    outDevice[] = device
+    return true
+end
+
+function testDevice(instance, queues, strategy::T) where T <: lava.IGroupAssemblyStrategy
+    device = instance.createDevice(queues, strategy)
+    @test checkDevice(device)
+
+    device.destroy()
+    @test checkDestroiedDevice(device)
 
     return true
 end

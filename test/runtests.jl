@@ -1,3 +1,4 @@
+using Revise
 using Test
 using Lava
 include("TestAPIs.jl")
