@@ -5,6 +5,7 @@ mutable struct CommandBuffer
     mSignalSemaphores::Vector{vk.VkSemaphore}
     mWaitSemaphores::Vector{vk.VkSemaphore}
     mWaitStages::Vector{vk.VkPipelineStageFlags}
+    mResources::Vector{Any}
 
     function CommandBuffer(queue::Queue, level::vk.VkCommandBufferLevel)
         this = new()
@@ -13,6 +14,7 @@ mutable struct CommandBuffer
         this.mSignalSemaphores = Vector{vk.VkSemaphore}()
         this.mWaitSemaphores = Vector{vk.VkSemaphore}()
         this.mWaitStages = Vector{vk.VkPipelineStageFlags}()
+        this.mResources = []
         info = Ref(vk.VkCommandBufferAllocateInfo(
             vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, #sType::VkStructureType
             C_NULL, #pNext::Ptr{Cvoid}
@@ -130,6 +132,14 @@ end
 function wait(this::CommandBuffer, sem::vk.VkSemaphore, stage::vk.VkPipelineStageFlags = vk.VkPipelineStageFlags(vk.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT))
     push!(this.mWaitSemaphores, sem)
     push!(this.mWaitStages, stage)
+end
+
+function attachResource(this::RecordingCommandBuffer, res)
+    this.mCmdBuffer.attachResource(res)
+end
+
+function attachResource(this::CommandBuffer, res)
+    push!(this.mResources, res)
 end
 
 function beginRenderpass(this::RecordingCommandBuffer, fbo::Framebuffer)::ActiveRenderPass

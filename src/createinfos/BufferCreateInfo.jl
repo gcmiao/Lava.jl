@@ -22,6 +22,7 @@ struct BufferCreateInfo
         )))
     end
 end
+@class BufferCreateInfo
 
 function handleRef(this::BufferCreateInfo)::Ref{vk.VkBufferCreateInfo}
     return this.mHandleRef

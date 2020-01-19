@@ -62,5 +62,6 @@ include("objects/Instance.jl")
 include("objects/Sampler.jl")
 
 include("raii/ActiveRenderPass.jl")
+include("raii/Barriers.jl")
 
 end

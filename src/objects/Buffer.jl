@@ -45,9 +45,9 @@ end
 function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
     # TODO
     #RecordingCommandBuffer::convenienceBufferCheck("Buffer::setDataVRAM()");
-    initHandle(this, size);
+    this.initHandle(size);
     if !isdefined(this, :mMemory)
-        realizeVRAM(this)
+        this.realizeVRAM()
     end
 
     if isMappable(this.mMemory) # For APUs / integrated GPUs
@@ -55,16 +55,15 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
         memmove(getData(mapped), pointer(data), size)
         unmap(mapped)
     else
-        staging::Buffer
         if isdefined(this, :mStagingBuffer)
             staging = this.mStagingBuffer;
         else
-            createInfo = copyWithUsage(this.mCreateInfo, vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
-            staging = createBuffer(this.mDevice, createInfo)
+            createInfo = copyWithUsage(this.mCreateInfo, vk.VkFlags(vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT))
+            staging = this.mDevice.createBuffer(createInfo)
         end
-        setDataRAM(staging, data, size)
+        staging.setDataRAM(data, size)
 
-        copyFrom(staging)
+        this.copyFrom(staging)
 
         if this.mKeepStagingBuffer
             this.mStagingBuffer = staging
@@ -74,7 +73,7 @@ end
 
 function setDataRAM(this::Buffer, data, size::Csize_t)
     initHandle(this, size)
-    if (!mMemory)
+    if !isdefined(this, :mMemory)
         realizeRAM(this)
     end
 
@@ -112,30 +111,85 @@ function realizeVRAM(this::Buffer)
     bindToBuffer(this.mMemory, this.mHandle)
 end
 
+function stagesForUsage(usage::vk.VkBufferUsageFlags)::vk.VkPipelineStageFlags
+    flags::vk.VkPipelineStageFlags = vk.VkFlags(0)
+    check = (use, flag) -> begin
+        if ((usage & use) != 0)
+            flags |= flag
+        end
+    end
+
+    check(vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT,                          vk.VK_PIPELINE_STAGE_TRANSFER_BIT)
+    check(vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT,                          vk.VK_PIPELINE_STAGE_TRANSFER_BIT)
+    check(vk.VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT,                  vk.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
+    check(vk.VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT,                  vk.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
+    check(vk.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,                        vk.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
+    check(vk.VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,                        vk.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
+    check(vk.VK_BUFFER_USAGE_INDEX_BUFFER_BIT,                          vk.VK_PIPELINE_STAGE_VERTEX_INPUT_BIT)
+    check(vk.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,                         vk.VK_PIPELINE_STAGE_VERTEX_INPUT_BIT)
+    check(vk.VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,                       vk.VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT)
+    check(vk.VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT,         vk.VK_PIPELINE_STAGE_TRANSFORM_FEEDBACK_BIT_EXT)
+    check(vk.VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT, vk.VK_PIPELINE_STAGE_TRANSFORM_FEEDBACK_BIT_EXT)
+    check(vk.VK_BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT,             vk.VK_PIPELINE_STAGE_CONDITIONAL_RENDERING_BIT_EXT)
+    check(vk.VK_BUFFER_USAGE_RAY_TRACING_BIT_NV,                        vk.VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_NV)
+
+    return flags
+end
+
+function accessForUsage(usage::vk.VkBufferUsageFlags)::vk.VkAccessFlags
+    flags::vk.VkAccessFlags = vk.VkFlags(0)
+
+    check = (use, flag) -> begin
+        if ((usage & use) != 0)
+            flags |= flag
+        end
+    end
+
+    check(vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT,                          vk.VK_ACCESS_TRANSFER_READ_BIT)
+    check(vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT,                          vk.VK_ACCESS_TRANSFER_WRITE_BIT)
+    check(vk.VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT,                  vk.VK_ACCESS_UNIFORM_READ_BIT)
+    check(vk.VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT,                  vk.VK_ACCESS_SHADER_READ_BIT |
+                                                                        vk.VK_ACCESS_SHADER_WRITE_BIT)
+    check(vk.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,                        vk.VK_ACCESS_UNIFORM_READ_BIT)
+    check(vk.VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,                        vk.VK_ACCESS_SHADER_READ_BIT |
+                                                                        vk.VK_ACCESS_SHADER_WRITE_BIT)
+    check(vk.VK_BUFFER_USAGE_INDEX_BUFFER_BIT,                          vk.VK_ACCESS_INDEX_READ_BIT)
+    check(vk.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,                         vk.VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT)
+    check(vk.VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,                       vk.VK_ACCESS_INDIRECT_COMMAND_READ_BIT)
+    check(vk.VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT,         vk.VK_ACCESS_TRANSFORM_FEEDBACK_WRITE_BIT_EXT)
+    check(vk.VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT, vk.VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_READ_BIT_EXT |
+                                                                        vk.VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT)
+    check(vk.VK_BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT,             vk.VK_ACCESS_CONDITIONAL_RENDERING_READ_BIT_EXT)
+    check(vk.VK_BUFFER_USAGE_RAY_TRACING_BIT_NV,                        vk.VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_NV |
+                                                                        vk.VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NV)
+
+    return flags
+end
+
 function copyFrom(this::Buffer, other::Buffer)
     # TODO
     # RecordingCommandBuffer::convenienceBufferCheck("Buffer::copyFrom()")
-    queue = graphicsQueue(this.mDevice)
+    queue = this.mDevice.graphicsQueue()
     cmd = queue.beginCommandBuffer()
-    copyFrom(other, cmd)
+    this.copyFrom(other, cmd)
+    cmd.endCommandBuffer()
 end
 
 function copyFrom(this::Buffer, other::Buffer, cmd::RecordingCommandBuffer)
-    error("copyFrom has not been implemented!")
-    region = vk.VkBufferCopy(
+    region = [vk.VkBufferCopy(
         0, #srcOffset::VkDeviceSize
         0, #dstOffset::VkDeviceSize
-        min(this.mCreateInfo.size, other.mCreateInfo.size) #size::VkDeviceSize
-    )
-    # TODO
-    # cmd->copyBuffer(other->mHandle, mHandle, 1, &region);
-    # cmd.attachResource(other);
+        min(this.mCreateInfo.handleRef()[].size, other.mCreateInfo.handleRef()[].size) #size::VkDeviceSize
+    )]
 
-    # return BufferBarrier(cmd, handle())
-    #     .addSrcStage(vk::PipelineStageFlagBits::eTransfer)
-    #     .addSrcAccess(vk::AccessFlagBits::eTransferWrite)
-    #     .addDstStage(stagesForUsage(mCreateInfo.usage))
-    #     .addDstAccess(accessForUsage(mCreateInfo.usage));
+    vk.vkCmdCopyBuffer(cmd.handle(), other.handle(), this.handle(), 1, pointer(region))
+    cmd.attachResource(other)
+
+    BufferBarrier(cmd, this.handle(),
+                  srcStage = vk.VkFlags(vk.VK_PIPELINE_STAGE_TRANSFER_BIT),
+                  srcAccessMask = vk.VkFlags(vk.VK_ACCESS_TRANSFER_WRITE_BIT),
+                  dstStage = stagesForUsage(this.mCreateInfo.handleRef()[].usage),
+                  dstAccessMask = accessForUsage(this.mCreateInfo.handleRef()[].usage)).apply()
 end
 
 function keepStagingBuffer(this::Buffer, val::Bool = true)
