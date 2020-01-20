@@ -3,8 +3,8 @@ module VkExt
 using VulkanCore
 include("VkExt.VkPhysicalDeviceFeatures.jl")
 
-const VK_TRUE = UInt32(vk.VK_TRUE)
-const VK_FALSE = UInt32(vk.VK_FALSE)
+const VK_TRUE = vk.VkBool32(vk.VK_TRUE)
+const VK_FALSE = vk.VkBool32(vk.VK_FALSE)
 
 # instance
 function createInstance(info::vk.VkInstanceCreateInfo)::vk.VkInstance

@@ -61,8 +61,8 @@ function defaults(::Type{GraphicsPipelineCreateInfo};
     layout, #required
     renderPass::vk.VkRenderPass, #required
     subpass::UInt32 = UInt32(0),
-    depthTestEnable::vk.VkBool32 = Vk.VK_FALSE,
-    depthWriteEnable::vk.VkBool32 = Vk.VK_FALSE,
+    depthTestEnable::vk.VkBool32 = VkExt.VK_FALSE,
+    depthWriteEnable::vk.VkBool32 = VkExt.VK_FALSE,
     frontFace::vk.VkFrontFace = vk.VK_FRONT_FACE_COUNTER_CLOCKWISE,
     inputState::PipelineVertexInputStateCreateInfo = PipelineVertexInputStateCreateInfo()
 )::GraphicsPipelineCreateInfo

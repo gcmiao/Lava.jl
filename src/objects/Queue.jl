@@ -72,7 +72,7 @@ end
 
 function catchUp(this::Queue, inflightBuffers::Int32)
     while(length(this.mSubmissionFences) > inflightBuffers)
-        VkExt.waitForFences(this.mVkDevice, this.mSubmissionFences, vk.VkBool32(vk.VK_FALSE), typemax(UInt64))
+        VkExt.waitForFences(this.mVkDevice, this.mSubmissionFences, VkExt.VK_FALSE, typemax(UInt64))
         gc(this)
     end
 end
