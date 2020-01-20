@@ -1,7 +1,7 @@
 module Utils
 
 using LinearAlgebra
-export object_to_pointer, indexOfField, memmove, sizeof_obj
+export ref_to_pointer, indexOfField, memmove, sizeof_obj
 
 include("MathUtils.jl")
 include("StringUtils.jl")
@@ -32,8 +32,8 @@ function indexOfField(type, field)
     return 0
 end
 
-function object_to_pointer(type::Type, pointer)
-    pointer == nothing ? C_NULL : Base.unsafe_convert(Ptr{type}, pointer)
+function ref_to_pointer(type::Type, ref)
+    ref == nothing ? C_NULL : Base.unsafe_convert(Ptr{type}, ref)
 end
 
 end #module

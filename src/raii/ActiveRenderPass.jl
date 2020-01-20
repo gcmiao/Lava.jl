@@ -74,7 +74,7 @@ end
 function pushConstantBlock(this::InlineSubpass, data::T) where T
     ref = Ref(data)
     GC.@preserve ref begin
-        pushConstantBlock(this, UInt32(sizeof_obj(data)), Base.unsafe_convert(Ptr{Cvoid}, pointer_from_objref(ref)))
+        pushConstantBlock(this, UInt32(sizeof_obj(data)), ref_to_pointer(Cvoid, ref))
     end
 end
 

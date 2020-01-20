@@ -18,7 +18,7 @@ struct PipelineShaderStageCreateInfo
             stage, #stage::VkShaderStageFlagBits
             _module, #::vk.VkShaderModule
             Base.unsafe_convert(Cstring, name), #pName::Cstring
-            object_to_pointer(vk.VkSpecializationInfo, specializationInfo), #pSpecializationInfo::Ptr{VkSpecializationInfo}
+            ref_to_pointer(vk.VkSpecializationInfo, specializationInfo), #pSpecializationInfo::Ptr{VkSpecializationInfo}
         )), [specializationInfo])
     end
 end

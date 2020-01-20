@@ -19,7 +19,7 @@ struct PipelineMultisampleStateCreateInfo
             rasterizationSamples, #::VkSampleCountFlagBits
             sampleShadingEnable, #::VkBool32
             minSampleShading, #::Cfloat
-            object_to_pointer(vk.VkSampleMask, sampleMask), #Ptr{VkSampleMask}
+            ref_to_pointer(vk.VkSampleMask, sampleMask), #Ptr{VkSampleMask}
             alphaToCoverageEnable, #::VkBool32
             alphaToOneEnable #::VkBool32
         )), [sampleMask])

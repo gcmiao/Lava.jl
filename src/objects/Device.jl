@@ -224,7 +224,7 @@ function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysical
                 phyDeviceCount, #physicalDeviceCount::UInt32
                 pointer(physicalDevices) #pPhysicalDevices::Ptr{VkPhysicalDevice}
                 )
-            pNext = pointer_from_objref(Ref(groupInfo))
+            pNext = ref_to_pointer(Ref(groupInfo))
         end
         enabledFeaturesRef = Ref(VkExt.build(deviceFatures))
         createInfo = vk.VkDeviceCreateInfo(
