@@ -3,8 +3,8 @@ using VulkanCore
 include("TestInstance.jl")
 include("TestQueueRequest.jl")
 include("TestDevice.jl")
-include("ShaderTest.jl")
-include("SamplerTest.jl")
+include("TestShader.jl")
+include("TestSampler.jl")
 
 instanceRef = Ref{lava.Instance}()
 @test testInstance(instanceRef)
