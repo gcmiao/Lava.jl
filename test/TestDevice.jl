@@ -46,7 +46,8 @@ function testDevice(instance, queues, outDevice::Ref)
     @test testSelectionStrategy(instance)
     # create INTEGRATED_GPU
     device = instance.createDevice(queues,
-                                   lava.NthOfTypeStrategy(vk.VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU))
+                                   # lava.NthOfTypeStrategy(vk.VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+                                   lava.NthOfTypeStrategy(vk.VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU))
     # create DISCRETE_GPU
     # device = instance.createDevice(queues,
     #                               lava.NthOfTypeStrategy(vk.VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU))

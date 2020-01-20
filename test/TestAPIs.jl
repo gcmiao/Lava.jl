@@ -18,4 +18,4 @@ deviceRef = Ref{lava.Device}()
 
 @test testDescriptorSetLayout(deviceRef[])
 
-@test testSampler(deviceRef[].mVkDevice)
+@test testSampler(deviceRef[].getLogicalDevice())
