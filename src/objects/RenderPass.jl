@@ -49,3 +49,37 @@ end
 function getClearValues(this::RenderPass)::Vector{vk.VkClearValue}
     return this.mClearValues
 end
+
+function setClearColor(this::RenderPass, color::vk.VkClearColorValue)
+    attachments = this.mInfo.getAttachments()
+    for i = 1 : length(this.mClearValues)
+        if (aspectsOf(attachments[i].getFormat()) &
+            vk.VK_IMAGE_ASPECT_COLOR_BIT != 0)
+            this.mClearValues[i] = VkExt.ClearValue(color)
+        end
+    end
+end
+
+function setClearColors(this::RenderPass, colors::Vector{vk.VkClearColorValue})
+    colorsIdx = 1
+    attachments = this.mInfo.getAttachments()
+    for i = 1 : length(this.mClearValues)
+        if (aspectsOf(attachments[i].getFormat()) &
+            vk.VK_IMAGE_ASPECT_COLOR_BIT != 0)
+            @assert colorsIdx <= length(colors) "You need to provide as many clear colors as there are " *
+                                               "color attachments in your RenderPass."
+            this.mClearValues[i] = VkExt.ClearValue(colors[colorsIdx])
+            colorsIdx += 1
+        end
+    end
+end
+
+function setClearDepthStencil(this::RenderPass, depthStencil::vk.VkClearDepthStencilValue)
+    attachments = this.mInfo.getAttachments()
+    for i = 1 : length(this.mClearValues)
+        if (aspectsOf(attachments[i].getFormat()) &
+           (vk.VK_IMAGE_ASPECT_DEPTH_BIT | vk.VK_IMAGE_ASPECT_STENCIL_BIT) != 0)
+            this.mClearValues[i] = VkExt.ClearValue(depthStencil)
+        end
+    end
+end

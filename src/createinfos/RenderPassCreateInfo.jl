@@ -21,6 +21,7 @@ mutable struct RenderPassCreateInfo
         return this
     end
 end
+@class RenderPassCreateInfo
 
 function createSimpleForward(::Type{RenderPassCreateInfo}, colorFormat::vk.VkFormat)::RenderPassCreateInfo
     info = RenderPassCreateInfo()
@@ -54,6 +55,10 @@ end
 
 function addAttachment(this::RenderPassCreateInfo, att::AttachmentDescription)
     push!(this.mAttachments, att);
+end
+
+function getAttachments(this::RenderPassCreateInfo)::Vector{AttachmentDescription}
+    return this.mAttachments
 end
 
 function createFullSubpass(this::RenderPassCreateInfo)::SubpassDescription

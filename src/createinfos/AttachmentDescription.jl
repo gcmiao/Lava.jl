@@ -17,6 +17,7 @@ mutable struct AttachmentDescription
         return this
     end
 end
+@class AttachmentDescription
 
 function createWithDepth24Stencil8(::Type{AttachmentDescription})::AttachmentDescription
     result = AttachmentDescription()
