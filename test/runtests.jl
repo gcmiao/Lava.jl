@@ -1,6 +1,8 @@
 using Revise
 using Test
+using VulkanCore
 using Lava
+using Lava: @class
 include("TestAPIs.jl")
 
 # include("class_method.jl")

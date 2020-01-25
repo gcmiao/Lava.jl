@@ -1,13 +1,13 @@
-using Lava: @class
-using VulkanCore
 include("TestInstance.jl")
 include("TestQueueRequest.jl")
 include("TestDevice.jl")
 include("TestShader.jl")
 include("TestSampler.jl")
+include("TestFramebuffer.jl")
 
 instanceRef = Ref{lava.Instance}()
-@test testInstance(instanceRef)
+glfwRef = Ref{features.GlfwOutput}()
+@test testInstance(instanceRef, glfwRef)
 
 @test testQueueRequest()
 queues = [lava.createGraphics(lava.QueueRequest, "graphics")]
@@ -18,4 +18,8 @@ deviceRef = Ref{lava.Device}()
 
 @test testDescriptorSetLayout(deviceRef[])
 
+pass = deviceRef[].createRenderPass(lava.createSimpleForward(lava.RenderPassCreateInfo, glfwRef[].format()))
+
 @test testSampler(deviceRef[].getLogicalDevice())
+
+@test testFramebuffer(deviceRef[], pass)

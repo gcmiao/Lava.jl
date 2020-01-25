@@ -1,5 +1,5 @@
 include("TestFeature.jl")
-function testInstance(outInstance::Ref)
+function testInstance(outInstance::Ref, outGlfw::Ref)
     # Create a Vulkan instance, tell it we need glfw and the validation as
     # extension features
     fs = Vector{features.IFeature}()
@@ -15,5 +15,6 @@ function testInstance(outInstance::Ref)
     @test glfw.mTempSurface != vk.VK_NULL_HANDLE
 
     outInstance[] = instance
+    outGlfw[] = glfw
     return true
 end

@@ -3,6 +3,7 @@ mutable struct Framebuffer
     mViews::Vector{ImageView}
     mViewHandles::Vector{vk.VkImageView}
     mCreateInfo::vk.VkFramebufferCreateInfo
+    mOwnedViews
 
     mHandle::vk.VkFramebuffer
 
@@ -11,6 +12,27 @@ mutable struct Framebuffer
         this.mPass = pass
         this.mViews = views
         this.mViewHandles = Vector{vk.VkImageView}()
+        this.mOwnedViews = nothing
+        init(this)
+        return this
+    end
+
+    function Framebuffer(pass::RenderPass, images::Vector{Image})
+        this = new()
+        this.mPass = pass
+        this.mViews = Vector{ImageView}()
+        this.mViewHandles = Vector{vk.VkImageView}()
+        this.mOwnedViews = this.mViews
+        for img in images
+            range = vk.VkImageSubresourceRange(
+                aspectsOf(img.mCreateInfo.format), # aspectMask::VkImageAspectFlags
+                0, # baseMipLevel::UInt32
+                1, # levelCount::UInt32
+                0, # baseArrayLayer::UInt32
+                img.mCreateInfo.arrayLayers # layerCount::UInt32
+            )
+            push!(this.mViews, img.createView(range))
+        end
         init(this)
         return this
     end
@@ -18,14 +40,15 @@ end
 
 @class Framebuffer
 
-
-function createFramebuffer(renderPass::RenderPass, attachments::Vector{ImageView})::Framebuffer
-    return Framebuffer(renderPass, attachments)
-end
-
 function destroy(this::Framebuffer)
     vk.vkDestroyFramebuffer(getVkDevice(this.mPass), this.mHandle, C_NULL)
     this.mHandle = C_NULL
+
+    if this.mOwnedViews != nothing
+        for v in this.mOwnedViews
+            v.destroy()
+        end
+    end
 end
 
 function init(this::Framebuffer)
