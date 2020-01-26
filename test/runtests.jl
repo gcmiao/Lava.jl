@@ -1,6 +1,8 @@
 using Revise
 using Test
 using VulkanCore
+using LinearAlgebra
+using GeometryTypes
 using Lava
 using Lava: @class
 include("TestAPIs.jl")

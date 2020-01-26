@@ -40,27 +40,33 @@ end
 function addAttribute(attributes::Vector{vk.VkVertexInputAttributeDescription},
                         bindings::Vector{vk.VkVertexInputBindingDescription},
                        attribute::vk.VkVertexInputAttributeDescription,
-                       type::Type)
+                            type::Type;
+                       inputRate::vk.VkVertexInputRate = vk.VK_VERTEX_INPUT_RATE_VERTEX)
     push!(attributes, attribute)
     if findfirst(b -> (b.binding == attribute.binding), bindings) == nothing
-        addBinding(bindings, attribute.binding, UInt32(sizeof(type)))
+        addBinding(bindings, attribute.binding, UInt32(sizeof(type)), inputRate)
     end
 end
 
 function addAttribute(attributes::Vector{vk.VkVertexInputAttributeDescription},
                         bindings::Vector{vk.VkVertexInputBindingDescription},
-                            type::Type, member::Symbol, location::UInt32, binding::UInt32 = 0)
+                            type::Type, member::Symbol, location::UInt32, binding::UInt32 = 0;
+                       inputRate::vk.VkVertexInputRate = vk.VK_VERTEX_INPUT_RATE_VERTEX)
     idx = indexOfField(type, member)
     if idx == 0
         error("Cannot find field '", member, "' in type '", type, "'")
     end
     offset = fieldoffset(type, idx)
     format = vkTypeOfFormat(fieldtype(type, member))
-    addAttribute(attributes, bindings, vk.VkVertexInputAttributeDescription(location, binding, format, offset), type)
+    addAttribute(attributes, bindings, vk.VkVertexInputAttributeDescription(location, binding, format, offset),
+                type; inputRate = inputRate)
 end
 
 function binding(attributes::Vector{vk.VkVertexInputAttributeDescription},
                    bindings::Vector{vk.VkVertexInputBindingDescription},
-                  bindingId::UInt32, type::Type, member::Symbol)
-    addAttribute(attributes, bindings, type, member, isempty(attributes) ? UInt32(0) : UInt32(Base.last(attributes).location + 1), bindingId)
+                  bindingId::UInt32, type::Type, member::Symbol;
+                  inputRate::vk.VkVertexInputRate = vk.VK_VERTEX_INPUT_RATE_VERTEX)
+    addAttribute(attributes, bindings, type, member,
+                 isempty(attributes) ? UInt32(0) : UInt32(Base.last(attributes).location + 1),
+                 bindingId; inputRate = inputRate)
 end

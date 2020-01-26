@@ -1,19 +1,9 @@
 include("TestInstance.jl")
 include("TestQueueRequest.jl")
 include("TestDevice.jl")
-include("TestShader.jl")
 include("TestSampler.jl")
 include("TestFramebuffer.jl")
-include("TestRenderpass.jl")
-
-# mutable struct CameraData
-#     view::Mat4f0
-#     proj::Mat4f0
-#
-#     CameraData() = new(Mat4f0(1I), Mat4f0(1I))
-#     CameraData(view::Mat4f0, proj::Mat4f0) = new(view, proj)
-# end
-# @class CameraData
+include("TestGraphicsPipeline.jl")
 
 instanceRef = Ref{lava.Instance}()
 glfwRef = Ref{features.GlfwOutput}()
@@ -26,11 +16,9 @@ deviceRef = Ref{lava.Device}()
 @test testDevice(instanceRef[], queues, deviceRef)
 @test testDevice(instanceRef[], queues, lava.NthGroupStrategy(0))
 
-# plLayout = deviceRef[].createPipelineLayout(CameraData)
-@test testDescriptorSetLayout(deviceRef[])
-
+pipelineRef = Ref{lava.GraphicsPipeline}()
 passRef = Ref{lava.RenderPass}()
-@test testRenderPass(deviceRef[], glfwRef[], passRef)
+@test testCreateGraphicsPipeline(deviceRef[], glfwRef[], pipelineRef, passRef)
 
 @test testSampler(deviceRef[].getLogicalDevice())
 

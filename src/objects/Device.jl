@@ -291,8 +291,8 @@ function createRenderPass(this::Device, info::RenderPassCreateInfo)::RenderPass
     return RenderPass(this.mVkDevice, info)
 end
 
-# TODO
-function createShader(this::Device, code)
+function createShader(this::Device, code::String)
+    # TODO
 end
 
 function createShaderFromFile(this::Device, filePath::String)::ShaderModule
