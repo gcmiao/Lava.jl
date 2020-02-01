@@ -9,6 +9,13 @@ function destroy(objList::Vector{T}) where T
     end
 end
 
+function destroy!(objList::Vector{T}) where T
+    for obj in objList
+        destroy(obj)
+    end
+    empty!(objList)
+end
+
 function Base.getproperty(objList::Vector{T}, sym::Symbol) where T
     if sym == :destroy
         return () -> begin

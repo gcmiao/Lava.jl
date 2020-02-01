@@ -41,6 +41,7 @@ mutable struct GlfwWindow <: IFeature
                         width::UInt32, height::UInt32, resizable::Bool, title::String)
         this = new()
         this.mDevice = device
+        this.mChain = C_NULL
         this.mChainFormat = format
         this.mWidth = width
         this.mHeight = height
@@ -55,6 +56,13 @@ mutable struct GlfwWindow <: IFeature
         GLFW.WindowHint(GLFW.VISIBLE, true)
         GLFW.WindowHint(GLFW.RESIZABLE, this.mResizable ? true : false)
         this.mWindow = GLFW.CreateWindow(width, height, title)
+        GLFW.SetWindowSizeCallback(this.mWindow, (winHandle, w, h) -> begin
+            # TODO: if check does not work
+            # if this.mWindow == winHandle
+                this.onResize(UInt32(w), UInt32(h))
+            # end
+        end)
+
         this.mQueue = namedQueue(this.mDevice, "present")
         this.mSurface = GLFW.CreateWindowSurface(getInstance(device), this.mWindow)
         vkDevice = getLogicalDevice(this.mDevice)
@@ -70,8 +78,7 @@ end
 @class GlfwWindow
 
 function LavaCore.:destroy(this::GlfwWindow)
-    LavaCore.destroy(this.mChainViews)
-    empty!(this.mChainViews)
+    destroy!(this.mChainViews)
 
     vkDevice = getLogicalDevice(this.mDevice)
     if isdefined(this, :mImageReady)
@@ -81,7 +88,7 @@ function LavaCore.:destroy(this::GlfwWindow)
         vk.vkDestroySemaphore(vkDevice, this.mRenderingComplete, C_NULL)
     end
 
-    if isdefined(this, :mChain)
+    if this.mChain != C_NULL
         vk.vkDestroySwapchainKHR(vkDevice, this.mChain, C_NULL)
     end
 
@@ -130,14 +137,21 @@ function buildSwapchainWith(this::GlfwWindow, handler)
     buildSwapchain(this)
 end
 
-function buildSwapchain(this::GlfwWindow)
-    empty!(this.mChainImages)
-    empty!(this.mChainViews)
+function onResize(this::GlfwWindow, w::UInt32, h::UInt32)
+    this.mWidth = w
+    this.mHeight = h
+    # TODO Executing build while dragging will get bad performance
+    this.buildSwapchain()
+end
 
-    # TODO
-    # if this.mChain
-    #     mDevice->handle().destroySwapchainKHR(mChain);
-    # end
+function buildSwapchain(this::GlfwWindow)
+    destroy!(this.mChainImages)
+    destroy!(this.mChainViews)
+    vkDevice = getLogicalDevice(this.mDevice)
+
+    if this.mChain != C_NULL
+        vk.vkDestroySwapchainKHR(vkDevice, this.mChain, C_NULL)
+    end
     phyDevice = getPhysicalDevice(this.mDevice)
     capRef = Ref{vk.VkSurfaceCapabilitiesKHR}()
     vk.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(phyDevice, this.mSurface, capRef)
