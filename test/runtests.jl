@@ -4,7 +4,7 @@ using VulkanCore
 using LinearAlgebra
 using GeometryTypes
 using Lava
-using Lava: @class
+using Lava: @class, @scope, @autodestroy
 include("TestAPIs.jl")
 
 # include("class_method.jl")

@@ -52,3 +52,11 @@ function defaults(::Type{PipelineShaderStageCreateInfo};
 
     return info
 end
+
+function createComputeStage(_module::ShaderModule, #required
+                               name::String = "main")
+    info = PipelineShaderStageCreateInfo(
+              _module = handle(_module), name = name,
+              stage = vk.VK_SHADER_STAGE_COMPUTE_BIT)
+    return info
+end

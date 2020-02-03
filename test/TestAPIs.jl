@@ -4,6 +4,7 @@ include("TestDevice.jl")
 include("TestSampler.jl")
 include("TestFramebuffer.jl")
 include("TestGraphicsPipeline.jl")
+include("TestComputePipeline.jl")
 
 instanceRef = Ref{lava.Instance}()
 glfwRef = Ref{features.GlfwOutput}()
@@ -19,6 +20,7 @@ deviceRef = Ref{lava.Device}()
 pipelineRef = Ref{lava.GraphicsPipeline}()
 passRef = Ref{lava.RenderPass}()
 @test testCreateGraphicsPipeline(deviceRef[], glfwRef[], pipelineRef, passRef)
+@test testCreateComputePipeline(deviceRef[])
 
 @test testSampler(deviceRef[].getLogicalDevice())
 

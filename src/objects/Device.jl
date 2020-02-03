@@ -274,8 +274,8 @@ function createPipelineLayout(this::Device, type::Type, descriptorSets::Vector{D
     return createPipelineLayout(this, [range], descriptorSets);
 end
 
-function createPipelineLayout(this::Device, constantRanges::Vector{vk.VkPushConstantRange} = [],
-                              descriptorSets::Vector{DescriptorSetLayout} = [])::PipelineLayout
+function createPipelineLayout(this::Device, constantRanges::Vector{vk.VkPushConstantRange} = Vector{vk.VkPushConstantRange}(),
+                                            descriptorSets::Vector{DescriptorSetLayout} = Vector{DescriptorSetLayout}())::PipelineLayout
     return PipelineLayout(this.mVkDevice, descriptorSets, constantRanges)
 end
 
