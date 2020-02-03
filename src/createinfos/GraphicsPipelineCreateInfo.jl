@@ -132,3 +132,23 @@ function defaults(::Type{GraphicsPipelineCreateInfo};
     )
     return info
 end
+
+function deriveFrom(outFlagRef::Ref{vk.VkPipelineCreateFlags})
+    outFlagRef[] |= vk.VK_PIPELINE_CREATE_DERIVATIVE_BIT
+end
+
+function allowDerivatives(outFlagRef::Ref{vk.VkPipelineCreateFlags}, val::Bool)
+    if (val)
+        outFlagRef[] |= vk.VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT
+    else
+        outFlagRef[] &= ~UInt32(vk.VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT)
+    end
+end
+
+function disableOptimization(outFlagRef::Ref{vk.VkPipelineCreateFlags}, val::Bool)
+    if (val)
+        outFlagRef[] |= vk.VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT
+    else
+        outFlagRef[] &= ~UInt32(vk.VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT)
+    end
+end

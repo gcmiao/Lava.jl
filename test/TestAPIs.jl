@@ -19,6 +19,7 @@ deviceRef = Ref{lava.Device}()
 
 pipelineRef = Ref{lava.GraphicsPipeline}()
 passRef = Ref{lava.RenderPass}()
+@test testGraphicsPipelineFlag()
 @test testCreateGraphicsPipeline(deviceRef[], glfwRef[], pipelineRef, passRef)
 @test testCreateComputePipeline(deviceRef[])
 

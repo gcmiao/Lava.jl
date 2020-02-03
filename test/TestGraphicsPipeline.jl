@@ -38,3 +38,18 @@ function testCreateGraphicsPipeline(device, glfw, pipelineRef::Ref, passRef::Ref
     pipelineRef[] = pipeline
     return true
 end
+
+function testGraphicsPipelineFlag()
+    createFlagRef = Ref{vk.VkPipelineCreateFlags}()
+    lava.deriveFrom(createFlagRef)
+    @test createFlagRef[] & vk.VK_PIPELINE_CREATE_DERIVATIVE_BIT != 0
+    lava.allowDerivatives(createFlagRef, true)
+    @test createFlagRef[] & vk.VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT != 0
+    lava.allowDerivatives(createFlagRef, false)
+    @test createFlagRef[] & vk.VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT == 0
+    lava.disableOptimization(createFlagRef, true)
+    @test createFlagRef[] & vk.VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT != 0
+    lava.disableOptimization(createFlagRef, false)
+    @test createFlagRef[] & vk.VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT == 0
+    return true
+end
