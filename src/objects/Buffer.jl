@@ -45,7 +45,7 @@ end
 function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
     # TODO
     #RecordingCommandBuffer::convenienceBufferCheck("Buffer::setDataVRAM()");
-    this.initHandle(size);
+    this.initHandle(size)
     if !isdefined(this, :mMemory)
         this.realizeVRAM()
     end
@@ -56,7 +56,7 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
         unmap(mapped)
     else
         if isdefined(this, :mStagingBuffer)
-            staging = this.mStagingBuffer;
+            staging = this.mStagingBuffer
         else
             createInfo = copyWithUsage(this.mCreateInfo, vk.VkFlags(vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT))
             staging = this.mDevice.createBuffer(createInfo)
@@ -68,6 +68,24 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
         if this.mKeepStagingBuffer
             this.mStagingBuffer = staging
         end
+    end
+end
+
+function setDataVRAM(this::Buffer, data::Vector, size::Csize_t,
+                      cmd::RecordingCommandBuffer)::BufferBarrier
+    this.initHandle(size)
+    if !isdefined(this, :mMemory)
+        this.realizeVRAM()
+    end
+
+    if this.mMemory.isMappable() # For APUs / integrated GPUs
+        mapped = this.mMemory.map()
+        memmove(mapped.getData(), pointer(data), size)
+        unmap(mapped)
+    else
+        staging = this.stagingBuffer()
+        staging.setDataRAM(data, size)
+        return this.copyFrom(staging, cmd)
     end
 end
 
@@ -175,7 +193,7 @@ function copyFrom(this::Buffer, other::Buffer)
     cmd.endCommandBuffer()
 end
 
-function copyFrom(this::Buffer, other::Buffer, cmd::RecordingCommandBuffer)
+function copyFrom(this::Buffer, other::Buffer, cmd::RecordingCommandBuffer)::BufferBarrier
     region = [vk.VkBufferCopy(
         0, #srcOffset::VkDeviceSize
         0, #dstOffset::VkDeviceSize
@@ -185,13 +203,33 @@ function copyFrom(this::Buffer, other::Buffer, cmd::RecordingCommandBuffer)
     vk.vkCmdCopyBuffer(cmd.handle(), other.handle(), this.handle(), 1, pointer(region))
     cmd.attachResource(other)
 
-    BufferBarrier(cmd, this.handle(),
-                  srcStage = vk.VkFlags(vk.VK_PIPELINE_STAGE_TRANSFER_BIT),
-                  srcAccessMask = vk.VkFlags(vk.VK_ACCESS_TRANSFER_WRITE_BIT),
-                  dstStage = stagesForUsage(this.mCreateInfo.handleRef()[].usage),
-                  dstAccessMask = accessForUsage(this.mCreateInfo.handleRef()[].usage)).apply()
+    barrier = BufferBarrier(cmd, this.handle(),
+                          srcStage = vk.VkFlags(vk.VK_PIPELINE_STAGE_TRANSFER_BIT),
+                          srcAccessMask = vk.VkFlags(vk.VK_ACCESS_TRANSFER_WRITE_BIT),
+                          dstStage = stagesForUsage(this.mCreateInfo.handleRef()[].usage),
+                          dstAccessMask = accessForUsage(this.mCreateInfo.handleRef()[].usage))
+    barrier.apply()
+    return barrier
 end
 
 function keepStagingBuffer(this::Buffer, val::Bool = true)
     this.mKeepStagingBuffer = val
+end
+
+function stagingBuffer(this::Buffer)::Buffer
+    staging::Buffer
+    if isdefined(this, :mStagingBuffer)
+        staging = this.mStagingBuffer
+    else
+        createInfo = copyWithUsage(this.mCreateInfo, vk.VkFlags(vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+                                                                vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT))
+        staging = this.mDevice.createBuffer(createInfo)
+        staging.realizeRAM()
+    end
+
+    if this.mKeepStagingBuffer
+        this.mStagingBuffer = staging
+    end
+
+    return staging
 end
