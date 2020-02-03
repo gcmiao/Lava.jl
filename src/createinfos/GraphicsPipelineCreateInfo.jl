@@ -107,7 +107,7 @@ function defaults(::Type{GraphicsPipelineCreateInfo};
                         alphaBlendOp = vk.VK_BLEND_OP_ADD, #::VkBlendOp
                         colorWriteMask = (vk.VK_COLOR_COMPONENT_R_BIT | vk.VK_COLOR_COMPONENT_G_BIT |
                                             vk.VK_COLOR_COMPONENT_B_BIT | vk.VK_COLOR_COMPONENT_A_BIT) #::VkColorComponentFlags
-                    )]
+                    ).handle()]
     colorBlendState = PipelineColorBlendStateCreateInfo(
                             logicOp = vk.VK_LOGIC_OP_COPY, #::VkLogicOp
                             attachments = attachments #::Vector{vk.VkPipelineColorBlendAttachmentState}

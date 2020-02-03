@@ -19,8 +19,9 @@ function testShaderStages(device, stagesRef::Ref)
     @test testLoadShader(device, shaderFolder * "cube_frag.spv", fragShaderRef)
 
     stageVert = lava.defaults(lava.PipelineShaderStageCreateInfo, _module = vertShaderRef[])
-    stageFrag = lava.defaults(lava.PipelineShaderStageCreateInfo, _module = fragShaderRef[])
-    stages = [stageVert.handleRef()[], stageFrag.handleRef()[]]
+    stages = [stageVert.handleRef()[]]
+    lava.addStage(stages, fragShaderRef[])
+    @test length(stages) == 2
     stagesRef[] = stages
     return true
 end

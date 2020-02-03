@@ -53,6 +53,14 @@ function defaults(::Type{PipelineShaderStageCreateInfo};
     return info
 end
 
+function addStage(outStages::Vector{vk.VkPipelineShaderStageCreateInfo},
+                    _module::ShaderModule, #required
+                       name::String = "main",
+                      stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL)
+    stage = defaults(PipelineShaderStageCreateInfo, _module = _module, name = name, stage = stage)
+    push!(outStages, stage.handleRef()[])
+end
+
 function createComputeStage(_module::ShaderModule, #required
                                name::String = "main")
     info = PipelineShaderStageCreateInfo(

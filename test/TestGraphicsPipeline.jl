@@ -51,5 +51,16 @@ function testGraphicsPipelineFlag()
     @test createFlagRef[] & vk.VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT != 0
     lava.disableOptimization(createFlagRef, false)
     @test createFlagRef[] & vk.VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT == 0
+
+    @test testColorBlendStateFlag()
+
+    return true
+end
+
+function testColorBlendStateFlag()
+    states = Vector{vk.VkPipelineColorBlendAttachmentState}()
+    lava.addNoBlend(states)
+    lava.addTransparencyBlend(states)
+    @test length(states) == 2
     return true
 end
