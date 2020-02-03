@@ -28,6 +28,16 @@ function handleRef(this::BufferCreateInfo)::Ref{vk.VkBufferCreateInfo}
     return this.mHandleRef
 end
 
+function stagingBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
+    return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+end
+
+function storageBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
+    return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                                                 vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                                 vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+end
+
 function arrayBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
     return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                                                  vk.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
@@ -36,6 +46,26 @@ end
 function indexBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
     return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                                                  vk.VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+end
+
+function indexArrayBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
+    return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                                 vk.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                                 vk.VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+end
+
+function downloadBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
+    return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+end
+
+function uniformBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
+    return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                                 vk.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
+end
+
+function raytracingBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
+    return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                                 vk.VK_BUFFER_USAGE_RAY_TRACING_BIT_NV)
 end
 
 function copyWithSize(this::BufferCreateInfo, size::Csize_t)
