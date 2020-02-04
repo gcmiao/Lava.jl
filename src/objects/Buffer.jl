@@ -2,7 +2,7 @@ mutable struct Buffer
     mDevice::Device
     mCreateInfo::BufferCreateInfo
     mMemory::MemoryChunk
-    mStagingBuffer::Buffer
+    mStagingBuffer::Ref{Buffer}
     mKeepStagingBuffer::Bool
 
     mHandle::vk.VkBuffer
@@ -13,6 +13,7 @@ mutable struct Buffer
         this.mCreateInfo = createInfo
         this.mHandle = C_NULL
         this.mKeepStagingBuffer = false
+        this.mStagingBuffer = Ref{Buffer}()
         if (handleRef(createInfo)[].size > 0)
             this.mHandle = VkExt.createBuffer(getLogicalDevice(this.mDevice), handleRef(createInfo))
         end
@@ -29,8 +30,8 @@ end
 function destroy(this::Buffer)
     vk.vkDestroyBuffer(getLogicalDevice(this.mDevice), this.mHandle, C_NULL)
     destroy(this.mMemory)
-    if isdefined(this, :mStagingBuffer)
-        destroy(this.mStagingBuffer)
+    if isdefined(this.mStagingBuffer, :x)
+        destroy(this.mStagingBuffer[])
     end
 end
 
@@ -55,8 +56,9 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
         memmove(getData(mapped), pointer(data), size)
         unmap(mapped)
     else
-        if isdefined(this, :mStagingBuffer)
-            staging = this.mStagingBuffer
+        staging::Buffer
+        if isdefined(this.mStagingBuffer, :x)
+            staging = this.mStagingBuffer[]
         else
             createInfo = copyWithUsage(this.mCreateInfo, vk.VkFlags(vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT))
             staging = this.mDevice.createBuffer(createInfo)
@@ -66,7 +68,9 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
         this.copyFrom(staging)
 
         if this.mKeepStagingBuffer
-            this.mStagingBuffer = staging
+            this.mStagingBuffer[] = staging
+        else
+            destroy(staging)
         end
     end
 end
@@ -83,13 +87,14 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t,
         memmove(mapped.getData(), pointer(data), size)
         unmap(mapped)
     else
-        staging = this.stagingBuffer()
-        staging.setDataRAM(data, size)
-        return this.copyFrom(staging, cmd)
+        return this.executeOnStagingBuffer(staging->begin
+            staging.setDataRAM(data, size)
+            return this.copyFrom(staging, cmd)
+        end)
     end
 end
 
-function setDataRAM(this::Buffer, data, size::Csize_t)
+function setDataRAM(this::Buffer, data::Vector, size::Csize_t)
     initHandle(this, size)
     if !isdefined(this, :mMemory)
         realizeRAM(this)
@@ -100,13 +105,13 @@ function setDataRAM(this::Buffer, data, size::Csize_t)
     unmap(mapped)
 end
 
-function initHandle(this::Buffer, dataLen::Csize_t)
+function initHandle(this::Buffer, size::Csize_t)
     if (this.mHandle != C_NULL)
-        @assert (dataLen <= handleRef(this.mCreateInfo)[].size) "Buffers in Vulkan cannot be " *
-                                                                "enlarged. Create a new one or " *
-                                                                "start off with a bigger one."
+        @assert (size <= handleRef(this.mCreateInfo)[].size) "Buffers in Vulkan cannot be " *
+                                                             "enlarged. Create a new one or " *
+                                                             "start off with a bigger one."
     else
-        this.mCreateInfo = copyWithSize(this.mCreateInfo, dataLen)
+        this.mCreateInfo = copyWithSize(this.mCreateInfo, size)
         this.mHandle = VkExt.createBuffer(getLogicalDevice(this.mDevice), handleRef(this.mCreateInfo))
     end
 end
@@ -216,10 +221,10 @@ function keepStagingBuffer(this::Buffer, val::Bool = true)
     this.mKeepStagingBuffer = val
 end
 
-function stagingBuffer(this::Buffer)::Buffer
+function executeOnStagingBuffer(this::Buffer, callable)
     staging::Buffer
-    if isdefined(this, :mStagingBuffer)
-        staging = this.mStagingBuffer
+    if isdefined(this.mStagingBuffer, :x)
+        staging = this.mStagingBuffer[]
     else
         createInfo = copyWithUsage(this.mCreateInfo, vk.VkFlags(vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
                                                                 vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT))
@@ -227,9 +232,12 @@ function stagingBuffer(this::Buffer)::Buffer
         staging.realizeRAM()
     end
 
-    if this.mKeepStagingBuffer
-        this.mStagingBuffer = staging
-    end
+    ret = callable(staging)
 
-    return staging
+    if this.mKeepStagingBuffer
+        this.mStagingBuffer[] = staging
+    else
+        destroy(staging)
+    end
+    return ret
 end
