@@ -5,6 +5,7 @@ include("TestSampler.jl")
 include("TestFramebuffer.jl")
 include("TestGraphicsPipeline.jl")
 include("TestComputePipeline.jl")
+include("TestImage.jl")
 include("TestBuffer.jl")
 
 instanceRef = Ref{lava.Instance}()
@@ -26,6 +27,7 @@ passRef = Ref{lava.RenderPass}()
 
 @test testSampler(deviceRef[].getLogicalDevice())
 
+@test testImageCreateInfo(deviceRef[].getPhysicalDevice())
 @test testFramebuffer(deviceRef[], passRef[])
 
 @test testCreateBufferCreateInfo()

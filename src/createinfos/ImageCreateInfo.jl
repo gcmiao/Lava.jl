@@ -12,7 +12,7 @@ struct ImageCreateInfo
         arrayLayers = 0, #::UInt32
         samples = vk.VK_SAMPLE_COUNT_1_BIT, #::VkSampleCountFlagBits
         tiling = vk.VK_IMAGE_TILING_OPTIMAL, #::VkImageTiling
-        usage = 0, #::VkImageUsageFlags
+        usage = vk.VkImageUsageFlags(0), #::VkImageUsageFlags
         sharingMode = vk.VK_SHARING_MODE_EXCLUSIVE, #::VkSharingMode
         queueFamilyIndexCount = 0, #::UInt32
         pQueueFamilyIndices = C_NULL, #::Ptr{UInt32}
@@ -45,7 +45,7 @@ function handleRef(this::ImageCreateInfo)::Ref{vk.VkImageCreateInfo}
 end
 
 function createImageCreateInfo(vkPhyDevice::vk.VkPhysicalDevice;
-                               usage = vk.VK_IMAGE_USAGE_TRANSFER_DST_BIT | vk.VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                               usage = vk.VkImageUsageFlags(0),
                                others...)
     usage |= vk.VK_IMAGE_USAGE_TRANSFER_DST_BIT | vk.VK_IMAGE_USAGE_TRANSFER_SRC_BIT
     tilingRef = Ref{vk.VkImageTiling}(vk.VK_IMAGE_TILING_OPTIMAL)
@@ -118,6 +118,68 @@ function adaptTiling(vkPhyDevice::vk.VkPhysicalDevice, format::vk.VkFormat, usag
     end
 end
 
+function mipLevels(dim::UInt32)::UInt32
+    count::UInt32 = UInt32(1)
+    while (dim >>= 1) > 0
+        count += 1
+    end
+    return count
+end
+
+function texture2D(vkPhyDevice::vk.VkPhysicalDevice,
+                         width::UInt32, height::UInt32, format::vk.VkFormat)::ImageCreateInfo
+    viewType, imgType, flags = getCombinedType(vk.VK_IMAGE_VIEW_TYPE_2D)
+    usage = vk.VK_IMAGE_USAGE_SAMPLED_BIT
+
+    info = createImageCreateInfo(vkPhyDevice, imageViewType = viewType, imageType = imgType, flags = flags,
+                                format = format,
+                                extent = vk.VkExtent3D(width, height, 1),
+                                mipLevels = mipLevels(min(width, height)),
+                                usage = usage)
+    return info
+end
+
+function texture2DArray(vkPhyDevice::vk.VkPhysicalDevice,
+                              width::UInt32, height::UInt32,
+                             layers::UInt32, format::vk.VkFormat)::ImageCreateInfo
+    viewType, imgType, flags = getCombinedType(vk.VK_IMAGE_VIEW_TYPE_2D_ARRAY)
+    usage = vk.VK_IMAGE_USAGE_SAMPLED_BIT
+
+    info = createImageCreateInfo(vkPhyDevice, imageViewType = viewType, imageType = imgType, flags = flags,
+                             format = format,
+                             extent = vk.VkExtent3D(width, height, 1),
+                             mipLevels = mipLevels(min(width, height)),
+                             arrayLayers = layers,
+                             usage = usage)
+    return info
+end
+
+function storageImage2D(vkPhyDevice::vk.VkPhysicalDevice,
+                              width::UInt32, height::UInt32, format::vk.VkFormat)::ImageCreateInfo
+    viewType, imgType, flags = getCombinedType(vk.VK_IMAGE_VIEW_TYPE_2D)
+    usage = vk.VK_IMAGE_USAGE_STORAGE_BIT
+
+    info = createImageCreateInfo(vkPhyDevice, imageViewType = viewType, imageType = imgType, flags = flags,
+                               format = format,
+                               extent = vk.VkExtent3D(width, height, 1),
+                               usage = usage)
+    return info
+end
+
+function storageImage2DArray(vkPhyDevice::vk.VkPhysicalDevice,
+                                   width::UInt32, height::UInt32,
+                                  layers::UInt32, format::vk.VkFormat)::ImageCreateInfo
+    viewType, imgType, flags = getCombinedType(vk.VK_IMAGE_VIEW_TYPE_2D_ARRAY)
+    usage = vk.VK_IMAGE_USAGE_STORAGE_BIT
+
+    info = createImageCreateInfo(vkPhyDevice, imageViewType = viewType, imageType = imgType, flags = flags,
+                               format = format,
+                               extent = vk.VkExtent3D(width, height, 1),
+                               arrayLayers = layers,
+                               usage = usage)
+    return info
+end
+
 function attachment2D(vkPhyDevice::vk.VkPhysicalDevice,
                     width::Integer, height::Integer, format::vk.VkFormat)::ImageCreateInfo
     viewType, imgType, flags = getCombinedType(vk.VK_IMAGE_VIEW_TYPE_2D)
@@ -134,6 +196,28 @@ function attachment2D(vkPhyDevice::vk.VkPhysicalDevice,
     info = createImageCreateInfo(vkPhyDevice, imageViewType = viewType, imageType = imgType, flags = flags,
                                 format = format,
                                 extent = vk.VkExtent3D(width, height, 1),
+                                usage = usage)
+    return info
+end
+
+function attachment2DArray(vkPhyDevice::vk.VkPhysicalDevice,
+                                 width::UInt32, height::UInt32,
+                                layers::UInt32, format::vk.VkFormat)::ImageCreateInfo
+    viewType, imgType, flags = getCombinedType(vk.VK_IMAGE_VIEW_TYPE_2D_ARRAY)
+    usage = vk.VK_IMAGE_USAGE_SAMPLED_BIT
+    aspects = aspectsOf(format)
+    if (aspects & vk.VK_IMAGE_ASPECT_DEPTH_BIT != 0 ||
+        aspects & vk.VK_IMAGE_ASPECT_STENCIL_BIT != 0)
+        usage |= vk.VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+    end
+    if (aspects & vk.VK_IMAGE_ASPECT_COLOR_BIT != 0)
+        usage |= vk.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+    end
+
+    info = createImageCreateInfo(vkPhyDevice, imageViewType = viewType, imageType = imgType, flags = flags,
+                                format = format,
+                                extent = vk.VkExtent3D(width, height, 1),
+                                arrayLayers = layers,
                                 usage = usage)
     return info
 end
