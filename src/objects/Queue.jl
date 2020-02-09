@@ -77,6 +77,11 @@ function catchUp(this::Queue, inflightBuffers::Int32)
     end
 end
 
+function activeBuffers(this::Queue)::UInt32
+    this.gc()
+    return length(this.mSubmissionFences)
+end
+
 function gc(this::Queue)
     # Garbage collection of pool
     len = length(this.mSubmissionFences)

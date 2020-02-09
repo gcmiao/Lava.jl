@@ -31,3 +31,4 @@ passRef = Ref{lava.RenderPass}()
 @test testFramebuffer(deviceRef[], passRef[])
 
 @test testCreateBufferCreateInfo()
+@test testBufferFunction(deviceRef[])

@@ -55,6 +55,7 @@ mutable struct MappedMemory
         return this
     end
 end
+@class MappedMemory
 
 function handle(this::MemoryChunk)::vk.VkDeviceMemory
     return this.mMemory
@@ -109,4 +110,8 @@ end
 
 function getData(this::MappedMemory)::Ptr{Cvoid}
     return this.mData
+end
+
+function getSize(this::MappedMemory)::vk.VkDeviceSize
+    return this.mSize
 end

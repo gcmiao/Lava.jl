@@ -53,8 +53,6 @@ function testDevice(instance, queues, outDevice::Ref)
     #                               lava.NthOfTypeStrategy(vk.VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU))
     @test checkDevice(device)
 
-    device.destroy()
-    @test checkDestroiedDevice(device)
     outDevice[] = device
     return true
 end

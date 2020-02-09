@@ -116,6 +116,39 @@ function initHandle(this::Buffer, size::Csize_t)
     end
 end
 
+function pushData(this::Buffer, data::Vector, size::Csize_t)
+    cmd = this.mDevice.graphicsQueue().beginCommandBuffer()
+    pushData(this, data, size, cmd)
+    cmd.endCommandBuffer()
+end
+
+function pushData(this::Buffer, data::Vector, size::Csize_t,
+                   cmd::RecordingCommandBuffer)
+    vk.vkCmdUpdateBuffer(cmd.handle(), this.mHandle, 0, size, pointer(data))
+end
+
+function getData(this::Buffer, outData::Vector)
+    @assert isdefined(this, :mMemory) "Buffer needs to be realized to get data."
+
+    if this.mMemory.isMappable() # For APUs / integrated GPUs
+        mapped = this.mMemory.map()
+        memmove(pointer(outData), mapped.getData(), this.mCreateInfo.handleRef()[].size)
+        unmap(mapped)
+    else
+        this.executeOnStagingBuffer(staging->begin
+            cmd = this.mDevice.graphicsQueue().beginCommandBuffer()
+            region = [vk.VkBufferCopy(
+                0, #srcOffset::VkDeviceSize
+                0, #dstOffset::VkDeviceSize
+                this.mCreateInfo.handleRef()[].size #size::VkDeviceSize
+            )]
+            vk.vkCmdCopyBuffer(cmd.handle(), this.mHandle, staging.mHandle, 1, pointer(region))
+            cmd.endCommandBuffer()
+            staging.getData(outData)
+        end)
+    end
+end
+
 function realizeRAM(this::Buffer)
     @assert (this.mHandle != C_NULL) "Cannot realize a Buffer that doesn't have a size yet."
     logicalDevice = getLogicalDevice(this.mDevice)
