@@ -19,7 +19,6 @@ function testBufferFunction(device)
         # println(lava.graphicsQueue(device).activeBuffers())
         outData = Vector{UInt32}(undef, 2)
         eab.getData(outData)
-        println(outData)
         @test outData[1] == 3
         @test outData[2] == 4
     end

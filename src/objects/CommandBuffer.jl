@@ -157,11 +157,10 @@ function beginRenderpass(this::RecordingCommandBuffer, fbo::Framebuffer)::Active
     return ActiveRenderPass(this, info)
 end
 
-# TODO
-# function bindPipeline(this::RecordingCommandBuffer, pip::ComputePipeline)
-#     this.mLastLayout = getLayout(pip)
-#     vk.vkCmdBindPipeline(this.mCmdBuffer, vk.VK_PIPELINE_BIND_POINT_COMPUTE, handleRef(pip)[])
-# end
+function bindPipeline(this::RecordingCommandBuffer, pip::ComputePipeline)
+    this.mLastLayout = pip.getLayout()
+    vk.vkCmdBindPipeline(this.mCmdBuffer, vk.VK_PIPELINE_BIND_POINT_COMPUTE, pip.handleRef()[])
+end
 
 function pushConstantBlock(this::RecordingCommandBuffer, size::UInt32, data::Ptr{Cvoid})
     ranges = getRanges(getCreateInfo(this.mLastLayout))
