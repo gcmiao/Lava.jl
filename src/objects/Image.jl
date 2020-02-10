@@ -14,7 +14,7 @@ mutable struct Image
         this.mType = type
         this.mCreateInfo = createInfo
         this.mUnowned = false
-        
+
         newImage = Ref{vk.VkImage}()
         infoRef = Ref(createInfo)
         GC.@preserve infoRef begin
@@ -109,3 +109,21 @@ end
 function getHeight(this::Image)::UInt32
     return this.mCreateInfo.extent.height
 end
+
+# TODO
+# setDataVRAM
+# setDataRAM
+# getData
+# realizeVRAM
+# realizeRAM
+# copyFrom
+# copyTo
+# blitTo
+# changeLayout
+# changeOwner
+# generateMipmaps
+# createView
+# changeOwnerImpl
+# levelPixels
+# levelBytes
+# prepStagingBuffer

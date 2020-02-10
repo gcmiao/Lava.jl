@@ -142,3 +142,7 @@ end
 # end
 
 ########## override end ##########
+
+function pollEvent()
+    GLFW.PollEvents()
+end

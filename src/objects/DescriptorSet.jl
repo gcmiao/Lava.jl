@@ -42,3 +42,21 @@ end
 function handleRef(this::DescriptorSet)::Ref{vk.VkDescriptorSet}
     return this.mHandleRef
 end
+
+# TODO
+# writeCombinedImageSamplers
+# writeCombinedImageSampler
+# writeUniformBuffer
+# writeSampledImage
+# sampledImage
+# combinedImageSampler
+# combinedImageSamplers
+# storageBuffer
+# storageBuffers
+# uniformBuffer
+# uniformBuffers
+# storageImage
+# accelerationStructure
+# inputAttachment
+# inputAttachmentColor
+# inputAttachmentDepth

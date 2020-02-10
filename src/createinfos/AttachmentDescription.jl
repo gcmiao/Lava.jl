@@ -112,3 +112,10 @@ end
 function handleRef(this::AttachmentDescription)::Ref{vk.VkAttachmentDescription}
     return this.mHandleRef
 end
+
+# TODO
+# finalLayout_Attachment
+# finalLayout_ShaderRead
+# finalLayout_TransferSrc
+# finalLayout_DepthStencilRead
+# finalLayout_PresentSrc

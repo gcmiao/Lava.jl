@@ -298,7 +298,3 @@ function endFrame(this::Frame)
         end
     end
 end
-
-function pollEvent()
-    GLFW.PollEvents()
-end

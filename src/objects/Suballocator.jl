@@ -203,3 +203,6 @@ function deallocate(this::Suballocator, chunk::MemoryChunk)
         deleteat!(blocks, it)
     end
 end
+
+# TODO
+# heldBlockCount

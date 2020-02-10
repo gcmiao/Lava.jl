@@ -162,6 +162,10 @@ function bindPipeline(this::RecordingCommandBuffer, pip::ComputePipeline)
     vk.vkCmdBindPipeline(this.mCmdBuffer, vk.VK_PIPELINE_BIND_POINT_COMPUTE, pip.handleRef()[])
 end
 
+# TODO
+# bindDescriptorSets
+# dispatch
+
 function pushConstantBlock(this::RecordingCommandBuffer, size::UInt32, data::Ptr{Cvoid})
     ranges = getRanges(getCreateInfo(this.mLastLayout))
     @assert (length(ranges) == 1) "Can only use pushConstantBlock with a single push constant range."
