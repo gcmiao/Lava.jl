@@ -15,13 +15,10 @@ mutable struct DescriptorPool
         return this
     end
 end
+@class DescriptorPool
 
 function destroy(this::DescriptorPool)
     vk.vkDestroyDescriptorPool(this.mVkDevice, this.mHandleRef[], C_NULL)
-end
-
-function createDescriptorSet(this::DescriptorPool, layout)::DescriptorSet
-    return DescriptorSet(this.mDevice, this, layout)
 end
 
 function handleRef(this::DescriptorPool)::Ref{vk.VkDescriptorPool}

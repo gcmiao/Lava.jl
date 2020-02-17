@@ -2,8 +2,10 @@ mutable struct DescriptorSet
     mVkDevice::vk.VkDevice
     mPool::DescriptorPool
     mLayout::DescriptorSetLayout
-
+    mInfo::vk.VkDescriptorSetAllocateInfo
     mHandleRef::Ref{vk.VkDescriptorSet}
+    # Keep Samplers/Views etc. to keep them from being destroyed while in use
+    mBindingResources::Dict{UInt32, Vector{Any}}
 
     function DescriptorSet(device::vk.VkDevice,
                              pool::DescriptorPool,
@@ -12,20 +14,22 @@ mutable struct DescriptorSet
         this.mVkDevice = device
         this.mPool = pool
         this.mLayout = layout
+        this.mBindingResources = Dict{UInt32, Vector{Any}}()
 
-        setLayoutRef = handleRef(this.mLayout)
+        setLayouts = [this.mLayout.handleRef()[]]
         info = Ref(vk.VkDescriptorSetAllocateInfo(
-            VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, #sType::VkStructureType
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, #sType::VkStructureType
             C_NULL, #pNext::Ptr{Cvoid}
-            handleRef(this.mPool), #descriptorPool::VkDescriptorPool
-            1, #descriptorSetCount::UInt32
-            pointer(setLayoutRef) #pSetLayouts::Ptr{VkDescriptorSetLayout}
+            handleRef(this.mPool)[], #descriptorPool::VkDescriptorPool
+            UInt32(length(setLayouts)), #descriptorSetCount::UInt32
+            pointer(setLayouts) #pSetLayouts::Ptr{VkDescriptorSetLayout}
         ))
 
         descriptorSets = Vector{vk.VkDescriptorSet}(undef, info[].descriptorSetCount)
         vk.vkAllocateDescriptorSets(this.mVkDevice, info, pointer(descriptorSets))
-        this.mHandleRef = Ref(descriptorSets[0])
+        this.mHandleRef = Ref(descriptorSets[1])
         println("descriptor set:", this.mHandleRef)
+        return this
     end
 
 
@@ -34,6 +38,7 @@ mutable struct DescriptorSet
     # using ResourceList = std::vector<std::shared_ptr<void>>;
     # std::unordered_map<uint32_t, ResourceList> mBindingResources;
 end
+@class DescriptorSet
 
 function destroy(this::DescriptorSet)
     vk.vkFreeDescriptorSets(this.mVkDevice, handleRef(this.mPool)[], 1, this.mHandleRef[])
@@ -43,20 +48,26 @@ function handleRef(this::DescriptorSet)::Ref{vk.VkDescriptorSet}
     return this.mHandleRef
 end
 
-# TODO
-# writeCombinedImageSamplers
-# writeCombinedImageSampler
-# writeUniformBuffer
-# writeSampledImage
-# sampledImage
-# combinedImageSampler
-# combinedImageSamplers
-# storageBuffer
-# storageBuffers
-# uniformBuffer
-# uniformBuffers
-# storageImage
-# accelerationStructure
-# inputAttachment
-# inputAttachmentColor
-# inputAttachmentDepth
+function writeCombinedImageSamplers(this::DescriptorSet, sampler::Sampler, views::Vector{ImageView}, binding::UInt32)::DescriptorSet
+    writer = DescriptorSetWriter(this, binding)
+    writer.combinedImageSamplers(sampler, views).write()
+    return this
+end
+
+function writeCombinedImageSampler(this::DescriptorSet, sampler::Sampler, view::ImageView, binding::UInt32)::DescriptorSet
+    writer = DescriptorSetWriter(this, binding)
+    writer.combinedImageSamplers(sampler, view).write()
+    return this
+end
+
+function writeUniformBuffer(this::DescriptorSet, buffer::Buffer, binding::UInt32)::DescriptorSet
+    writer = DescriptorSetWriter(this, binding)
+    writer.uniformBuffer(buffer).write()
+    return this
+end
+
+function writeSampledImage(this::DescriptorSet, view::ImageView, binding::UInt32)::DescriptorSet
+    writer = DescriptorSetWriter(this, binding)
+    writer.sampledImage(view).write()
+    return this
+end

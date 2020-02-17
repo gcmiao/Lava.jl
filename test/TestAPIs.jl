@@ -7,6 +7,7 @@ include("TestGraphicsPipeline.jl")
 include("TestComputePipeline.jl")
 include("TestImage.jl")
 include("TestBuffer.jl")
+include("TestDescriptorSet.jl")
 
 instanceRef = Ref{lava.Instance}()
 glfwRef = Ref{features.GlfwOutput}()
@@ -32,3 +33,5 @@ passRef = Ref{lava.RenderPass}()
 
 @test testCreateBufferCreateInfo()
 @test testBufferFunction(deviceRef[])
+
+@test testDescriptorSet(deviceRef[])

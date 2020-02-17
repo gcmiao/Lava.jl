@@ -37,9 +37,11 @@ mutable struct DescriptorSetLayout
     end
 
 end
+@class DescriptorSetLayout
 
 function destroy(this::DescriptorSetLayout)
     vk.vkDestroyDescriptorSetLayout(this.mVkDevice, this.mHandleRef[], C_NULL)
+    this.mPool.destroy()
 end
 
 function handleRef(this::DescriptorSetLayout)::Ref{vk.VkDescriptorSetLayout}
@@ -47,5 +49,5 @@ function handleRef(this::DescriptorSetLayout)::Ref{vk.VkDescriptorSetLayout}
 end
 
 function createDescriptorSet(this::DescriptorSetLayout)::DescriptorSet
-    return createDescriptorSet(this.mPool, this);
+    return DescriptorSet(this.mVkDevice, this.mPool, this)
 end
