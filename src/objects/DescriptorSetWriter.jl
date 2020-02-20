@@ -22,11 +22,11 @@ function skipToBinding(this::DescriptorSetWriter, binding::UInt32)::DescriptorSe
 end
 
 function pushWrite(this::DescriptorSetWriter, type::vk.VkDescriptorType;
-                    bufferInfos::Vector{vk.VkDescriptorBufferInfo} = [],
-                    imageInfos::Vector{vk.VkDescriptorImageInfo} = [],
+                    bufferInfos::Vector{vk.VkDescriptorBufferInfo} = Vector{vk.VkDescriptorBufferInfo}(),
+                    imageInfos::Vector{vk.VkDescriptorImageInfo} = Vector{vk.VkDescriptorImageInfo}(),
                     descCount::Integer = 0,
                     pNext::Ptr{Cvoid} = C_NULL)
-    push_back!(this.mWrites, vk.VkWriteDescriptorSet(
+    push!(this.mWrites, vk.VkWriteDescriptorSet(
         vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, # sType::VkStructureType
         pNext, # pNext::Ptr{Cvoid}
         this.mSet.handleRef()[], # dstSet::VkDescriptorSet
@@ -34,8 +34,8 @@ function pushWrite(this::DescriptorSetWriter, type::vk.VkDescriptorType;
         UInt32(0), # dstArrayElement::UInt32
         UInt32(descCount), # descriptorCount::UInt32
         type, # descriptorType::VkDescriptorType
-        pointer(bufferInfos), # pImageInfo::Ptr{VkDescriptorImageInfo}
-        pointer(imageInfos), # pBufferInfo::Ptr{VkDescriptorBufferInfo}
+        pointer(imageInfos), # pImageInfo::Ptr{VkDescriptorImageInfo}
+        pointer(bufferInfos), # pBufferInfo::Ptr{VkDescriptorBufferInfo}
         C_NULL # pTexelBufferView::Ptr{VkBufferView}
     ))
 end
@@ -92,7 +92,7 @@ function imageWithType(this::DescriptorSetWriter, view::ImageView, type::vk.VkDe
                         imageLayout::vk.VkImageLayout = vk.VkImageLayout(vk.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL))::DescriptorSetWriter
     res = this.getBindingResource(this.mCurrentBinding)
     empty!(res)
-    push_back!(res, view)
+    push!(res, view)
 
     sampler = C_NULL
     if isdefined(samplerRef, :x)

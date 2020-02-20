@@ -28,7 +28,6 @@ mutable struct DescriptorSet
         descriptorSets = Vector{vk.VkDescriptorSet}(undef, info[].descriptorSetCount)
         vk.vkAllocateDescriptorSets(this.mVkDevice, info, pointer(descriptorSets))
         this.mHandleRef = Ref(descriptorSets[1])
-        println("descriptor set:", this.mHandleRef)
         return this
     end
 

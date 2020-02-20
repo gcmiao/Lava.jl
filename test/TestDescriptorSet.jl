@@ -6,7 +6,10 @@ function testDescriptorSet(device)
     descLayout = lava.createDescriptorSetLayout(device, descCreateInfo)
     descSet = descLayout.createDescriptorSet()
 
-    buf = lava.createBuffer(device, lava.uniformBuffer(Csize_t(4)))
+    data = [UInt32(1), UInt32(2)]
+    buf = lava.createBuffer(device, lava.uniformBuffer(Csize_t(sizeof(data))))
+    buf.setDataVRAM(data, UInt32)
 
-    @test descSet.writeUniformBuffer(buf, UInt32(0))
+    descSet.writeUniformBuffer(buf, UInt32(0))
+    return true
 end
