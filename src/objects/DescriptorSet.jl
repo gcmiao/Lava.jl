@@ -55,13 +55,19 @@ end
 
 function writeCombinedImageSampler(this::DescriptorSet, sampler::Sampler, view::ImageView, binding::UInt32)::DescriptorSet
     writer = DescriptorSetWriter(this, binding)
-    writer.combinedImageSamplers(sampler, view).write()
+    writer.combinedImageSampler(sampler, view).write()
     return this
 end
 
 function writeUniformBuffer(this::DescriptorSet, buffer::Buffer, binding::UInt32)::DescriptorSet
     writer = DescriptorSetWriter(this, binding)
     writer.uniformBuffer(buffer).write()
+    return this
+end
+
+function writeUniformBuffers(this::DescriptorSet, buffers::Vector{Buffer}, binding::UInt32)::DescriptorSet
+    writer = DescriptorSetWriter(this, binding)
+    writer.uniformBuffers(buffers).write()
     return this
 end
 

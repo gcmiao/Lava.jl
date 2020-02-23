@@ -88,7 +88,7 @@ function buffersWithType(this::DescriptorSetWriter, buffers::Vector{Buffer}, typ
 end
 
 function imageWithType(this::DescriptorSetWriter, view::ImageView, type::vk.VkDescriptorType;
-                        samplerRef::Ref = Ref(),
+                        samplerRef::Ref{Sampler} = Ref{Sampler}(),
                         imageLayout::vk.VkImageLayout = vk.VkImageLayout(vk.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL))::DescriptorSetWriter
     res = this.getBindingResource(this.mCurrentBinding)
     empty!(res)
@@ -97,7 +97,7 @@ function imageWithType(this::DescriptorSetWriter, view::ImageView, type::vk.VkDe
     sampler = C_NULL
     if isdefined(samplerRef, :x)
         sampler = samplerRef[].handle()
-        push_back!(res, samplerRef[])
+        push!(res, samplerRef[])
     end
 
     info = [vk.VkDescriptorImageInfo(
@@ -113,7 +113,7 @@ function imageWithType(this::DescriptorSetWriter, view::ImageView, type::vk.VkDe
 end
 
 function imagesWithType(this::DescriptorSetWriter, views::Vector{ImageView}, type::vk.VkDescriptorType;
-                        samplerRef::Ref = Ref(),
+                        samplerRef::Ref{Sampler} = Ref{Sampler}(),
                         imageLayout::vk.VkImageLayout = vk.VkImageLayout(vk.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL))::DescriptorSetWriter
     res = this.getBindingResource(this.mCurrentBinding)
     empty!(res)
@@ -122,15 +122,15 @@ function imagesWithType(this::DescriptorSetWriter, views::Vector{ImageView}, typ
     sampler = C_NULL
     if isdefined(samplerRef, :x)
         sampler = samplerRef[].handle()
-        push_back!(res, samplerRef[])
+        push!(res, samplerRef[])
     end
 
     viewLen = length(views)
     if viewLen > 0
         info = Vector{vk.VkDescriptorImageInfo}(undef, viewLen)
-        for i = 1 : bufferLen
+        for i = 1 : viewLen
             info[i] = vk.VkDescriptorImageInfo(
-                        sampler.handle(), # sampler::VkSampler
+                        sampler, # sampler::VkSampler
                         views[i].handle(), # imageView::VkImageView
                         imageLayout) # imageLayout::VkImageLayout
         end

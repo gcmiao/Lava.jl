@@ -24,14 +24,50 @@ function addBinding(this::DescriptorSetLayoutCreateInfo,
                             ))
 end
 
+function addSampler(this::DescriptorSetLayoutCreateInfo,
+                   stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL_GRAPHICS,
+                   count::UInt32 = UInt32(1))
+    addBinding(this, vk.VK_DESCRIPTOR_TYPE_SAMPLER, stage, count)
+end
+
 function addUniformBuffer(this::DescriptorSetLayoutCreateInfo,
-                         stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL)
-    addBinding(this, vk.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, stage, UInt32(1))
+                         stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL,
+                         count::UInt32 = UInt32(1))
+    addBinding(this, vk.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, stage, count)
 end
 
 function addCombinedImageSampler(this::DescriptorSetLayoutCreateInfo,
-                                stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL_GRAPHICS)
-    addBinding(this, vk.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, stage, UInt32(1))
+                                stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL_GRAPHICS,
+                                count::UInt32 = UInt32(1))
+    addBinding(this, vk.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, stage, count)
+end
+
+function addSampledImage(this::DescriptorSetLayoutCreateInfo,
+                        stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL_GRAPHICS,
+                        count::UInt32 = UInt32(1))
+    addBinding(this, vk.VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, stage, count)
+end
+
+function addStorageBuffer(this::DescriptorSetLayoutCreateInfo,
+                         stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL,
+                         count::UInt32 = UInt32(1))
+    addBinding(this, vk.VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, stage, count)
+end
+
+function addStorageImage(this::DescriptorSetLayoutCreateInfo,
+                        stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL,
+                        count::UInt32 = UInt32(1))
+    addBinding(this, vk.VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, stage, count)
+end
+
+function addAccelerationStructure(this::DescriptorSetLayoutCreateInfo,
+                                 stage::vk.VkShaderStageFlagBits = vk.VkShaderStageFlagBits(
+                                        vk.VK_SHADER_STAGE_RAYGEN_BIT_NV |
+                                        vk.VK_SHADER_STAGE_ANY_HIT_BIT_NV |
+                                        vk.VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV |
+                                        vk.VK_SHADER_STAGE_MISS_BIT_NV),
+                                 count::UInt32 = UInt32(1))
+    addBinding(this, vk.VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV, stage, count)
 end
 
 function handleRef(this::DescriptorSetLayoutCreateInfo)::Ref{vk.VkDescriptorSetLayoutCreateInfo}
