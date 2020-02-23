@@ -22,8 +22,8 @@ macro class(Type, MethodList = [])
                 return getfield(obj, sym)
             else
                 # assumes unknown properties are methods
-                return (args...) -> begin
-                    getfield(@__MODULE__, sym)(obj, args...)
+                return (args...;kwargs...) -> begin
+                    getfield(@__MODULE__, sym)(obj, args...;kwargs...)
                 end
             end
             # else
