@@ -7,7 +7,7 @@ mutable struct DescriptorSetLayout
 
     function DescriptorSetLayout(device::vk.VkDevice,
                                    info::DescriptorSetLayoutCreateInfo,
-                               poolSize::UInt32)
+                               poolSize::UInt32 = UInt32(4))
         this = new()
         this.mVkDevice = device
         this.mCreateInfo = info

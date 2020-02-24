@@ -1,5 +1,7 @@
 module VkExt
 
+using ..LavaCore: @class
+
 using VulkanCore
 include("VkExt.VkPhysicalDeviceFeatures.jl")
 

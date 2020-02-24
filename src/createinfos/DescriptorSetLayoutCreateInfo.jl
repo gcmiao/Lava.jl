@@ -9,12 +9,13 @@ mutable struct DescriptorSetLayoutCreateInfo
         return this
     end
 end
+@class DescriptorSetLayoutCreateInfo
 
 function addBinding(this::DescriptorSetLayoutCreateInfo,
                     type::vk.VkDescriptorType,
                    stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL_GRAPHICS,
                    count::UInt32 = 0,
-                   samplers::Ptr{vk.VkSampler} = Ptr{vk.VkSampler}(C_NULL))
+                   samplers::Ptr{vk.VkSampler} = Ptr{vk.VkSampler}(C_NULL))::DescriptorSetLayoutCreateInfo
     push!(this.mBindings, vk.VkDescriptorSetLayoutBinding(
                                 length(this.mBindings), #binding::UInt32
                                 type, #descriptorType::VkDescriptorType
@@ -22,42 +23,49 @@ function addBinding(this::DescriptorSetLayoutCreateInfo,
                                 stage, #stageFlags::VkShaderStageFlags
                                 samplers, #pImmutableSamplers::Ptr{VkSampler}
                             ))
+    return this
 end
 
 function addSampler(this::DescriptorSetLayoutCreateInfo,
                    stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL_GRAPHICS,
-                   count::UInt32 = UInt32(1))
+                   count::UInt32 = UInt32(1))::DescriptorSetLayoutCreateInfo
     addBinding(this, vk.VK_DESCRIPTOR_TYPE_SAMPLER, stage, count)
+    return this
 end
 
 function addUniformBuffer(this::DescriptorSetLayoutCreateInfo,
                          stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL,
-                         count::UInt32 = UInt32(1))
+                         count::UInt32 = UInt32(1))::DescriptorSetLayoutCreateInfo
     addBinding(this, vk.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, stage, count)
+    return this
 end
 
 function addCombinedImageSampler(this::DescriptorSetLayoutCreateInfo,
                                 stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL_GRAPHICS,
-                                count::UInt32 = UInt32(1))
+                                count::UInt32 = UInt32(1))::DescriptorSetLayoutCreateInfo
     addBinding(this, vk.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, stage, count)
+    return this
 end
 
 function addSampledImage(this::DescriptorSetLayoutCreateInfo,
                         stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL_GRAPHICS,
-                        count::UInt32 = UInt32(1))
+                        count::UInt32 = UInt32(1))::DescriptorSetLayoutCreateInfo
     addBinding(this, vk.VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, stage, count)
+    return this
 end
 
 function addStorageBuffer(this::DescriptorSetLayoutCreateInfo,
                          stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL,
-                         count::UInt32 = UInt32(1))
+                         count::UInt32 = UInt32(1))::DescriptorSetLayoutCreateInfo
     addBinding(this, vk.VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, stage, count)
+    return this
 end
 
 function addStorageImage(this::DescriptorSetLayoutCreateInfo,
                         stage::vk.VkShaderStageFlagBits = vk.VK_SHADER_STAGE_ALL,
-                        count::UInt32 = UInt32(1))
+                        count::UInt32 = UInt32(1))::DescriptorSetLayoutCreateInfo
     addBinding(this, vk.VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, stage, count)
+    return this
 end
 
 function addAccelerationStructure(this::DescriptorSetLayoutCreateInfo,
@@ -66,8 +74,9 @@ function addAccelerationStructure(this::DescriptorSetLayoutCreateInfo,
                                         vk.VK_SHADER_STAGE_ANY_HIT_BIT_NV |
                                         vk.VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV |
                                         vk.VK_SHADER_STAGE_MISS_BIT_NV),
-                                 count::UInt32 = UInt32(1))
+                                 count::UInt32 = UInt32(1))::DescriptorSetLayoutCreateInfo
     addBinding(this, vk.VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV, stage, count)
+    return this
 end
 
 function handleRef(this::DescriptorSetLayoutCreateInfo)::Ref{vk.VkDescriptorSetLayoutCreateInfo}

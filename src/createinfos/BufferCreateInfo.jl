@@ -54,6 +54,13 @@ function indexArrayBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
                                                  vk.VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
 end
 
+function arrayIndexStorageBuffer()::BufferCreateInfo
+    return BufferCreateInfo(usage = vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                    vk.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                    vk.VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
+                                    vk.VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
+end
+
 function downloadBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
     return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_TRANSFER_DST_BIT)
 end

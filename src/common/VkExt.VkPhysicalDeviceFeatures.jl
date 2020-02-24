@@ -63,6 +63,7 @@ mutable struct VkPhysicalDeviceFeatures
                                     false, false, false, false, false
                                     )
 end
+@class VkPhysicalDeviceFeatures
 
 function build(this::VkPhysicalDeviceFeatures)::vk.VkPhysicalDeviceFeatures
     return vk.VkPhysicalDeviceFeatures(
