@@ -1,6 +1,7 @@
 module VkExt
 
 using ..LavaCore: @class
+using ..LavaCore.Utils: ref_to_pointer
 
 using VulkanCore
 include("VkExt.VkPhysicalDeviceFeatures.jl")
@@ -84,6 +85,34 @@ function getProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalDevicePrope
     deviceProperties = Ref{vk.VkPhysicalDeviceProperties}()
     vk.vkGetPhysicalDeviceProperties(phyDevice, deviceProperties)
     return deviceProperties[]
+end
+
+function getRayTracingProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalDeviceRayTracingPropertiesNV
+    rtProps = Ref(vk.VkPhysicalDeviceRayTracingPropertiesNV(
+                    vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV, # sType::VkStructureType
+                    C_NULL, # pNext::Ptr{Cvoid}
+                    0, # shaderGroupHandleSize::UInt32
+                    0, # maxRecursionDepth::UInt32
+                    0, # maxShaderGroupStride::UInt32
+                    0, # shaderGroupBaseAlignment::UInt32
+                    0, # maxGeometryCount::UInt64
+                    0, # maxInstanceCount::UInt64
+                    0, # maxTriangleCount::UInt64
+                    0 # maxDescriptorSetAccelerationStructures::UInt32
+                ))
+    #rtProps = Ref{vk.VkPhysicalDeviceRayTracingPropertiesNV}()
+    props = VkExt.getProperties(phyDevice)
+    props2 = Ref(vk.VkPhysicalDeviceProperties2(
+                    vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, # sType::VkStructureType
+                    ref_to_pointer(vk.VkPhysicalDeviceRayTracingPropertiesNV, rtProps), # pNext::Ptr{Cvoid}
+                    props # properties::VkPhysicalDeviceProperties
+                ))
+    #props2 = Ref{vk.VkPhysicalDeviceProperties2}()
+    vk.vkGetPhysicalDeviceProperties2(phyDevice, props2)
+    p = unsafe_load(Ptr{vk.VkPhysicalDeviceRayTracingPropertiesNV}(props2[].pNext))
+    println("---", rtProps)
+    println("---", p)
+    return rtProps[]
 end
 
 function enumerateDeviceExtensionProperties(phyDevice::vk.VkPhysicalDevice)

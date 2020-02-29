@@ -36,6 +36,7 @@ include("createinfos/PipelineVertexInputStateCreateInfo.jl")
 include("createinfos/PipelineViewportStateCreateInfo.jl")
 include("createinfos/GraphicsPipelineCreateInfo.jl")
 include("createinfos/ComputePipelineCreateInfo.jl")
+include("createinfos/RayTracingPipelineCreateInfo.jl")
 include("createinfos/ImageCreateInfo.jl")
 include("createinfos/BufferCreateInfo.jl")
 include("createinfos/SamplerCreateInfo.jl")
@@ -67,5 +68,6 @@ include("raii/Barriers.jl")
 
 include("objects/GraphicsPipeline.jl")
 include("objects/ComputePipeline.jl")
+include("objects/RayTracingPipeline.jl")
 
 end
