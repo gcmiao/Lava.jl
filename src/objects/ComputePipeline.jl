@@ -23,3 +23,8 @@ end
 function destroy(this::ComputePipeline)
     vk.vkDestroyPipeline(this.mVkDevice, this.mHandleRef[], C_NULL)
 end
+
+function bindPipeline(this::RecordingCommandBuffer, pip::ComputePipeline)
+    this.mLastLayout = pip.getLayout()
+    vk.vkCmdBindPipeline(this.handle(), vk.VK_PIPELINE_BIND_POINT_COMPUTE, pip.handleRef()[])
+end

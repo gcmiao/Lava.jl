@@ -1,14 +1,14 @@
 module LavaCore
 
 include("common/Common.jl")
+include("common/Utils.jl")
+using .Utils
+export Utils
 
 using VulkanCore
 include("common/VkExt.jl")
 using .VkExt
 export VkExt
-include("common/Utils.jl")
-using .Utils
-export Utils
 include("camera/Camera.jl")
 using .Camera
 export Camera
@@ -42,23 +42,21 @@ include("createinfos/SamplerCreateInfo.jl")
 
 include("gpuselection/SelectionStrategy.jl")
 
+include("objects/MemoryChunk.jl")
+include("objects/Suballocator.jl")
+
+include("objects/Instance.jl")
 include("objects/Queue.jl")
+include("objects/Device.jl")
 include("objects/DescriptorPool.jl")
 include("objects/DescriptorSetLayout.jl")
 include("objects/PipelineLayout.jl")
 include("objects/RenderPass.jl")
-include("objects/GraphicsPipeline.jl")
-include("objects/ComputePipeline.jl")
 
-include("objects/MemoryChunk.jl")
-include("objects/Suballocator.jl")
-
-include("objects/Device.jl")
 include("objects/Image.jl")
 include("objects/ImageView.jl")
 include("objects/Framebuffer.jl")
 include("objects/CommandBuffer.jl")
-include("objects/Instance.jl")
 include("objects/Buffer.jl")
 include("objects/Sampler.jl")
 include("objects/DescriptorSetWriter.jl")
@@ -66,5 +64,8 @@ include("objects/DescriptorSet.jl")
 
 include("raii/ActiveRenderPass.jl")
 include("raii/Barriers.jl")
+
+include("objects/GraphicsPipeline.jl")
+include("objects/ComputePipeline.jl")
 
 end

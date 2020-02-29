@@ -67,25 +67,3 @@ end
 function create(::Type{Instance}, inFeatures::Vector{IFeature})::Instance
     return Instance(inFeatures)
 end
-
-function createDevice(this::Instance,
-                    queues::Vector{QueueRequest},
-      gpuSelectionStrategy::ISelectionStrategy)::Device
-
-    device = Device(this.mVkInstance, this.mFeatures, gpuSelectionStrategy, queues)
-    for feat in this.mFeatures
-        onLogicalDeviceCreated(feat, device)
-    end
-    return device
-end
-
-function createDevice(this::Instance,
-                    queues::Vector{QueueRequest},
-             groupAssembly::IGroupAssemblyStrategy)::Device
-
-    device = Device(this.mVkInstance, this.mFeatures, groupAssembly, queues)
-    for feat in this.mFeatures
-        onLogicalDeviceCreated(feat, device)
-    end
-    return device
-end

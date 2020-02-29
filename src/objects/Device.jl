@@ -62,6 +62,28 @@ end
 
 @class Device
 
+function createDevice(this::Instance,
+                    queues::Vector{QueueRequest},
+      gpuSelectionStrategy::ISelectionStrategy)::Device
+
+    device = Device(this.mVkInstance, this.mFeatures, gpuSelectionStrategy, queues)
+    for feat in this.mFeatures
+        onLogicalDeviceCreated(feat, device)
+    end
+    return device
+end
+
+function createDevice(this::Instance,
+                    queues::Vector{QueueRequest},
+             groupAssembly::IGroupAssemblyStrategy)::Device
+
+    device = Device(this.mVkInstance, this.mFeatures, groupAssembly, queues)
+    for feat in this.mFeatures
+        onLogicalDeviceCreated(feat, device)
+    end
+    return device
+end
+
 function getLogicalDevice(this::Device)::vk.VkDevice
     return this.mVkDevice
 end
@@ -263,20 +285,6 @@ function createLogicalDevice(this::Device, physicalDevices::Vector{vk.VkPhysical
             this.mQueues[name] = Queue(family, queue[], pool, this.mVkDevice)
         end
     end
-end
-
-function createPipelineLayout(this::Device, type::Type, descriptorSets::Vector{DescriptorSetLayout} = Vector{DescriptorSetLayout}())::PipelineLayout
-    range = vk.VkPushConstantRange(
-        vk.VK_SHADER_STAGE_ALL, #stageFlags::VkShaderStageFlags
-        0, #offset::UInt32
-        sizeof_obj(type()) #size::UInt32
-    )
-    return createPipelineLayout(this, [range], descriptorSets);
-end
-
-function createPipelineLayout(this::Device, constantRanges::Vector{vk.VkPushConstantRange} = Vector{vk.VkPushConstantRange}(),
-                                            descriptorSets::Vector{DescriptorSetLayout} = Vector{DescriptorSetLayout}())::PipelineLayout
-    return PipelineLayout(this.mVkDevice, descriptorSets, constantRanges)
 end
 
 function createDescriptorSetLayout(this::Device, info::DescriptorSetLayoutCreateInfo, poolSize::UInt32 = UInt32(4))

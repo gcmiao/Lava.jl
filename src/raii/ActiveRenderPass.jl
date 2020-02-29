@@ -48,11 +48,6 @@ function endRenderPass(this::ActiveRenderPass)
     end
 end
 
-function bindPipeline(this::InlineSubpass, pip::GraphicsPipeline)
-    setLastLayout(this.mCommandBuffer, getLayout(pip))
-    vk.vkCmdBindPipeline(handle(this.mCommandBuffer), vk.VK_PIPELINE_BIND_POINT_GRAPHICS, handleRef(pip)[])
-end
-
 function setViewports(this::InlineSubpass, viewports::Vector{vk.VkViewport}, first::UInt32 = UInt32(0))
     vk.vkCmdSetViewport(handle(this.mCommandBuffer), first, length(viewports), pointer(viewports))
 end

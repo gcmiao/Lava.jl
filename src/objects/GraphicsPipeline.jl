@@ -31,3 +31,8 @@ end
 function getLayout(this::GraphicsPipeline)::PipelineLayout
     return this.mCreateInfo.mLayout
 end
+
+function bindPipeline(this::InlineSubpass, pip::GraphicsPipeline)
+    setLastLayout(this.mCommandBuffer, getLayout(pip))
+    vk.vkCmdBindPipeline(handle(this.mCommandBuffer), vk.VK_PIPELINE_BIND_POINT_GRAPHICS, handleRef(pip)[])
+end
