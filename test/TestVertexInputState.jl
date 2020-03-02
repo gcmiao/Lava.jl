@@ -1,9 +1,3 @@
-const u8vec4 = Vec{4, UInt8}
-struct Vertex
-    position::Vec3f0
-    color::u8vec4
-end
-
 function testVertexInputState(inputStateRef::Ref)
     attributes = Vector{vk.VkVertexInputAttributeDescription}()
     bindings = Vector{vk.VkVertexInputBindingDescription}()

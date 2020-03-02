@@ -1,6 +1,8 @@
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 GeometryTypes = "4d00f742-c7ba-57c2-abde-4428a4b178cb"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
+MeshIO = "7269a6da-0436-5bbc-96c2-40638cbb6118"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 VulkanCore = "16167f82-ea26-5cba-b1de-ed6fd5e30a11"

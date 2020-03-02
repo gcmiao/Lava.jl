@@ -8,6 +8,7 @@ include("TestComputePipeline.jl")
 include("TestImage.jl")
 include("TestBuffer.jl")
 include("TestDescriptorSet.jl")
+include("TestGeometry.jl")
 
 instanceRef = Ref{lava.Instance}()
 glfwRef = Ref{features.GlfwOutput}()
