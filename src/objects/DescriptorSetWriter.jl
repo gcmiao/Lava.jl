@@ -57,8 +57,8 @@ function bufferWithType(this::DescriptorSetWriter, buffer::Buffer, type::vk.VkDe
     info = [vk.VkDescriptorBufferInfo(
                 buffer.handle(), # buffer::VkBuffer
                 vk.VkDeviceSize(0), # offset::VkDeviceSize
-                vk.VkDeviceSize(vk.VK_WHOLE_SIZE)) #range::VkDeviceSize
-    ]
+                vk.VkDeviceSize(vk.VK_WHOLE_SIZE) #range::VkDeviceSize
+    )]
     pushWrite(this, type, bufferInfos = info, descCount = 1)
 
     this.mCurrentBinding += 1
@@ -190,22 +190,21 @@ function inputAttachmentDepth(this::DescriptorSetWriter, view::ImageView)::Descr
     return this.inputAttachment(view, vk.VkImageLayout(vk.VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL))
 end
 
-# TODO need TopLevelAccelerationStructure
-# function accelerationStructure(this::DescriptorSetWriter, tlas::TopLevelAccelerationStructure)::DescriptorSetWriter
-#     res = this.getBindingResource(this.mCurrentBinding)
-#     empty!(res)
-#     append!(res, tlas)
-#
-#     handles::Vector{vk.VkAccelerationStructureNV} = [tlas.handle()]
-#     infoRef = Ref(vk.VkWriteDescriptorSetAccelerationStructureNV(
-#         vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV, # sType::VkStructureType
-#         C_NULL, # pNext::Ptr{Cvoid}
-#         UInt32(1), # accelerationStructureCount::UInt32
-#         pointers(handles) # pAccelerationStructures::Ptr{VkAccelerationStructureNV}
-#     ))
-#
-#     pushWrite(this, vk.VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV, pNext = ref_to_pointer(infoRef), descCount = UInt32(1))
-#
-#     this.mCurrentBinding += 1
-#     return this
-# end
+function accelerationStructure(this::DescriptorSetWriter, tlas::TopLevelAccelerationStructure)::DescriptorSetWriter
+    res = this.getBindingResource(this.mCurrentBinding)
+    empty!(res)
+    append!(res, tlas)
+
+    handles::Vector{vk.VkAccelerationStructureNV} = [tlas.handle()]
+    infoRef = Ref(vk.VkWriteDescriptorSetAccelerationStructureNV(
+        vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV, # sType::VkStructureType
+        C_NULL, # pNext::Ptr{Cvoid}
+        UInt32(1), # accelerationStructureCount::UInt32
+        pointers(handles) # pAccelerationStructures::Ptr{VkAccelerationStructureNV}
+    ))
+
+    pushWrite(this, vk.VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV, pNext = ref_to_pointer(infoRef), descCount = UInt32(1))
+
+    this.mCurrentBinding += 1
+    return this
+end

@@ -17,6 +17,7 @@ using GeometryTypes
 include("common/FormatInfo.jl")
 include("common/ShaderExtension.jl")
 include("common/FeatureBase.jl")
+include("common/RigidTransform.jl")
 
 include("objects/ShaderModule.jl")
 
@@ -64,6 +65,7 @@ include("objects/Sampler.jl")
 include("objects/DescriptorSetWriter.jl")
 include("objects/DescriptorSet.jl")
 include("objects/BottomLevelAccelerationStructure.jl")
+include("objects/TopLevelAccelerationStructure.jl")
 
 include("raii/ActiveRenderPass.jl")
 include("raii/Barriers.jl")

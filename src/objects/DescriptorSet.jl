@@ -76,3 +76,7 @@ function writeSampledImage(this::DescriptorSet, view::ImageView, binding::UInt32
     writer.sampledImage(view).write()
     return this
 end
+
+function write(this::DescriptorSet)::DescriptorSetWriter
+    return DescriptorSetWriter(this)
+end
