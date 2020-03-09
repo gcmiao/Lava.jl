@@ -21,6 +21,10 @@ function sizeofObj(x)
     end
 end
 
+function sizeofField(type, field)
+    return sizeof(fieldtype(type, field))
+end
+
 function indexOfField(type, field)
     names = fieldnames(type)
     count = length(names)

@@ -254,6 +254,14 @@ function keepStagingBuffer(this::Buffer, val::Bool = true)
     this.mKeepStagingBuffer = val
 end
 
+function getMemoryChunk(this::Buffer)::MemoryChunk
+    return this.mMemory
+end
+
+function getSize()::vk.VkDeviceSize
+    return this.mCreateInfo.size
+end
+
 function executeOnStagingBuffer(this::Buffer, callable)
     staging::Buffer
     if isdefined(this.mStagingBuffer, :x)

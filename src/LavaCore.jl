@@ -40,6 +40,7 @@ include("createinfos/RayTracingPipelineCreateInfo.jl")
 include("createinfos/ImageCreateInfo.jl")
 include("createinfos/BufferCreateInfo.jl")
 include("createinfos/SamplerCreateInfo.jl")
+include("createinfos/BottomLevelAccelerationStructureCreateInfo.jl")
 
 include("gpuselection/SelectionStrategy.jl")
 
@@ -62,6 +63,7 @@ include("objects/Buffer.jl")
 include("objects/Sampler.jl")
 include("objects/DescriptorSetWriter.jl")
 include("objects/DescriptorSet.jl")
+include("objects/BottomLevelAccelerationStructure.jl")
 
 include("raii/ActiveRenderPass.jl")
 include("raii/Barriers.jl")
