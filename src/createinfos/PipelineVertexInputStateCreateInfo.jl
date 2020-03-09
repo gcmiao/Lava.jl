@@ -52,11 +52,7 @@ function addAttribute(attributes::Vector{vk.VkVertexInputAttributeDescription},
                         bindings::Vector{vk.VkVertexInputBindingDescription},
                             type::Type, member::Symbol, location::UInt32, binding::UInt32 = 0;
                        inputRate::vk.VkVertexInputRate = vk.VK_VERTEX_INPUT_RATE_VERTEX)
-    idx = indexOfField(type, member)
-    if idx == 0
-        error("Cannot find field '", member, "' in type '", type, "'")
-    end
-    offset = fieldoffset(type, idx)
+    offset = fieldOffset(type, member)
     format = vkTypeOfFormat(fieldtype(type, member))
     addAttribute(attributes, bindings, vk.VkVertexInputAttributeDescription(location, binding, format, offset),
                 type; inputRate = inputRate)

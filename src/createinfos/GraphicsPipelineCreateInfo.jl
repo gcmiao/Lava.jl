@@ -28,15 +28,15 @@ struct GraphicsPipelineCreateInfo
             flags, #flags::VkPipelineCreateFlags
             length(stages), #stageCount::UInt32
             pointer(stages), #pStages::Ptr{VkPipelineShaderStageCreateInfo}
-            ref_to_pointer(vk.VkPipelineVertexInputStateCreateInfo, handleRef(vertexInputState)), #::Ptr{VkPipelineVertexInputStateCreateInfo}
-            ref_to_pointer(vk.VkPipelineInputAssemblyStateCreateInfo, handleRef(inputAssemblyState)), #::Ptr{VkPipelineInputAssemblyStateCreateInfo}
-            ref_to_pointer(vk.VkPipelineTessellationStateCreateInfo, handleRef(tessellationState)), #::Ptr{VkPipelineTessellationStateCreateInfo}
-            ref_to_pointer(vk.VkPipelineViewportStateCreateInfo, handleRef(viewportState)), #::Ptr{VkPipelineViewportStateCreateInfo}
-            ref_to_pointer(vk.VkPipelineRasterizationStateCreateInfo, handleRef(rasterizationState)), #::Ptr{VkPipelineRasterizationStateCreateInfo}
-            ref_to_pointer(vk.VkPipelineMultisampleStateCreateInfo, handleRef(multisampleState)), #::Ptr{VkPipelineMultisampleStateCreateInfo}
-            ref_to_pointer(vk.VkPipelineDepthStencilStateCreateInfo, handleRef(depthStencilState)), #::Ptr{VkPipelineDepthStencilStateCreateInfo}
-            ref_to_pointer(vk.VkPipelineColorBlendStateCreateInfo, handleRef(colorBlendState)), #::Ptr{VkPipelineColorBlendStateCreateInfo}
-            ref_to_pointer(vk.VkPipelineDynamicStateCreateInfo, handleRef(dynamicState)), #::Ptr{VkPipelineDynamicStateCreateInfo}
+            ref_to_pointer(handleRef(vertexInputState)), #::Ptr{VkPipelineVertexInputStateCreateInfo}
+            ref_to_pointer(handleRef(inputAssemblyState)), #::Ptr{VkPipelineInputAssemblyStateCreateInfo}
+            ref_to_pointer(handleRef(tessellationState)), #::Ptr{VkPipelineTessellationStateCreateInfo}
+            ref_to_pointer(handleRef(viewportState)), #::Ptr{VkPipelineViewportStateCreateInfo}
+            ref_to_pointer(handleRef(rasterizationState)), #::Ptr{VkPipelineRasterizationStateCreateInfo}
+            ref_to_pointer(handleRef(multisampleState)), #::Ptr{VkPipelineMultisampleStateCreateInfo}
+            ref_to_pointer(handleRef(depthStencilState)), #::Ptr{VkPipelineDepthStencilStateCreateInfo}
+            ref_to_pointer(handleRef(colorBlendState)), #::Ptr{VkPipelineColorBlendStateCreateInfo}
+            ref_to_pointer(handleRef(dynamicState)), #::Ptr{VkPipelineDynamicStateCreateInfo}
             handleRef(layout)[], #::VkPipelineLayout
             renderPass, #::VkRenderPass
             subpass, #::UInt32
@@ -51,7 +51,7 @@ struct GraphicsPipelineCreateInfo
         return this
     end
 end
-    
+
 function handleRef(this::GraphicsPipelineCreateInfo)::Ref{vk.VkGraphicsPipelineCreateInfo}
     return this.mHandleRef
 end

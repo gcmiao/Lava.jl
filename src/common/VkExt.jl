@@ -104,7 +104,7 @@ function getRayTracingProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalD
     props = VkExt.getProperties(phyDevice)
     props2 = Ref(vk.VkPhysicalDeviceProperties2(
                     vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, # sType::VkStructureType
-                    ref_to_pointer(vk.VkPhysicalDeviceRayTracingPropertiesNV, rtProps), # pNext::Ptr{Cvoid}
+                    ref_to_pointer(rtProps), # pNext::Ptr{Cvoid}
                     props # properties::VkPhysicalDeviceProperties
                 ))
     #props2 = Ref{vk.VkPhysicalDeviceProperties2}()
