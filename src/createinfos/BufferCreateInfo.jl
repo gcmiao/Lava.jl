@@ -28,8 +28,8 @@ function handleRef(this::BufferCreateInfo)::Ref{vk.VkBufferCreateInfo}
     return this.mHandleRef
 end
 
-function stagingBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo
-    return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+function stagingBuffer(size::Csize_t = Csize_t(0); addUsage = 0)::BufferCreateInfo
+    return BufferCreateInfo(size = size, usage = vk.VK_BUFFER_USAGE_TRANSFER_SRC_BIT | addUsage)
 end
 
 function storageBuffer(size::Csize_t = Csize_t(0))::BufferCreateInfo

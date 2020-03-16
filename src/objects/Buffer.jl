@@ -43,6 +43,10 @@ function setDataVRAM(this::Buffer, data::Vector, dataType::Type)
     setDataVRAM(this, data, Csize_t(sizeof(dataType) * length(data)))
 end
 
+function setDataVRAM(this::Buffer, data::Vector{T}) where T
+    setDataVRAM(this, data, Csize_t(sizeof(T) * length(data)))
+end
+
 function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
     # TODO
     #RecordingCommandBuffer::convenienceBufferCheck("Buffer::setDataVRAM()");
@@ -56,7 +60,6 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
         memmove(getData(mapped), pointer(data), size)
         unmap(mapped)
     else
-        staging::Buffer
         if isdefined(this.mStagingBuffer, :x)
             staging = this.mStagingBuffer[]
         else
@@ -263,7 +266,6 @@ function getSize()::vk.VkDeviceSize
 end
 
 function executeOnStagingBuffer(this::Buffer, callable)
-    staging::Buffer
     if isdefined(this.mStagingBuffer, :x)
         staging = this.mStagingBuffer[]
     else
