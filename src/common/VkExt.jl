@@ -100,18 +100,13 @@ function getRayTracingProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalD
                     0, # maxTriangleCount::UInt64
                     0 # maxDescriptorSetAccelerationStructures::UInt32
                 ))
-    #rtProps = Ref{vk.VkPhysicalDeviceRayTracingPropertiesNV}()
     props = VkExt.getProperties(phyDevice)
     props2 = Ref(vk.VkPhysicalDeviceProperties2(
                     vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, # sType::VkStructureType
                     ref_to_pointer(rtProps), # pNext::Ptr{Cvoid}
                     props # properties::VkPhysicalDeviceProperties
                 ))
-    #props2 = Ref{vk.VkPhysicalDeviceProperties2}()
     vk.vkGetPhysicalDeviceProperties2(phyDevice, props2)
-    p = unsafe_load(Ptr{vk.VkPhysicalDeviceRayTracingPropertiesNV}(props2[].pNext))
-    println("---", rtProps)
-    println("---", p)
     return rtProps[]
 end
 
@@ -283,6 +278,18 @@ function createFence(logicalDevice::vk.VkDevice)::vk.VkFence
     return outFence[]
 end
 
+function vkCreateRayTracingPipelinesNV(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines)
+    fnptr = vk.vkGetDeviceProcAddr(device, "vkCreateRayTracingPipelinesNV") |> vk.PFN_vkCreateRayTracingPipelinesNV
+    ccall(fnptr, vk.VkResult, (vk.VkDevice, vk.VkPipelineCache, UInt32, Ptr{vk.VkRayTracingPipelineCreateInfoNV}, Ptr{vk.VkAllocationCallbacks}, Ptr{vk.VkPipeline}),
+                               device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines)
+end
+
+function vkGetRayTracingShaderGroupHandlesNV(device, pipeline, firstGroup, groupCount, dataSize, pData)
+    fnptr = vk.vkGetDeviceProcAddr(device, "vkGetRayTracingShaderGroupHandlesNV") |> vk.PFN_vkGetRayTracingShaderGroupHandlesNV
+    ccall(fnptr, vk.VkResult, (vk.VkDevice, vk.VkPipeline, UInt32, UInt32, Csize_t, Ptr{Cvoid}),
+                               device, pipeline, firstGroup, groupCount, dataSize, pData)
+end
+
 # common
 function ClearValue(color::vk.VkClearColorValue)
     return vk.VkClearValue(color)
@@ -290,6 +297,22 @@ end
 
 function ClearValue(depthStencil::vk.VkClearDepthStencilValue)
     vk.VkClearValue(vk.VkClearColorValue((depthStencil.depth, depthStencil.stencil, 0, 0)))
+end
+
+# cmd
+function vkCmdPipelineBarrier(commandBuffer::vk.VkCommandBuffer,
+                              srcStageMask::VkPipelineStageFlags, dstStageMask::VkPipelineStageFlags,
+                              dependencyFlags::VkDependencyFlags;
+                              memoryBarriers = nothing,
+                              bufferMemoryBarriers = nothing,
+                              imageMemoryBarriers = nothing)
+    vk.vkCmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, dependencyFlags,
+                            memoryBarriers == nothing ? 0 : length(memoryBarriers),
+                            memoryBarriers == nothing ? C_NULL : pointer(memoryBarriers),
+                            bufferMemoryBarriers == nothing ? 0 : length(bufferMemoryBarriers),
+                            bufferMemoryBarriers == nothing ? C_NULL : pointer(bufferMemoryBarriers),
+                            imageMemoryBarriers == nothing ? 0 : length(imageMemoryBarriers),
+                            imageMemoryBarriers == nothing ? C_NULL : pointer(imageMemoryBarriers))
 end
 
 end #module

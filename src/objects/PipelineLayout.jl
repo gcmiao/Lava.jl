@@ -49,7 +49,7 @@ function createPipelineLayout(this::Device, type::Type, descriptorSets::Vector{D
     range = vk.VkPushConstantRange(
         vk.VK_SHADER_STAGE_ALL, #stageFlags::VkShaderStageFlags
         0, #offset::UInt32
-        sizeofObj(type()) #size::UInt32
+        sizeof(type) #size::UInt32
     )
     return createPipelineLayout(this, [range], descriptorSets);
 end

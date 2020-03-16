@@ -139,11 +139,10 @@ function build(this::TopLevelAccelerationStructure, instances::Vector{RayTracing
         vk.VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NV # dstAccessMask::VkAccessFlags
     )]
 
-    vk.vkCmdPipelineBarrier(cmd.handle(),
-                            vk.VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_NV,
-                            vk.VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_NV,
-                            vk.VkFlags(0), length(barrs), pointer(barrs),
-                            0, C_NULL, 0, C_NULL)
+    VkExt.vkCmdPipelineBarrier(cmd.handle(),
+                               vk.VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_NV,
+                               vk.VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_NV,
+                               vk.VkFlags(0), memoryBarriers = barrs)
 
     info = this.mCreateInfo.handleRef()[].info
     # TODO info is readonly

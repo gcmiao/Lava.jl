@@ -8,10 +8,11 @@ mutable struct RayTracingPipeline
     function RayTracingPipeline(device::Device, info::RayTracingPipelineCreateInfo)
         this = new()
         this.mDevice = device
+        this.mCreateInfo = info
         vkDevice = device.getLogicalDevice()
         phyDevice = device.getPhysicalDevice()
         pipelineRef = Ref{vk.VkPipeline}()
-        vk.vkCreateRayTracingPipelinesNV(vkDevice, C_NULL, 1, this.mCreateInfo.handleRef(), C_NULL, pipelineRef)
+        VkExt.vkCreateRayTracingPipelinesNV(vkDevice, C_NULL, UInt32(1), ref_to_pointer(this.mCreateInfo.handleRef()), C_NULL, pipelineRef)
         this.mHandle = pipelineRef[]
 
         this.mShaderBindingTable = this.mDevice.createBuffer(raytracingBuffer())
@@ -19,7 +20,7 @@ mutable struct RayTracingPipeline
 
         groupData = Vector{UInt8}(undef, this.mRaytracingProperties.shaderGroupHandleSize *
                                          length(this.mCreateInfo.getGroups()))
-        vk.vkGetRayTracingShaderGroupHandlesNV(vkDevice, this.mHandle,
+        VkExt.vkGetRayTracingShaderGroupHandlesNV(vkDevice, this.mHandle,
                 0, length(this.mCreateInfo.getGroups()), length(groupData), pointer(groupData))
 
         this.mShaderBindingTable.setDataVRAM(groupData)

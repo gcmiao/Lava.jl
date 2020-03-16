@@ -35,15 +35,8 @@ end
 
 function apply(this::BufferBarrier)
     if this.mEnabled
-        vk.vkCmdPipelineBarrier(this.mTarget, this.mSrcStage, this.mDstStage,
-                                0, # dependencyFlags
-                                0, # memoryBarrierCount
-                                C_NULL, # pMemoryBarriers
-                                1, # bufferMemoryBarrierCount
-                                pointer([this.mHandle]), # pBufferMemoryBarriers
-                                0, # imageMemoryBarrierCount
-                                C_NULL # pImageMemoryBarriers
-        )
+        VkExt.vkCmdPipelineBarrier(this.mTarget, this.mSrcStage, this.mDstStage,
+                                   vk.VkFlags(0), bufferMemoryBarriers = [this.mHandle])
     end
 end
 

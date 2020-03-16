@@ -53,4 +53,8 @@ function ref_to_pointer(ref::Ref{T}) where T
     ref == nothing ? C_NULL : Base.unsafe_convert(Ptr{T}, ref)
 end
 
+function ref_to_pointer(::Nothing)
+    return C_NULL
+end
+
 end #module
