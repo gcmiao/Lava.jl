@@ -9,7 +9,7 @@ struct BottomLevelAccelerationStructureCreateInfo
                 C_NULL, # pNext::Ptr{Cvoid}
                 0, # compactedSize::VkDeviceSize
                 vk.VkAccelerationStructureInfoNV(
-                    VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_INFO_NV, # sType::VkStructureType
+                    vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_INFO_NV, # sType::VkStructureType
                     C_NULL, # pNext::Ptr{Cvoid}
                     vk.VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NV, # type::VkAccelerationStructureTypeNV
                     vk.VkFlags(0), # flags::VkBuildAccelerationStructureFlagsNV
@@ -33,8 +33,8 @@ end
 function addTriangleGeometry(geometries::Vector{vk.VkGeometryNV}, refBuffers::Set,
                              vbuffer, voffset::UInt32, vcount::UInt32, vstride::UInt32, vformat::vk.VkFormat,
                              ibuffer, ioffset::UInt32, icount::UInt32, itype::vk.VkIndexType)
-    insert!(refBuffers, vbuffer)
-    insert!(refBuffers, ibuffer)
+    push!(refBuffers, vbuffer)
+    push!(refBuffers, ibuffer)
 
     geo = vk.VkGeometryNV(
         vk.VK_STRUCTURE_TYPE_GEOMETRY_NV, # sType::VkStructureType

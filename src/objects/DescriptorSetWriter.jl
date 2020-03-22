@@ -25,7 +25,7 @@ function pushWrite(this::DescriptorSetWriter, type::vk.VkDescriptorType;
                     bufferInfos::Vector{vk.VkDescriptorBufferInfo} = Vector{vk.VkDescriptorBufferInfo}(),
                     imageInfos::Vector{vk.VkDescriptorImageInfo} = Vector{vk.VkDescriptorImageInfo}(),
                     descCount::Integer = 0,
-                    pNext::Ptr{Cvoid} = C_NULL)
+                    pNext = C_NULL)
     push!(this.mWrites, vk.VkWriteDescriptorSet(
         vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, # sType::VkStructureType
         pNext, # pNext::Ptr{Cvoid}
@@ -193,14 +193,14 @@ end
 function accelerationStructure(this::DescriptorSetWriter, tlas::TopLevelAccelerationStructure)::DescriptorSetWriter
     res = this.getBindingResource(this.mCurrentBinding)
     empty!(res)
-    append!(res, tlas)
+    push!(res, tlas)
 
     handles::Vector{vk.VkAccelerationStructureNV} = [tlas.handle()]
     infoRef = Ref(vk.VkWriteDescriptorSetAccelerationStructureNV(
         vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV, # sType::VkStructureType
         C_NULL, # pNext::Ptr{Cvoid}
         UInt32(1), # accelerationStructureCount::UInt32
-        pointers(handles) # pAccelerationStructures::Ptr{VkAccelerationStructureNV}
+        pointer(handles) # pAccelerationStructures::Ptr{VkAccelerationStructureNV}
     ))
 
     pushWrite(this, vk.VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV, pNext = ref_to_pointer(infoRef), descCount = UInt32(1))

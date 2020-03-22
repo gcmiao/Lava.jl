@@ -1,27 +1,27 @@
 module Utils
 
 using LinearAlgebra
-export ref_to_pointer, indexOfField, memmove, sizeofObj, fieldOffset
+export ref_to_pointer, indexOfField, memmove, sizeOfObj, fieldOffset, sizeOfField
 
 include("MathUtils.jl")
 include("StringUtils.jl")
 
 memmove(dest, src, n) = ccall(:memmove, Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, Int), dest, src, n)
 
-function sizeofObj(x)
+function sizeOfObj(x)
     total = 0;
     fieldNames = fieldnames(typeof(x));
     if length(fieldNames) == 0
         return sizeof(x);
     else
         for fieldName in fieldNames
-            total += sizeofObj(getfield(x, fieldName));
+            total += sizeOfObj(getfield(x, fieldName));
         end
         return total;
     end
 end
 
-function sizeofField(type, field)
+function sizeOfField(type, field)
     return sizeof(fieldtype(type, field))
 end
 

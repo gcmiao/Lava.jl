@@ -120,7 +120,7 @@ function getFormat(this::Image)::vk.VkFormat
     return this.mCreateInfo.format
 end
 
-function setDataVRAM(this::Image, data::Vector, cmd::RecordingCommandBuffer)
+function setDataVRAM(this::Image, data::Vector, cmd)
     this.realizeVRAM()
 
     num_bytes = this.getWidth() * this.getHeight() * this.getDepth() * bytePerPixel(this.mCreateInfo.format)
@@ -139,7 +139,7 @@ end
 function setDataVRAM(this::Image, data::Vector{T}) where T
     num_bytes = this.getWidth() * this.getHeight() * this.getDepth() * bytePerPixel(this.mCreateInfo.format)
     @assert (length(data) * sizeof(T) == num_bytes) "The size of the vector provided " *
-                                                    "does not match the size of the image contents.")
+                                                    "does not match the size of the image contents."
 
     # RecordingCommandBuffer::convenienceBufferCheck("Image::setDataVRAM()");
     this.realizeVRAM()
@@ -165,7 +165,7 @@ end
 function setDataRAM(this::Image, data::Vector{T}) where T
     num_bytes = this.getWidth() * this.getHeight() * this.getDepth() * bytePerPixel(this.mCreateInfo.format)
     @assert (length(data) * sizeof(T) == num_bytes) "The size of the vector provided " *
-                                                    "does not match the size of the image contents.")
+                                                    "does not match the size of the image contents."
     this.realizeRAM()
 
     cmd = this.mDevice.graphicsQueue().beginCommandBuffer()
@@ -178,7 +178,7 @@ function setDataRAM(this::Image, data::Vector{T}) where T
     cmd.endCommandBuffer()
 end
 
-function Image::getData(this::Image, outData::Vector, level::Integer)
+function getData(this::Image, outData::Vector, level::Integer)
     @assert isdefined(this, :mMemory) "Image needs to be realized to get data."
 
     staging = prepStagingBuffer(this.levelBytes(level))
@@ -194,8 +194,8 @@ function realizeVRAM(this::Image)
     end
 
     req = VkExt.getImageMemoryRequirements(this.mDevice.getLogicalDevice(), this.mHandle)
-    this.mMemory = this.mDevice.suballocator().allocate(req, VRAM)
-    @assert (this.mMemory.offset() % req.alignment == 0)
+    this.mMemory = this.mDevice.getSuballocator().allocate(req, VRAM)
+    @assert (this.mMemory.getOffset() % req.alignment == 0)
     this.mMemory.bindToImage(this.mHandle)
 end
 
@@ -205,8 +205,8 @@ function realizeRAM(this::Image)
     end
 
     req = VkExt.getImageMemoryRequirements(this.mDevice.getLogicalDevice(), this.mHandle)
-    this.mMemory = this.mDevice.suballocator().allocate(req, RAM)
-    @assert (this.mMemory.offset() % req.alignment == 0)
+    this.mMemory = this.mDevice.getSuballocator().allocate(req, RAM)
+    @assert (this.mMemory.getOffset() % req.alignment == 0)
     this.mMemory.bindToImage(this.mHandle)
 end
 
@@ -217,7 +217,7 @@ function copyFrom(this::Image, buffer::Buffer)
     cmd.endCommandBuffer()
 end
 
-function copyFrom(this::Image,m buffer::Buffer, cmd::RecordingCommandBuffer)
+function copyFrom(this::Image, buffer::Buffer, cmd)
     this.changeLayout(vk.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, cmd)
 
     copies = [vk.VkBufferImageCopy(
@@ -239,7 +239,7 @@ function copyFrom(this::Image,m buffer::Buffer, cmd::RecordingCommandBuffer)
     cmd.attachResource(buffer)
 end
 
-function Image::copyFrom(this::Image, other::Image)
+function copyFrom(this::Image, other::Image)
     # RecordingCommandBuffer::convenienceBufferCheck("Image::copyFrom()");
     cmd = this.mDevice.transferQueue().beginCommandBuffer()
 
@@ -270,7 +270,7 @@ function copyTo(this::Image, buffer::Buffer, layer::Integer)
     cmd.endCommandBuffer()
 end
 
-function copyTo(this::Image, buffer::Buffer, cmd::RecordingCommandBuffer, level::Integer)
+function copyTo(this::Image, buffer::Buffer, cmd, level::Integer)
     @assert isdefined(this, :mMemory) "The Image needs to be realized to copy the data from it."
 
     copies = [vk.VkBufferImageCopy(
@@ -293,12 +293,13 @@ function copyTo(this::Image, buffer::Buffer, cmd::RecordingCommandBuffer, level:
 end
 
 function changeLayout(this::Image, from::vk.VkImageLayout, to::vk.VkImageLayout)
-    RecordingCommandBuffer::convenienceBufferCheck("Image::changeLayout()");
-    auto cmd = mDevice->graphicsQueue().beginCommandBuffer();
-    this.changeLayout(from, to, cmd);
+    # RecordingCommandBuffer::convenienceBufferCheck("Image::changeLayout()");
+    cmd = this.mDevice.graphicsQueue().beginCommandBuffer()
+    this.changeLayout(from, to, cmd)
+    cmd.endCommandBuffer()
 end
 
-function changeLayout(this::Image, from::vk.VkImageLayout, to::vk.VkImageLayout, cmd::RecordingCommandBuffer)
+function changeLayout(this::Image, from::vk.VkImageLayout, to::vk.VkImageLayout, cmd)
     barrs = [vk.VkImageMemoryBarrier(
                 vk.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, # sType::VkStructureType
                 C_NULL, # pNext::Ptr{Cvoid}
@@ -323,7 +324,7 @@ function changeLayout(this::Image, from::vk.VkImageLayout, to::vk.VkImageLayout,
                                vk.VkFlags(0), imageMemoryBarriers = barrs)
 end
 
-function changeLayout(this::Image, to::vk.VkImageLayout, cmd::RecordingCommandBuffer)
+function changeLayout(this::Image, to::vk.VkImageLayout, cmd)
     this.changeLayout(vk.VK_IMAGE_LAYOUT_UNDEFINED, to, cmd)
 end
 # changeOwner

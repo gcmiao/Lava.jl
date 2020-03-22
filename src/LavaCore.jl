@@ -15,6 +15,7 @@ export Camera
 
 using GeometryTypes
 include("common/FormatInfo.jl")
+include("common/LayoutInfo.jl")
 include("common/ShaderExtension.jl")
 include("common/FeatureBase.jl")
 include("common/RigidTransform.jl")
@@ -56,11 +57,11 @@ include("objects/DescriptorSetLayout.jl")
 include("objects/PipelineLayout.jl")
 include("objects/RenderPass.jl")
 
+include("objects/Buffer.jl")
 include("objects/Image.jl")
 include("objects/ImageView.jl")
 include("objects/Framebuffer.jl")
 include("objects/CommandBuffer.jl")
-include("objects/Buffer.jl")
 include("objects/Sampler.jl")
 include("objects/BottomLevelAccelerationStructure.jl")
 include("objects/TopLevelAccelerationStructure.jl")

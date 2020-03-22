@@ -278,6 +278,7 @@ function createFence(logicalDevice::vk.VkDevice)::vk.VkFence
     return outFence[]
 end
 
+# NV
 function vkCreateRayTracingPipelinesNV(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines)
     fnptr = vk.vkGetDeviceProcAddr(device, "vkCreateRayTracingPipelinesNV") |> vk.PFN_vkCreateRayTracingPipelinesNV
     ccall(fnptr, vk.VkResult, (vk.VkDevice, vk.VkPipelineCache, UInt32, Ptr{vk.VkRayTracingPipelineCreateInfoNV}, Ptr{vk.VkAllocationCallbacks}, Ptr{vk.VkPipeline}),
@@ -288,6 +289,36 @@ function vkGetRayTracingShaderGroupHandlesNV(device, pipeline, firstGroup, group
     fnptr = vk.vkGetDeviceProcAddr(device, "vkGetRayTracingShaderGroupHandlesNV") |> vk.PFN_vkGetRayTracingShaderGroupHandlesNV
     ccall(fnptr, vk.VkResult, (vk.VkDevice, vk.VkPipeline, UInt32, UInt32, Csize_t, Ptr{Cvoid}),
                                device, pipeline, firstGroup, groupCount, dataSize, pData)
+end
+
+function vkCreateAccelerationStructureNV(device, pCreateInfo, pAllocator, pAccelerationStructure)
+    fnptr = vk.vkGetDeviceProcAddr(device, "vkCreateAccelerationStructureNV") |> vk.PFN_vkCreateAccelerationStructureNV
+    ccall(fnptr, vk.VkResult, (vk.VkDevice, Ptr{vk.VkAccelerationStructureCreateInfoNV}, Ptr{vk.VkAllocationCallbacks}, Ptr{vk.VkAccelerationStructureNV}),
+                               device, pCreateInfo, pAllocator, pAccelerationStructure)
+end
+
+function vkGetAccelerationStructureMemoryRequirementsNV(device, pInfo, pMemoryRequirements)
+    fnptr = vk.vkGetDeviceProcAddr(device, "vkGetAccelerationStructureMemoryRequirementsNV") |> vk.PFN_vkGetAccelerationStructureMemoryRequirementsNV
+    ccall(fnptr, Cvoid, (vk.VkDevice, Ptr{vk.VkAccelerationStructureMemoryRequirementsInfoNV}, Ptr{vk.VkMemoryRequirements2KHR}),
+                         device, pInfo, pMemoryRequirements)
+end
+
+function vkBindAccelerationStructureMemoryNV(device, bindInfoCount, pBindInfos)
+    fnptr = vk.vkGetDeviceProcAddr(device, "vkBindAccelerationStructureMemoryNV") |> vk.PFN_vkBindAccelerationStructureMemoryNV
+    ccall(fnptr, vk.VkResult, (vk.VkDevice, UInt32, Ptr{vk.VkBindAccelerationStructureMemoryInfoNV}),
+                               device, bindInfoCount, pBindInfos)
+end
+
+function vkGetAccelerationStructureHandleNV(device, accelerationStructure, dataSize, pData)
+    fnptr = vk.vkGetDeviceProcAddr(device, "vkGetAccelerationStructureHandleNV") |> vk.PFN_vkGetAccelerationStructureHandleNV
+    ccall(fnptr, vk.VkResult, (vk.VkDevice, vk.VkAccelerationStructureNV, Csize_t, Ptr{Cvoid}),
+                        device, accelerationStructure, dataSize, pData)
+end
+
+function vkCmdBuildAccelerationStructureNV(device, commandBuffer, pInfo, instanceData, instanceOffset, update, dst, src, scratch, scratchOffset)
+    fnptr = vk.vkGetDeviceProcAddr(device, "vkCmdBuildAccelerationStructureNV") |> vk.PFN_vkCmdBuildAccelerationStructureNV
+    ccall(fnptr, vk.VkResult, (vk.VkCommandBuffer, Ptr{vk.VkAccelerationStructureInfoNV}, vk.VkBuffer, vk.VkDeviceSize, vk.VkBool32, vk.VkAccelerationStructureNV, vk.VkAccelerationStructureNV, vk.VkBuffer, vk.VkDeviceSize),
+                               commandBuffer, pInfo, instanceData, instanceOffset, update, dst, src, scratch, scratchOffset)
 end
 
 # common
@@ -301,8 +332,7 @@ end
 
 # cmd
 function vkCmdPipelineBarrier(commandBuffer::vk.VkCommandBuffer,
-                              srcStageMask::VkPipelineStageFlags, dstStageMask::VkPipelineStageFlags,
-                              dependencyFlags::VkDependencyFlags;
+                              srcStageMask, dstStageMask, dependencyFlags;
                               memoryBarriers = nothing,
                               bufferMemoryBarriers = nothing,
                               imageMemoryBarriers = nothing)

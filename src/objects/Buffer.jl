@@ -29,7 +29,9 @@ end
 
 function destroy(this::Buffer)
     vk.vkDestroyBuffer(getLogicalDevice(this.mDevice), this.mHandle, C_NULL)
-    destroy(this.mMemory)
+    if (isdefined(this, :mMemory))
+        destroy(this.mMemory)
+    end
     if isdefined(this.mStagingBuffer, :x)
         destroy(this.mStagingBuffer[])
     end
@@ -78,8 +80,7 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
     end
 end
 
-function setDataVRAM(this::Buffer, data::Vector, size::Csize_t,
-                      cmd::RecordingCommandBuffer)::BufferBarrier
+function setDataVRAM(this::Buffer, data::Vector{T}, size::Csize_t, cmd)::BufferBarrier where T
     this.initHandle(size)
     if !isdefined(this, :mMemory)
         this.realizeVRAM()
@@ -95,6 +96,10 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t,
             return this.copyFrom(staging, cmd)
         end)
     end
+end
+
+function setDataVRAM(this::Buffer, data::Vector{T}, cmd)::BufferBarrier where T
+    return this.setDataVRAM(data, Csize_t(sizeof(T) * length(data)), cmd)
 end
 
 function setDataRAM(this::Buffer, data::Vector, size::Csize_t)
@@ -126,7 +131,7 @@ function pushData(this::Buffer, data::Vector, size::Csize_t)
 end
 
 function pushData(this::Buffer, data::Vector, size::Csize_t,
-                   cmd::RecordingCommandBuffer)
+                   cmd)
     vk.vkCmdUpdateBuffer(cmd.handle(), this.mHandle, 0, size, pointer(data))
 end
 
@@ -234,7 +239,7 @@ function copyFrom(this::Buffer, other::Buffer)
     cmd.endCommandBuffer()
 end
 
-function copyFrom(this::Buffer, other::Buffer, cmd::RecordingCommandBuffer)::BufferBarrier
+function copyFrom(this::Buffer, other::Buffer, cmd)::BufferBarrier
     region = [vk.VkBufferCopy(
         0, #srcOffset::VkDeviceSize
         0, #dstOffset::VkDeviceSize

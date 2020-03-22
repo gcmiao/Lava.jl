@@ -13,7 +13,7 @@ mutable struct BottomLevelAccelerationStructure
         vkDevice = device.getLogicalDevice()
 
         asRef = Ref{vk.VkAccelerationStructureNV}()
-        vk.vkCreateAccelerationStructureNV(vkDevice, ref_to_pointer(info.handleRef()), C_NULL, asRef)
+        VkExt.vkCreateAccelerationStructureNV(vkDevice, ref_to_pointer(info.handleRef()), C_NULL, asRef)
         this.mHandle = asRef[]
 
         memInfoRef = Ref(vk.VkAccelerationStructureMemoryRequirementsInfoNV(
@@ -24,7 +24,7 @@ mutable struct BottomLevelAccelerationStructure
         ))
 
         reqsRef = Ref{vk.VkMemoryRequirements2KHR}()
-        vk.vkGetAccelerationStructureMemoryRequirementsNV(vkDevice, memInfoRef, reqsRef)
+        VkExt.vkGetAccelerationStructureMemoryRequirementsNV(vkDevice, memInfoRef, reqsRef)
 
         this.mMemory = device.getSuballocator().allocate(reqsRef[].memoryRequirements, VRAM)
         binds = [vk.VkBindAccelerationStructureMemoryInfoNV(
@@ -37,10 +37,10 @@ mutable struct BottomLevelAccelerationStructure
             C_NULL # pDeviceIndices::Ptr{UInt32}
         )]
 
-        vk.vkBindAccelerationStructureMemoryNV(vkDevice, length(binds), pointer(binds))
+        VkExt.vkBindAccelerationStructureMemoryNV(vkDevice, length(binds), pointer(binds))
 
         dhRef = Ref{UInt64}()
-        vk.vkGetAccelerationStructureHandleNV(vkDevice, this.mHandle, sizeof(UInt64), dhRef)
+        VkExt.vkGetAccelerationStructureHandleNV(vkDevice, this.mHandle, sizeof(UInt64), dhRef)
         this.mDeviceHandle = dhRef[]
 
         return this
@@ -79,7 +79,7 @@ end
 # Build the acceleration structure with the provided scratch and command
 # buffers
 function build(this::BottomLevelAccelerationStructure, scratchBuffer::Buffer, cmd::RecordingCommandBuffer)
-    vk.vkCmdBuildAccelerationStructureNV(cmd.handle(), Ref(this.mCreateInfo.handleRef()[].info),
+    VkExt.vkCmdBuildAccelerationStructureNV(this.mDevice.getLogicalDevice(), cmd.handle(), Ref(this.mCreateInfo.handleRef()[].info),
                                             C_NULL, 0, VkExt.VK_FALSE,
                                             this.mHandle, C_NULL, scratchBuffer.handle(), 0)
 end
@@ -91,7 +91,7 @@ function build(this::BottomLevelAccelerationStructure, cmd::RecordingCommandBuff
     this.build(buf, cmd)
 end
 
-function scratchSize(this::BottomLevelAccelerationStructure)::UInt32
+function scratchSize(this::BottomLevelAccelerationStructure)::Csize_t
     memInfoRef = Ref(vk.VkAccelerationStructureMemoryRequirementsInfoNV(
         vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_INFO_NV, # sType::VkStructureType
         C_NULL, # pNext::Ptr{Cvoid}
@@ -100,7 +100,7 @@ function scratchSize(this::BottomLevelAccelerationStructure)::UInt32
     ))
 
     reqsRef = Ref{vk.VkMemoryRequirements2KHR}()
-    vk.vkGetAccelerationStructureMemoryRequirementsNV(this.mDevice.getLogicalDevice(), memInfoRef, reqsRef)
+    VkExt.vkGetAccelerationStructureMemoryRequirementsNV(this.mDevice.getLogicalDevice(), memInfoRef, reqsRef)
 
     return reqsRef[].memoryRequirements.size
 end

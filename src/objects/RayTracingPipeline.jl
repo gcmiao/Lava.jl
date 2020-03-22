@@ -36,7 +36,7 @@ struct OffsetStride
 end
 
 function destroy(this::RayTracingPipeline)
-    vk.vkDestroyPipeline(mDevice.getLogicalDevice(), this.mHandle, C_NULL)
+    vk.vkDestroyPipeline(this.mDevice.getLogicalDevice(), this.mHandle, C_NULL)
 end
 
 function handle(this::RayTracingPipeline)::vk.VkPipeline
