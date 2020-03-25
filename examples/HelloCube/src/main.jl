@@ -5,7 +5,7 @@ using LinearAlgebra
 using GeometryTypes
 using Lava: @class, @scope, @autodestroy
 
-shaderFolder = String(@__DIR__) * "/../shaders/"
+const shaderFolder = String(@__DIR__) * "/../shaders/"
 
 mutable struct CameraData
     view::Mat4f0
@@ -133,9 +133,9 @@ function main()
 
     #Upload of the cube mesh
     vab = @autodestroy lava.createBuffer(device, lava.arrayBuffer())
-    vab.setDataVRAM(cubeVertices, Vertex)
+    vab.setDataVRAM(cubeVertices)
     eab = @autodestroy lava.createBuffer(device, lava.indexBuffer())
-    eab.setDataVRAM(cubeIndices, UInt32)
+    eab.setDataVRAM(cubeIndices)
 
     camera.setPosition(Vec3f0(2.0, 2.0, 2.0))
     camera.setTarget(Vec3f0(0.0, 0.0, 0.0))
