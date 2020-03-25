@@ -56,7 +56,6 @@ function setDataVRAM(this::Buffer, data::Vector, size::Csize_t)
         memmove(getData(mapped), pointer(data), size)
         unmap(mapped)
     else
-        staging::Buffer
         if isdefined(this.mStagingBuffer, :x)
             staging = this.mStagingBuffer[]
         else
