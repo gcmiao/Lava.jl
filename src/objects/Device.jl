@@ -51,7 +51,7 @@ mutable struct Device
         for feat in this.mFeatures
             onPhysicalDeviceSelected(feat, this.mPhysicalDevice)
         end
-        this.mPhyProperties = VkExt.getProperties(this.mPhysicalDevice)
+        this.mPhyProperties = VkExt.vkGetPhysicalDeviceProperties(this.mPhysicalDevice)
 
         this.createLogicalDevice(group, queues);
 
@@ -131,7 +131,7 @@ function pickPhysicalDevice(this::Device, gpuSelectionStrategy::ISelectionStrate
         onPhysicalDeviceSelected(feat, this.mPhysicalDevice)
     end
 
-    this.mPhyProperties = VkExt.getProperties(this.mPhysicalDevice)
+    this.mPhyProperties = VkExt.vkGetPhysicalDeviceProperties(this.mPhysicalDevice)
 end
 
 mutable struct FamilyInfo

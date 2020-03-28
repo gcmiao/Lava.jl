@@ -102,7 +102,7 @@ function setDataVRAM(this::Buffer, data::Vector{T}, cmd)::BufferBarrier where T
     return this.setDataVRAM(data, Csize_t(sizeof(T) * length(data)), cmd)
 end
 
-function setDataRAM(this::Buffer, data::Vector, size::Csize_t)
+function setDataRAM(this::Buffer, data, size::Csize_t)
     initHandle(this, size)
     if !isdefined(this, :mMemory)
         realizeRAM(this)

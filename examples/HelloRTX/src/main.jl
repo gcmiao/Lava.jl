@@ -45,6 +45,10 @@ function main()
         ibuffer = @autodestroy lava.createBuffer(device, lava.arrayIndexStorageBuffer())
         ibuffer->setDataVRAM(indices)
 
+        # Load the environment map
+        envmap = lava.createFromFile(dataFolder * "spruit_sunrise_4k.hdr").uploadTo(device)
+        envmap.changeLayout(vk.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vk.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+
         vkDevice = device.getLogicalDevice()
         phyDevice = device.getPhysicalDevice()
         dslayout = lava.DescriptorSetLayout(vkDevice,
@@ -104,3 +108,4 @@ function main()
                      storageBuffer(vbuffer)
     end
 end
+main()

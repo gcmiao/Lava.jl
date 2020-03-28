@@ -81,10 +81,16 @@ function enumeratePhysicalDeviceGroups(vkInstance::vk.VkInstance)
     return groupProps
 end
 
-function getProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalDeviceProperties
+function vkGetPhysicalDeviceProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalDeviceProperties
     deviceProperties = Ref{vk.VkPhysicalDeviceProperties}()
     vk.vkGetPhysicalDeviceProperties(phyDevice, deviceProperties)
     return deviceProperties[]
+end
+
+function vkGetPhysicalDeviceFormatProperties(phyDevice::vk.VkPhysicalDevice, format::vk.VkFormat)
+    props = Ref{vk.VkFormatProperties}()
+    vk.vkGetPhysicalDeviceFormatProperties(phyDevice, format, props)
+    return props[]
 end
 
 function getRayTracingProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalDeviceRayTracingPropertiesNV
@@ -100,7 +106,7 @@ function getRayTracingProperties(phyDevice::vk.VkPhysicalDevice)::vk.VkPhysicalD
                     0, # maxTriangleCount::UInt64
                     0 # maxDescriptorSetAccelerationStructures::UInt32
                 ))
-    props = VkExt.getProperties(phyDevice)
+    props = VkExt.vkGetPhysicalDeviceProperties(phyDevice)
     props2 = Ref(vk.VkPhysicalDeviceProperties2(
                     vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, # sType::VkStructureType
                     ref_to_pointer(rtProps), # pNext::Ptr{Cvoid}

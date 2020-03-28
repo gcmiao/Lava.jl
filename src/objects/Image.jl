@@ -82,8 +82,8 @@ function usageToFeatures(usage::vk.VkImageUsageFlags)::vk.VkFormatFeatureFlags
     return result;
 end
 
-function createImage(createInfo::ImageCreateInfo, device::Device)::Image
-    return Image(device, handleRef(createInfo)[], createInfo.mViewType)
+function createImage(this::ImageCreateInfo, device::Device)::Image
+    return Image(device, handleRef(this)[], this.mViewType)
 end
 
 function createView(this::Image, range::vk.VkImageSubresourceRange = vk.VkImageSubresourceRange(0, 0, 0, 0, 0))
@@ -120,11 +120,11 @@ function getFormat(this::Image)::vk.VkFormat
     return this.mCreateInfo.format
 end
 
-function setDataVRAM(this::Image, data::Vector, cmd)
+function setDataVRAM(this::Image, data, cmd)
     this.realizeVRAM()
 
     num_bytes = this.getWidth() * this.getHeight() * this.getDepth() * bytePerPixel(this.mCreateInfo.format)
-    if this.mMemory.mappable()
+    if this.mMemory.isMappable()
         this.changeLayout(vk.VK_IMAGE_LAYOUT_GENERAL, cmd)
         mapped = this.mMemory.map()
         memmove(mapped.getData(), pointer(data), num_bytes)
@@ -314,7 +314,7 @@ function changeLayout(this::Image, from::vk.VkImageLayout, to::vk.VkImageLayout,
                     aspectsOf(this.mCreateInfo.format), # aspectMask::VkImageAspectFlags
                     UInt32(0), # baseMipLevel::UInt32
                     this.mCreateInfo.mipLevels, # levelCount::UInt32
-                    UIntew(0), # baseArrayLayer::UInt32
+                    UInt32(0), # baseArrayLayer::UInt32
                     this.mCreateInfo.arrayLayers # layerCount::UInt32
                 ) # subresourceRange::VkImageSubresourceRange
             )
@@ -327,8 +327,79 @@ end
 function changeLayout(this::Image, to::vk.VkImageLayout, cmd)
     this.changeLayout(vk.VK_IMAGE_LAYOUT_UNDEFINED, to, cmd)
 end
+
+function changeLayout(this::Image, to::vk.VkImageLayout)
+    this.changeLayout(vk.VK_IMAGE_LAYOUT_UNDEFINED, to)
+end
 # changeOwner
-# generateMipmaps
+
+function barrierForGenerateMipmaps(this::Image, level::Integer, oldLayout::vk.VkImageLayout, newLayout::vk.VkImageLayout)
+    barrier = vk.VkImageMemoryBarrier(
+        vk.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, # sType::VkStructureType
+        C_NULL, # pNext::Ptr{Cvoid}
+        flagsForLayout(oldLayout), # srcAccessMask::VkAccessFlags
+        flagsForLayout(newLayout), # dstAccessMask::VkAccessFlags
+        oldLayout, # oldLayout::VkImageLayout
+        newLayout, # newLayout::VkImageLayout
+        UInt32(0), # srcQueueFamilyIndex::UInt32
+        UInt32(0), # dstQueueFamilyIndex::UInt32
+        this.mHandle, # image::VkImage
+        vk.VkImageSubresourceRange(
+            aspectsOf(this.mCreateInfo.format), # aspectMask::VkImageAspectFlags
+            UInt32(level), # baseMipLevel::UInt32
+            UInt32(1), # levelCount::UInt32
+            UInt32(0), # baseArrayLayer::UInt32
+            this.mCreateInfo.arrayLayers # layerCount::UInt32
+        ) # subresourceRange::VkImageSubresourceRange
+    )
+end
+function generateMipmaps(this::Image, cmd)
+    props = VkExt.vkGetPhysicalDeviceFormatProperties(this.mDevice.getPhysicalDevice(), this.mCreateInfo.format)
+    @assert (props.optimalTilingFeatures & vk.VK_FORMAT_FEATURE_BLIT_DST_BIT != 0) "Need to be able to blit to this image format."
+    @assert (props.optimalTilingFeatures & vk.VK_FORMAT_FEATURE_BLIT_SRC_BIT != 0) "Need to be able to blit to this image format."
+
+    or1 = x::UInt32 -> begin return max(x, 1) end
+
+    for level = 1 : this.mCreateInfo.mipLevels - 1
+        # change layout of target level
+        barrier = barrierForGenerateMipmaps(this, level, vk.VK_IMAGE_LAYOUT_UNDEFINED, vk.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+        VkExt.vkCmdPipelineBarrier(cmd.handle(), vk.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, vk.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                                   vk.VkFlags(0), imageMemoryBarriers = [barrier])
+
+        blits = [vk.VkImageBlit(
+            vk.VkImageSubresourceLayers(
+                aspectsOf(this.mCreateInfo.format), # aspectMask::VkImageAspectFlags
+                UInt32(level - 1), # mipLevel::UInt32
+                UInt32(0), # baseArrayLayer::UInt32
+                this.mCreateInfo.arrayLayers # layerCount::UInt32
+            ), # srcSubresource::VkImageSubresourceLayers
+            (vk.VkOffset3D(0, 0, 0),
+             vk.VkOffset3D(or1(this.getWidth() >> (level - 1)),
+                           or1(this.getHeight() >> (level - 1)),
+                           or1(this.getDepth() >> (level - 1)))), # srcOffsets::NTuple{2, VkOffset3D}
+            vk.VkImageSubresourceLayers(
+                aspectsOf(this.mCreateInfo.format), # aspectMask::VkImageAspectFlags
+                UInt32(level), # mipLevel::UInt32
+                UInt32(0), # baseArrayLayer::UInt32
+                this.mCreateInfo.arrayLayers # layerCount::UInt32
+            ), # dstSubresource::VkImageSubresourceLayers
+            (vk.VkOffset3D(0, 0, 0),
+             vk.VkOffset3D(or1(this.getWidth() >> level),
+                           or1(this.getHeight() >> level),
+                           or1(this.getDepth() >> level))) # dstOffsets::NTuple{2, VkOffset3D}
+        )]
+
+        vk.vkCmdBlitImage(cmd.handle(), this.mHandle, vk.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                        this.mHandle, vk.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                        UInt32(1), pointer(blits), vk.VK_FILTER_LINEAR)
+
+        barrier = barrierForGenerateMipmaps(this, level, vk.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vk.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+        VkExt.vkCmdPipelineBarrier(cmd.handle(), vk.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, vk.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                                   vk.VkFlags(0), imageMemoryBarriers = [barrier])
+
+    end
+    cmd.attachResource(this)
+end
 # createView
 # changeOwnerImpl
 function levelPixels(this::Image, layer::Integer)::Csize_t

@@ -18,7 +18,7 @@ end
 function selectFrom(this::NthOfTypeStrategy, phys::Vector{vk.VkPhysicalDevice})::vk.VkPhysicalDevice
     counter::UInt32 = 0
     for dev in phys
-        props = VkExt.getProperties(dev)
+        props = VkExt.vkGetPhysicalDeviceProperties(dev)
         if (props.deviceType == this.mType)
             if (counter == this.mN)
                 return dev;

@@ -81,11 +81,10 @@ end
 
 function adaptTiling(vkPhyDevice::vk.VkPhysicalDevice, format::vk.VkFormat, usage::vk.VkImageUsageFlags, tilingRef::Ref{vk.VkImageTiling})
     features = usageToFeatures(usage)
-    props = Ref{vk.VkFormatProperties}()
-    vk.vkGetPhysicalDeviceFormatProperties(vkPhyDevice, format, props)
-    canUseOptimal = ((props[].optimalTilingFeatures & features) == features)
-    canUseLinear = ((props[].linearTilingFeatures & features) == features)
-
+    props = VkExt.vkGetPhysicalDeviceFormatProperties(vkPhyDevice, format)
+    canUseOptimal = ((props.optimalTilingFeatures & features) == features)
+    canUseLinear = ((props.linearTilingFeatures & features) == features)
+    
     if (!canUseOptimal && tilingRef[] == vk.VK_IMAGE_TILING_OPTIMAL)
         if (canUseLinear)
             println("The format selected for this image does not support optimal ",
@@ -118,7 +117,7 @@ function adaptTiling(vkPhyDevice::vk.VkPhysicalDevice, format::vk.VkFormat, usag
     end
 end
 
-function mipLevels(dim::UInt32)::UInt32
+function evalRequiredMipLevels(dim::UInt32)::UInt32
     count::UInt32 = UInt32(1)
     while (dim >>= 1) > 0
         count += 1
@@ -127,28 +126,36 @@ function mipLevels(dim::UInt32)::UInt32
 end
 
 function texture2D(vkPhyDevice::vk.VkPhysicalDevice,
-                         width::UInt32, height::UInt32, format::vk.VkFormat)::ImageCreateInfo
+                         width::UInt32, height::UInt32, format::vk.VkFormat;
+                         mipLevels = 0)::ImageCreateInfo
     viewType, imgType, flags = getCombinedType(vk.VK_IMAGE_VIEW_TYPE_2D)
     usage = vk.VK_IMAGE_USAGE_SAMPLED_BIT
 
+    if mipLevels == 0
+        mipLevels = evalRequiredMipLevels(min(width, height))
+    end
     info = createImageCreateInfo(vkPhyDevice, imageViewType = viewType, imageType = imgType, flags = flags,
                                 format = format,
                                 extent = vk.VkExtent3D(width, height, 1),
-                                mipLevels = mipLevels(min(width, height)),
+                                mipLevels = mipLevels,
                                 usage = usage)
     return info
 end
 
 function texture2DArray(vkPhyDevice::vk.VkPhysicalDevice,
                               width::UInt32, height::UInt32,
-                             layers::UInt32, format::vk.VkFormat)::ImageCreateInfo
+                             layers::UInt32, format::vk.VkFormat;
+                             mipLevels = 0)::ImageCreateInfo
     viewType, imgType, flags = getCombinedType(vk.VK_IMAGE_VIEW_TYPE_2D_ARRAY)
     usage = vk.VK_IMAGE_USAGE_SAMPLED_BIT
 
+    if mipLevels == 0
+        mipLevels = evalRequiredMipLevels(min(width, height))
+    end
     info = createImageCreateInfo(vkPhyDevice, imageViewType = viewType, imageType = imgType, flags = flags,
                              format = format,
                              extent = vk.VkExtent3D(width, height, 1),
-                             mipLevels = mipLevels(min(width, height)),
+                             mipLevels = mipLevels,
                              arrayLayers = layers,
                              usage = usage)
     return info
